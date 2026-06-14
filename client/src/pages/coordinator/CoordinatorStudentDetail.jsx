@@ -1,236 +1,587 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
+import { 
+  Trophy, Award, Code, Activity, Calendar, FileText, 
+  ExternalLink, Download, ArrowLeft, RefreshCw
+} from 'lucide-react';
+import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { HeatmapWidget } from '../../components/HeatmapWidget';
 
 export function CoordinatorStudentDetail() {
   const { token } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [student, setStudent] = useState(null);
+  const [timeline, setTimeline] = useState([]);
+  const [heatmap, setHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview'); // overview, platforms, heatmap, analytics, timeline, resume
+
+  const [resumeBlobUrl, setResumeBlobUrl] = useState(null);
+  const [loadingResume, setLoadingResume] = useState(false);
+  const [studentResumes, setStudentResumes] = useState({ generated: [], uploaded: [] });
+  const [selectedResumeId, setSelectedResumeId] = useState(null);
+  const [resumeAnalytics, setResumeAnalytics] = useState(null);
+
+  const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+
+  const loadAllStudentData = async () => {
+    if (!token || !id) return;
+    try {
+      const studentData = await api.getJson(`/coordinator/students/${id}`, token);
+      setStudent(studentData);
+
+      const timelineData = await api.getJson(`/coordinator/students/${id}/timeline`, token);
+      setTimeline(timelineData);
+
+      const heatmapData = await api.getJson(`/coordinator/students/${id}/heatmap`, token);
+      setHeatmap(heatmapData);
+    } catch (err) {
+      console.error('Failed to load student details:', err);
+      navigate('/coordinator/students', { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      if (!token) return;
-      try {
-        const res = await api.getJson(`/coordinator/students/${id}`, token);
-        setStudent(res);
-      } catch {
-        navigate('/coordinator/students', { replace: true });
-      } finally {
-        setLoading(false);
+    loadAllStudentData();
+  }, [token, id]);
+
+  // Securely load PDF Resume blob url for selected resume
+  const loadResumeBlob = async (resumeId) => {
+    if (!token || !id) return;
+    setLoadingResume(true);
+    try {
+      const urlPath = resumeId 
+        ? `${backendBase}/coordinator/students/${id}/resumes/${resumeId}/download`
+        : `${backendBase}/coordinator/students/${id}/resume`;
+
+      const res = await fetch(urlPath, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Resume unavailable');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setResumeBlobUrl(prevUrl => {
+        if (prevUrl) URL.revokeObjectURL(prevUrl);
+        return url;
+      });
+    } catch (err) {
+      console.error('Failed to fetch resume blob:', err);
+      setResumeBlobUrl(null);
+    } finally {
+      setLoadingResume(false);
+    }
+  };
+
+  const loadResumeData = async () => {
+    if (!token || !id) return;
+    try {
+      // 1. Fetch resumes list
+      const data = await api.getJson(`/coordinator/students/${id}/resumes`, token);
+      setStudentResumes(data || { generated: [], uploaded: [] });
+
+      // 2. Fetch resume analytics
+      const analytics = await api.getJson(`/coordinator/students/${id}/resume-analytics`, token);
+      setResumeAnalytics(analytics);
+
+      // Select default resume
+      const defaultVer = (data.generated || []).find(v => v.isDefault) || (data.uploaded || []).find(u => u.isDefault);
+      const defaultId = defaultVer ? defaultVer._id : (data.generated?.[0]?._id || data.uploaded?.[0]?._id);
+      
+      setSelectedResumeId(defaultId);
+      if (defaultId) {
+        loadResumeBlob(defaultId);
       }
-    };
-    load();
-  }, [token, id, navigate]);
+    } catch (err) {
+      console.error('Failed to load coordinator student resume info:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'resume') {
+      loadResumeData();
+    }
+  }, [activeTab]);
+
+  // Recharts configurations
+  const chartData = useMemo(() => {
+    if (!student) return [];
+    const stats = student.platformStats || {};
+    return [
+      { name: 'LeetCode', solved: stats.leetcode?.problemsSolved || 0 },
+      { name: 'CodeChef', solved: stats.codechef?.problemsSolved || 0 },
+      { name: 'GFG', solved: stats.geeksforgeeks?.problemsSolved || 0 },
+      { name: 'HackerRank', solved: student.hackerrank?.totalProblemsSolved || 0 }
+    ].filter(d => d.solved > 0);
+  }, [student]);
+
+  const COLORS = ['#F59E0B', '#ef4444', '#22C55E', '#8B5CF6'];
 
   if (loading || !student) {
     return (
       <AppShell active="coord-students">
-        <div className="ct-card">Loading…</div>
+        <div className="ct-card">Loading student insights…</div>
       </AppShell>
     );
   }
 
   const scores = student.scores || {};
-  const platformStats = student.platformStats || {};
-  const lc = platformStats.leetcode || {};
-  const cc = platformStats.codechef || {};
+  const stats = student.platformStats || {};
+  const lc = stats.leetcode || {};
+  const cc = stats.codechef || {};
+  const gfg = stats.geeksforgeeks || {};
   const hr = student.hackerrank || {};
 
-  const initial = student.name ? student.name.charAt(0).toUpperCase() : '?';
+  const handleDownloadResume = () => {
+    if (!resumeBlobUrl) return;
+    const a = document.createElement('a');
+    a.href = resumeBlobUrl;
+    a.download = `resume-${student.name}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <AppShell active="coord-students">
-      <div style={{ marginBottom: '0.75rem', fontSize: '0.8rem' }}>
-        <Link to="/coordinator/students" style={{ textDecoration: 'underline', color: '#9ca3af' }}>
-          ← Back to Students
-        </Link>
-      </div>
-      <div className="ct-card" style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div className="ct-avatar-circle" style={{ width: 42, height: 42, fontSize: '1.1rem' }}>
-              {initial}
+      <style>{`
+        .active-tab {
+          background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)) !important;
+          color: #0b1120 !important;
+          font-weight: 700;
+        }
+      `}</style>
+
+      <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        
+        {/* BACK LINK */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Link to="/coordinator/students" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <ArrowLeft size={16} /> Back to Students List
+          </Link>
+        </div>
+
+        {/* STUDENT METRICS GENERAL HEADER */}
+        <div className="ct-card" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(17, 24, 39, 0.75))' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="ct-avatar-circle" style={{ width: 52, height: 52, fontSize: '1.3rem' }}>
+              {student.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{student.name}</div>
-              <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{student.email}</div>
+              <h2 style={{ margin: 0 }}>{student.name}</h2>
+              <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                {student.email} | MSSID: <strong>{student.mssid || '-'}</strong>
+              </p>
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ marginBottom: '0.25rem' }}>
-              <span className="ct-chip">Score: {scores.totalScore || 0}</span>{' '}
-              <span className="ct-chip">
-                LC {scores.lcScore || 0} · CC {scores.ccScore || 0} · HR {scores.hrScore || 0}
-              </span>
-            </div>
-            <div className="ct-pill">
-              <span
-                className={
-                  student.activityStatus === 'active' ? 'ct-star-active' : 'ct-star-inactive'
-                }
-              >
-                ⭐
-              </span>
-              <span style={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                {student.activityStatus === 'active' ? 'Very Active' : 'Inactive'}
-              </span>
-            </div>
+
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span className="ct-chip" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
+              Weighted Score: <strong>{Math.round(scores.weightedRankScore || 0)}</strong>
+            </span>
+            <span className="ct-chip" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
+              Total Solved: <strong>{(lc.problemsSolved || 0) + (cc.problemsSolved || 0) + (gfg.problemsSolved || 0) + (hr.totalProblemsSolved || 0)}</strong>
+            </span>
+            <span className="ct-pill" style={{ color: student.activityStatus === 'active' ? '#22C55E' : '#9ca3af', borderColor: student.activityStatus === 'active' ? '#22C55E' : '#9ca3af', background: 'rgba(255,255,255,0.02)' }}>
+              {student.activityStatus === 'active' ? '● Active' : '○ Inactive'}
+            </span>
           </div>
         </div>
-      </div>
 
-      <div className="ct-grid-2" style={{ alignItems: 'flex-start' }}>
-        <div>
-          <div className="ct-card">
-            <div className="ct-section-title">Personal details</div>
-            <div style={{ fontSize: '0.85rem', color: '#e5e7eb' }}>
-              <p>
-                <strong>College</strong>
-                <br />
-                {student.college || '—'}
-              </p>
-              <p>
-                <strong>Branch</strong>
-                <br />
-                {student.branch || '—'}
-              </p>
-              <p>
-                <strong>Year</strong>
-                <br />
-                {student.year || '—'}
-              </p>
-              <p>
-                <strong>Hostel</strong>
-                <br />
-                {student.hostel || '—'}
-              </p>
-              <p>
-                <strong>GPA</strong>
-                <br />
-                {student.overallGpa != null ? student.overallGpa : '—'}
-              </p>
-              <p>
-                <strong>Links</strong>
-                <br />
-                {student.githubUrl && (
-                  <>
-                    <a href={student.githubUrl} target="_blank" rel="noreferrer">
-                      GitHub
-                    </a>
-                    <br />
-                  </>
-                )}
+        {/* TAB CONTROLS */}
+        <div className="ct-card" style={{ padding: '0.8rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {[
+            { id: 'overview', label: '👤 Profile Overview' },
+            { id: 'platforms', label: '🔗 Coding Profiles' },
+            { id: 'heatmap', label: '📅 Streaks Heatmap' },
+            { id: 'analytics', label: '📊 Solve Analytics' },
+            { id: 'timeline', label: '⏳ Activity Timeline' },
+            { id: 'resume', label: '📜 PDF Resume' }
+          ].map(t => (
+            <button
+              key={t.id}
+              className={`ct-nav-item ${activeTab === t.id ? 'active-tab' : ''}`}
+              onClick={() => setActiveTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ================= TAB CONTENTS ================= */}
+
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && (
+          <div className="ct-grid-responsive" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            
+            {/* Academic details */}
+            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.5rem' }}>Academic Details</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                <span>🏛️ College: <strong>{student.college || '—'}</strong></span>
+                <span>🏨 Hostel / Locality: <strong>{student.hostel || '—'}</strong></span>
+                <span>💻 Branch: <strong>{student.branch || '—'}</strong></span>
+                <span>📅 Academic Year: <strong>Year {student.year || '—'}</strong></span>
+                <span>📈 Overall GPA: <strong>{student.overallGpa || '—'}</strong></span>
                 {student.linkedinUrl && (
-                  <a href={student.linkedinUrl} target="_blank" rel="noreferrer">
-                    LinkedIn
-                  </a>
+                  <span>🔗 LinkedIn: <a href={student.linkedinUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)', textDecoration: 'underline' }}>View Profile <ExternalLink size={12} style={{ display: 'inline' }} /></a></span>
                 )}
-              </p>
+              </div>
             </div>
-          </div>
 
-          <div className="ct-card" style={{ marginTop: '1rem' }}>
-            <div className="ct-section-title">Recent activity</div>
-            <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
-              <p>
-                Platform sync:{' '}
-                {student.lastPlatformSyncAt
-                  ? new Date(student.lastPlatformSyncAt).toLocaleString()
-                  : 'Not yet synced'}
-              </p>
-              <p>
-                Profile updated:{' '}
-                {student.lastProfileUpdateAt
-                  ? new Date(student.lastProfileUpdateAt).toLocaleString()
-                  : 'Not yet updated'}
-              </p>
-              <p>
-                Manual activity:{' '}
-                {student.lastManualActivityAt
-                  ? new Date(student.lastManualActivityAt).toLocaleString()
-                  : 'No manual entries yet'}
-              </p>
+            {/* Certifications & Hackathons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <h4 style={{ margin: 0 }}>Verified Certifications</h4>
+                {student.certifications && student.certifications.length > 0 ? (
+                  student.certifications.map((c, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <strong>{c.title}</strong> — {c.issuer}
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No certifications uploaded.</span>
+                )}
+              </div>
+
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <h4 style={{ margin: 0 }}>Hackathon participations</h4>
+                {student.hackathons && student.hackathons.length > 0 ? (
+                  student.hackathons.map((h, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <strong>{h.name}</strong> ({h.mode}) · Role: {h.role || 'Participant'} ({h.outcome || 'Finalist'})
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hackathon events registered.</span>
+                )}
+              </div>
+
             </div>
-          </div>
-        </div>
 
-        <div>
+          </div>
+        )}
+
+        {/* PLATFORMS TAB */}
+        {activeTab === 'platforms' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
+            
+            {/* LeetCode */}
+            <div className="ct-card" style={{ borderLeft: '4px solid #F59E0B' }}>
+              <h4 style={{ color: '#F59E0B', margin: '0 0 0.8rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <img src="/LeetCode_logo_black.png" alt="LeetCode" style={{ width: 20, height: 20, objectFit: 'contain', borderRadius: 4 }} />
+                LeetCode
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+                <span>Username: <strong>{student.leetcodeUsername || 'Not connected'}</strong></span>
+                <span>Solved: <strong>{lc.problemsSolved || 0}</strong></span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Easy: {lc.easySolved || 0} | Med: {lc.mediumSolved || 0} | Hard: {lc.hardSolved || 0}</span>
+                <span>Rating: <strong>{Math.round(lc.rating || 0)}</strong></span>
+                <span>Contest participation: <strong>{lc.contestCount || 0}</strong></span>
+              </div>
+            </div>
+
+            {/* CodeChef */}
+            <div className="ct-card" style={{ borderLeft: '4px solid #ef4444' }}>
+              <h4 style={{ color: '#ef4444', margin: '0 0 0.8rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <img src="/codechef.svg" alt="CodeChef" style={{ width: 20, height: 20, objectFit: 'contain', borderRadius: 4 }} />
+                CodeChef
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+                <span>Username: <strong>{student.codechefUsername || 'Not connected'}</strong></span>
+                <span>Rating: <strong>{cc.rating || 0}</strong> ({cc.stars || '1★'})</span>
+                <span>Max Rating: <strong>{cc.highestRating || 0}</strong></span>
+                <span>Contest participation: <strong>{cc.contestCount || 0}</strong></span>
+                <span>Solved: <strong>{cc.problemsSolved || 0}</strong></span>
+              </div>
+            </div>
+
+            {/* GeeksforGeeks */}
+            <div className="ct-card" style={{ borderLeft: '4px solid #22C55E' }}>
+              <h4 style={{ color: '#22C55E', margin: '0 0 0.8rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <img src="/gfg.svg" alt="GeeksforGeeks" style={{ width: 20, height: 20, objectFit: 'contain', borderRadius: 4 }} />
+                GeeksforGeeks
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+                <span>Username: <strong>{student.gfgUsername || 'Not connected'}</strong></span>
+                <span>Problems solved: <strong>{gfg.problemsSolved || 0}</strong></span>
+                <span>Reputation score: <strong>{gfg.codingScore || 0}</strong></span>
+                <span>Global rank: <strong>#{gfg.globalRank || '-'}</strong></span>
+                <span>Streak: <strong>{gfg.streak || 0} days</strong></span>
+              </div>
+            </div>
+
+            {/* HackerRank */}
+            <div className="ct-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
+              <h4 style={{ color: '#8B5CF6', margin: '0 0 0.8rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <img src="/HackerRank.svg" alt="HackerRank" style={{ width: 20, height: 20, objectFit: 'contain', borderRadius: 4 }} />
+                HackerRank
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
+                <span>Username: <strong>{hr.username || 'Not connected'}</strong></span>
+                <span>Solved: <strong>{hr.totalProblemsSolved || 0}</strong></span>
+                <span>Badges / Stars: <strong>{hr.badgeCount || 0}</strong></span>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* HEATMAP TAB */}
+        {activeTab === 'heatmap' && (
           <div className="ct-card">
-            <div className="ct-section-title">Platform performance</div>
-            <div style={{ fontSize: '0.85rem', color: '#e5e7eb' }}>
-              <p>
-                <strong>LeetCode</strong>
-                <br />
-                @{student.leetcodeUsername || '—'}
-                <br />
-                Problems: {lc.problemsSolved || 0} · Contests: {lc.contestCount || 0} · Rating:{' '}
-                {lc.rating || 0}
-              </p>
-              <p>
-                <strong>CodeChef</strong>
-                <br />
-                @{student.codechefUsername || '—'}
-                <br />
-                Contests: {cc.contestCount || 0} · Rating: {cc.rating || 0}
-              </p>
-              <p>
-                <strong>HackerRank</strong>
-                <br />
-                @{hr.username || '—'}
-                <br />
-                Problems: {hr.totalProblemsSolved || 0} · Badges: {hr.badgeCount || 0}
-              </p>
+            <h3 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Calendar size={18} color="var(--accent-blue)" /> Unified Activity Streak Heatmap
+            </h3>
+            <HeatmapWidget data={heatmap} showDetails={true} />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.4rem', marginTop: '0.8rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <span>Less</span>
+              <div className="heatmap-cell level-0" style={{ width: 10, height: 10 }} />
+              <div className="heatmap-cell level-1" style={{ width: 10, height: 10 }} />
+              <div className="heatmap-cell level-2" style={{ width: 10, height: 10 }} />
+              <div className="heatmap-cell level-3" style={{ width: 10, height: 10 }} />
+              <div className="heatmap-cell level-4" style={{ width: 10, height: 10 }} />
+              <span>More</span>
             </div>
           </div>
+        )}
 
-          <div className="ct-card" style={{ marginTop: '1rem' }}>
-            <div className="ct-section-title">Certificates</div>
-            <div style={{ fontSize: '0.85rem', color: '#e5e7eb' }}>
-              {student.certifications && student.certifications.length > 0 ? (
-                student.certifications.map((c, idx) => (
-                  <p key={idx}>
-                    <strong>{c.title}</strong>
-                    <br />
-                    {c.issuer || ''}{' '}
-                    {c.date ? `· ${new Date(c.date).toLocaleDateString()}` : ''}
-                    <br />
-                    {c.credentialLink && (
-                      <a href={c.credentialLink} target="_blank" rel="noreferrer">
-                        Credential
-                      </a>
+        {/* ANALYTICS TAB */}
+        {activeTab === 'analytics' && (
+          <div className="ct-card">
+            <h3 style={{ margin: '0 0 1.2rem 0' }}>Problem Solving Trends</h3>
+            {chartData.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No platform metrics synced for this student.
+              </div>
+            ) : (
+              <div className="ct-grid-responsive" style={{ gridTemplateColumns: '1fr 1.2fr' }}>
+                <div className="ct-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.01)' }}>
+                  <h4 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Platform distribution</h4>
+                  <div style={{ width: '100%', height: 220 }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          dataKey="solved"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={70}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ background: '#111827', borderColor: 'rgba(255,255,255,0.08)' }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="ct-card" style={{ padding: '1rem', background: 'rgba(255,255,255,0.01)' }}>
+                  <h4 style={{ margin: '0 0 1rem 0', textAlign: 'center' }}>Total Solved counts</h4>
+                  <div style={{ width: '100%', height: 220 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={chartData}>
+                        <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={11} />
+                        <YAxis stroke="var(--text-muted)" fontSize={11} />
+                        <Tooltip contentStyle={{ background: '#111827', borderColor: 'rgba(255,255,255,0.08)' }} />
+                        <Bar dataKey="solved" fill="var(--accent-blue)">
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TIMELINE TAB */}
+        {activeTab === 'timeline' && (
+          <div className="ct-card">
+            <h3 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity size={18} color="var(--accent-purple)" /> Student Activity Timeline
+            </h3>
+            {timeline.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No activities recorded for this student yet.
+              </div>
+            ) : (
+              <div className="timeline-feed">
+                {timeline.map((act) => {
+                  const getPlatformColor = (pf) => {
+                    if (pf === 'leetcode') return '#F59E0B';
+                    if (pf === 'codechef') return '#ef4444';
+                    if (pf === 'geeksforgeeks') return '#22C55E';
+                    return '#8B5CF6';
+                  };
+
+                  return (
+                    <div key={act._id} className="timeline-item">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <span className="timeline-platform-badge" style={{ color: getPlatformColor(act.platform) }}>
+                          {act.platform.toUpperCase()}
+                        </span>
+                        <span className="timeline-text" style={{ fontSize: '0.85rem' }}>
+                          {act.link ? (
+                            <a href={act.link} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#f3f4f6', textDecoration: 'underline' }}>
+                              {act.title} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            act.title
+                          )}
+                        </span>
+                      </div>
+                      <span className="timeline-date">{new Date(act.timestamp).toLocaleDateString()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* RESUME PREVIEW TAB */}
+        {activeTab === 'resume' && (
+          <div className="ct-grid-responsive" style={{ gridTemplateColumns: '1fr 2.2fr', minHeight: '520px' }}>
+            
+            {/* LEFT SIDE: SELECTION AND ANALYTICS */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              
+              {/* ANALYTICS SUMMARY CARD */}
+              {resumeAnalytics && (
+                <div className="ct-card" style={{ padding: '1rem', borderLeft: '4px solid var(--accent-green)' }}>
+                  <h4 style={{ margin: '0 0 0.5rem 0' }}>Resume Analytics</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem' }}>
+                    <div>Completeness Score: <strong style={{ color: '#22c55e' }}>{resumeAnalytics.completenessScore}%</strong></div>
+                    <div>ATS Score Estimate: <strong style={{ color: '#a855f7' }}>{resumeAnalytics.atsScore}%</strong></div>
+                    {resumeAnalytics.missingSections && resumeAnalytics.missingSections.length > 0 && (
+                      <div style={{ color: 'var(--accent-red)' }}>
+                        ⚠️ Missing: {resumeAnalytics.missingSections.join(', ')}
+                      </div>
                     )}
-                  </p>
-                ))
-              ) : (
-                <p>No certificates recorded.</p>
+                    {resumeAnalytics.lastUpdated && (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                        Last updated: {new Date(resumeAnalytics.lastUpdated).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
 
-          <div className="ct-card" style={{ marginTop: '1rem' }}>
-            <div className="ct-section-title">Hackathon participation</div>
-            <div style={{ fontSize: '0.85rem', color: '#e5e7eb' }}>
-              {student.hackathons && student.hackathons.length > 0 ? (
-                student.hackathons.map((h, idx) => (
-                  <p key={idx}>
-                    <strong>{h.name}</strong>
-                    <br />
-                    {h.mode} · {h.teamType} · {h.role || ''} · {h.outcome || ''}
-                    {h.date ? ` · ${new Date(h.date).toLocaleDateString()}` : ''}
-                  </p>
-                ))
-              ) : (
-                <p>No hackathons recorded.</p>
-              )}
+              {/* LIST OF AVAILABLE RESUMES */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '1rem' }}>
+                <h4 style={{ margin: '0 0 0.4rem 0' }}>Resume Versions</h4>
+                
+                {/* Generated builder resumes */}
+                {studentResumes.generated?.map(v => (
+                  <div 
+                    key={v._id} 
+                    onClick={() => { setSelectedResumeId(v._id); loadResumeBlob(v._id); }}
+                    style={{
+                      padding: '0.5rem 0.8rem',
+                      background: selectedResumeId === v._id ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255,255,255,0.01)',
+                      border: selectedResumeId === v._id ? '1px solid var(--accent-blue)' : '1px solid rgba(255,255,255,0.04)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{v.name} {v.isDefault ? '⭐' : ''}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#22c55e' }}>{v.completenessScore}%</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Uploaded credentials */}
+                {studentResumes.uploaded && studentResumes.uploaded.length > 0 && (
+                  <div style={{ marginTop: '0.4rem' }}>
+                    <h5 style={{ margin: '0 0 0.3rem 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Uploaded Credentials</h5>
+                    {studentResumes.uploaded.map(u => (
+                      <div 
+                        key={u._id} 
+                        onClick={() => { setSelectedResumeId(u._id); loadResumeBlob(u._id); }}
+                        style={{
+                          padding: '0.5rem 0.8rem',
+                          background: selectedResumeId === u._id ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255,255,255,0.01)',
+                          border: selectedResumeId === u._id ? '1px solid var(--accent-blue)' : '1px solid rgba(255,255,255,0.04)',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          marginBottom: '0.3rem'
+                        }}
+                      >
+                        <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{u.originalName} {u.isDefault ? '⭐' : ''}</span>
+                          <span style={{ fontSize: '0.7rem', padding: '1px 3px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px' }}>
+                            {u.fileType.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
+
+            {/* RIGHT SIDE: RESUME PDF IFRAME PREVIEW */}
+            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                  <FileText size={18} color="var(--accent-blue)" /> Secured PDF Resume Preview
+                </h3>
+                <button 
+                  className="ct-button" 
+                  onClick={handleDownloadResume}
+                  disabled={!resumeBlobUrl}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                >
+                  <Download size={14} /> Download PDF
+                </button>
+              </div>
+
+              <div style={{ flex: 1, background: '#0a0f1d', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', minHeight: '420px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {loadingResume && (
+                  <div style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+                    <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem auto' }} />
+                    Generating PDF...
+                  </div>
+                )}
+                {!loadingResume && !resumeBlobUrl && (
+                  <span style={{ color: 'var(--text-muted)' }}>Resume preview not available. Select another resume from the list.</span>
+                )}
+                {!loadingResume && resumeBlobUrl && (
+                  <iframe 
+                    title="Student Resume Preview" 
+                    src={resumeBlobUrl} 
+                    style={{ border: 'none', width: '100%', height: '100%' }} 
+                  />
+                )}
+              </div>
+            </div>
+
           </div>
-        </div>
+        )}
+
       </div>
     </AppShell>
   );
 }
-

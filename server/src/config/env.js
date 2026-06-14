@@ -17,7 +17,15 @@ const config = {
   platformSyncMinMinutes: parseInt(process.env.PLATFORM_SYNC_MIN_MINUTES || '60', 10),
   // How many days of inactivity before a student is considered inactive
   activityActiveThresholdDays: parseInt(process.env.ACTIVITY_ACTIVE_DAYS || '7', 10),
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173'
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+
+  // Configurable ranking weights for Leaderboard Ranking Logic
+  rankingWeights: {
+    codingScore: parseFloat(process.env.WEIGHT_CODING_SCORE || '0.40'),
+    contestPerformance: parseFloat(process.env.WEIGHT_CONTEST_PERFORMANCE || '0.25'),
+    activityScore: parseFloat(process.env.WEIGHT_ACTIVITY_SCORE || '0.20'),
+    consistencyScore: parseFloat(process.env.WEIGHT_CONSISTENCY_SCORE || '0.15')
+  }
 };
 
 module.exports = config;

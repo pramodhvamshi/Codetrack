@@ -1,4 +1,21 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://driving-resilient-afflicted.ngrok-free.dev/api';
+
+let currentToken = null;
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+export function setClientToken(token) {
+  currentToken = token;
+}
+
+function subscribeTokenRefresh(cb) {
+  refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(newToken) {
+  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers = [];
+}
 
 async function request(path, options = {}, token) {
   const headers = {
@@ -9,14 +26,56 @@ async function request(path, options = {}, token) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
   }
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  const activeToken = token || currentToken;
+  if (activeToken) {
+    headers.Authorization = `Bearer ${activeToken}`;
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const fetchOptions = {
     ...options,
-    headers
-  });
+    headers,
+    credentials: 'include'
+  };
+
+  let res = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
+
+  if (res.status === 401 && path !== '/auth/refresh' && path !== '/auth/login' && path !== '/auth/logout') {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      try {
+        const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          currentToken = data.token;
+          isRefreshing = false;
+          window.dispatchEvent(new CustomEvent('auth:refresh', { detail: data }));
+          onTokenRefreshed(data.token);
+        } else {
+          isRefreshing = false;
+          window.dispatchEvent(new CustomEvent('auth:expired'));
+          throw new Error('Session expired');
+        }
+      } catch (err) {
+        isRefreshing = false;
+        window.dispatchEvent(new CustomEvent('auth:expired'));
+        throw err;
+      }
+    }
+
+    const retryOrigRequest = new Promise((resolve) => {
+      subscribeTokenRefresh((newToken) => {
+        headers.Authorization = `Bearer ${newToken}`;
+        resolve(fetch(`${API_BASE_URL}${path}`, { ...fetchOptions, headers }));
+      });
+    });
+
+    res = await retryOrigRequest;
+  }
 
   if (!res.ok) {
     const text = await res.text();

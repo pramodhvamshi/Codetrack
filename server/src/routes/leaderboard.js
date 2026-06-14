@@ -4,6 +4,119 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+// Fetch Monthly Leaderboard
+router.get('/monthly', authMiddleware, async (req, res) => {
+  try {
+    const Activity = require('../models/Activity');
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    const monthlyAggregation = await Activity.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: startOfMonth, $lt: endOfMonth },
+          platform: { $in: ['leetcode', 'codechef', 'geeksforgeeks'] },
+          type: 'solved'
+        }
+      },
+      {
+        $group: {
+          _id: "$userId",
+          monthlyScore: {
+            $sum: { $ifNull: [ "$meta.increment", 1 ] }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "studentInfo"
+        }
+      },
+      {
+        $unwind: "$studentInfo"
+      },
+      {
+        $match: {
+          "studentInfo.role": "student",
+          "studentInfo.isOnboarded": true
+        }
+      },
+      {
+        $sort: { monthlyScore: -1, "studentInfo.name": 1 }
+      },
+      {
+        $limit: 10
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          name: "$studentInfo.name",
+          branch: "$studentInfo.branch",
+          monthlyScore: 1
+        }
+      }
+    ]);
+
+    let ranks = monthlyAggregation.map((item, idx) => ({
+      rank: idx + 1,
+      userId: item.userId,
+      name: item.name,
+      branch: item.branch || '-',
+      monthlyScore: item.monthlyScore
+    }));
+
+    if (ranks.length < 10) {
+      const excludedIds = ranks.map(r => r.userId);
+      const extraStudents = await User.find({
+        role: 'student',
+        isOnboarded: true,
+        _id: { $nin: excludedIds }
+      })
+      .limit(10 - ranks.length)
+      .select('name branch');
+
+      extraStudents.forEach(s => {
+        ranks.push({
+          rank: ranks.length + 1,
+          userId: s._id,
+          name: s.name,
+          branch: s.branch || '-',
+          monthlyScore: 0
+        });
+      });
+    }
+
+    return res.json(ranks.slice(0, 10));
+  } catch (err) {
+    console.error('Failed to load monthly leaderboard:', err);
+    return res.status(500).json({ message: 'Failed to load monthly leaderboard' });
+  }
+});
+
+// Fetch unique dropdown filter values
+router.get('/filters', authMiddleware, async (req, res) => {
+  try {
+    const students = await User.find({ role: 'student', isOnboarded: true }).select('college hostel branch year');
+    const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
+    const hostels = [...new Set(students.map(s => s.hostel).filter(Boolean))].sort();
+    const branches = [...new Set(students.map(s => s.branch).filter(Boolean))].sort();
+    const years = [...new Set(students.map(s => s.year).filter(Boolean))].sort();
+
+    return res.json({ colleges, hostels, branches, years });
+  } catch (err) {
+    console.error('Failed to fetch leaderboard filters:', err);
+    return res.status(500).json({ message: 'Failed to fetch filters' });
+  }
+});
+
 // Shared leaderboard (students + coordinators can both access via auth)
 router.get('/', authMiddleware, async (req, res) => {
   try {
@@ -12,18 +125,36 @@ router.get('/', authMiddleware, async (req, res) => {
       hostel,
       branch,
       year,
-      sortBy = 'scores.totalScore',
+      type, // 'global', 'college', 'branch', 'hostel', 'year'
+      sortBy = 'scores.weightedRankScore',
       sortOrder = 'desc',
       name
     } = req.query;
 
     // Only include fully onboarded students on the leaderboard
     const filter = { role: 'student', isOnboarded: true };
-    if (college) filter.college = college;
-    if (hostel) filter.hostel = hostel;
-    if (branch) filter.branch = branch;
-    if (year) filter.year = year;
-    if (name) filter.name = new RegExp(name, 'i');
+
+    // Handle Leaderboard Types (contexts)
+    if (type === 'college' && req.currentUser?.college) {
+      filter.college = req.currentUser.college;
+    } else if (type === 'branch' && req.currentUser?.branch) {
+      filter.branch = req.currentUser.branch;
+    } else if (type === 'hostel' && req.currentUser?.hostel) {
+      filter.hostel = req.currentUser.hostel;
+    } else if (type === 'year' && req.currentUser?.year) {
+      filter.year = req.currentUser.year;
+    } else {
+      // Apply manual dropdown filters if not restricted by type
+      if (college) filter.college = String(college);
+      if (hostel) filter.hostel = String(hostel);
+      if (branch) filter.branch = String(branch);
+      if (year) filter.year = String(year);
+    }
+
+    if (name) {
+      const escapedName = String(name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      filter.name = new RegExp(escapedName, 'i');
+    }
 
     const sort = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
@@ -43,17 +174,19 @@ router.get('/', authMiddleware, async (req, res) => {
       year: s.year,
       lcScore: s.scores?.lcScore || 0,
       ccScore: s.scores?.ccScore || 0,
+      gfgScore: s.scores?.gfgScore || 0,
       hrScore: s.scores?.hrScore || 0,
-      totalScore: s.scores?.totalScore || 0
+      activityScore: s.scores?.activityScore || 0,
+      consistencyScore: s.scores?.consistencyScore || 0,
+      totalScore: s.scores?.totalScore || 0,
+      weightedRankScore: s.scores?.weightedRankScore || 0
     }));
 
     return res.json(rows);
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Leaderboard error', err);
     return res.status(500).json({ message: 'Failed to load leaderboard' });
   }
 });
 
 module.exports = router;
-

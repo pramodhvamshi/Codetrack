@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const config = require('./env');
+const { seedTemplates } = require('../services/templateSeeder');
 
 async function connectDB() {
   try {
@@ -9,6 +10,9 @@ async function connectDB() {
     // Simple console log – in real apps prefer a logger
     // eslint-disable-next-line no-console
     console.log('MongoDB connected');
+    
+    // Seed default resume templates
+    await seedTemplates();
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('MongoDB connection error:', err.message);

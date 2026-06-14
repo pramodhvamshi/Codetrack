@@ -28,18 +28,30 @@ router.get('/me', async (req, res) => {
     overallGpa: user.overallGpa,
     leetcodeUsername: user.leetcodeUsername,
     codechefUsername: user.codechefUsername,
+    gfgUsername: user.gfgUsername,
+    githubUsername: user.githubUsername,
     githubUrl: user.githubUrl,
     linkedinUrl: user.linkedinUrl,
     hackerrank: user.hackerrank,
     platformStats: user.platformStats,
     scores: user.scores,
+    currentStreak: user.currentStreak,
+    longestStreak: user.longestStreak,
+    activeDaysCount: user.activeDaysCount,
+    consistencyPercentage: user.consistencyPercentage,
+    monthlyActivityCount: user.monthlyActivityCount,
+    yearlyActivityCount: user.yearlyActivityCount,
     activityStatus: user.activityStatus,
     certifications: user.certifications,
     achievements: user.achievements,
     hackathons: user.hackathons,
     projects: user.projects,
+    workExperience: user.workExperience,
     resume: user.resume,
-    isOnboarded: user.isOnboarded
+    isOnboarded: user.isOnboarded,
+    mssid: user.mssid,
+    bio: user.bio,
+    graduationYear: user.graduationYear
   });
 });
 
@@ -56,12 +68,74 @@ router.put('/me/profile', async (req, res) => {
       overallGpa,
       leetcodeUsername,
       codechefUsername,
-      githubUrl,
+      gfgUsername,
+      githubUsername,
       linkedinUrl,
       hackerrank,
-      projects,          // ✅ ADD
-      workExperience     // ✅ ADD
+      projects,
+      workExperience,
+      mssid,
+      bio,
+      graduationYear
     } = req.body;
+
+    const {
+      validateLeetCode,
+      validateCodeChef,
+      validateGeeksforGeeks,
+      validateGitHub
+    } = require('../services/validationService');
+
+    // 1. Perform platform username validations if they changed
+    if (leetcodeUsername !== undefined && leetcodeUsername !== user.leetcodeUsername) {
+      if (leetcodeUsername) {
+        const isValid = await validateLeetCode(leetcodeUsername);
+        if (!isValid) {
+          return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
+        }
+        user.leetcodeUsername = leetcodeUsername;
+      } else {
+        user.leetcodeUsername = undefined;
+      }
+    }
+
+    if (codechefUsername !== undefined && codechefUsername !== user.codechefUsername) {
+      if (codechefUsername) {
+        const isValid = await validateCodeChef(codechefUsername);
+        if (!isValid) {
+          return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
+        }
+        user.codechefUsername = codechefUsername;
+      } else {
+        user.codechefUsername = undefined;
+      }
+    }
+
+    if (gfgUsername !== undefined && gfgUsername !== user.gfgUsername) {
+      if (gfgUsername) {
+        const isValid = await validateGeeksforGeeks(gfgUsername);
+        if (!isValid) {
+          return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
+        }
+        user.gfgUsername = gfgUsername;
+      } else {
+        user.gfgUsername = undefined;
+      }
+    }
+
+    if (githubUsername !== undefined && githubUsername !== user.githubUsername) {
+      if (githubUsername) {
+        const isValid = await validateGitHub(githubUsername);
+        if (!isValid) {
+          return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
+        }
+        user.githubUsername = githubUsername;
+        user.githubUrl = `https://github.com/${githubUsername}`;
+      } else {
+        user.githubUsername = undefined;
+        user.githubUrl = undefined;
+      }
+    }
 
     if (name != null) user.name = name;
     if (college != null) user.college = college;
@@ -69,19 +143,25 @@ router.put('/me/profile', async (req, res) => {
     if (branch != null) user.branch = branch;
     if (year != null) user.year = year;
     if (overallGpa != null) user.overallGpa = overallGpa;
-    if (leetcodeUsername != null) user.leetcodeUsername = leetcodeUsername;
-    if (codechefUsername != null) user.codechefUsername = codechefUsername;
-    if (githubUrl != null) user.githubUrl = githubUrl;
     if (linkedinUrl != null) user.linkedinUrl = linkedinUrl;
-
-    if (hackerrank != null) {
-      user.hackerrank = {
-        ...(user.hackerrank || {}),
-        ...hackerrank
-      };
+    if (mssid !== undefined) user.mssid = mssid;
+    if (bio !== undefined) user.bio = bio;
+    if (graduationYear !== undefined) {
+      user.graduationYear = graduationYear;
+      user.year = graduationYear; // maintain year/graduationYear parity
     }
 
-    // 🔥 NEW
+    if (hackerrank !== undefined) {
+      if (hackerrank === null) {
+        user.hackerrank = null;
+      } else {
+        user.hackerrank = {
+          ...(user.hackerrank || {}),
+          ...hackerrank
+        };
+      }
+    }
+
     if (Array.isArray(projects)) {
       user.projects = projects;
     }
@@ -99,6 +179,103 @@ router.put('/me/profile', async (req, res) => {
   } catch (err) {
     console.error('Update profile error', err);
     return res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+
+// GET Student Timeline Event logs (recent 10)
+router.get('/me/timeline', async (req, res) => {
+  try {
+    const Activity = require('../models/Activity');
+    const activities = await Activity.find({ userId: req.currentUser._id })
+      .sort({ timestamp: -1 })
+      .limit(10);
+    return res.json(activities);
+  } catch (err) {
+    console.error('Timeline error:', err);
+    return res.status(500).json({ message: 'Failed to fetch timeline' });
+  }
+});
+
+// GET Student Heatmap data (grouped by date)
+router.get('/me/heatmap', async (req, res) => {
+  try {
+    const student = req.currentUser;
+    const heatmap = {};
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setMonth(today.getMonth() - 6);
+    startDate.setHours(0, 0, 0, 0);
+
+    const curr = new Date(startDate);
+    while (curr <= today) {
+      const dateStr = curr.toISOString().split('T')[0];
+      heatmap[dateStr] = {
+        date: dateStr,
+        count: 0,
+        platforms: { leetcode: 0, github: 0 },
+        activities: []
+      };
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    let lcCalendar = student.platformStats?.leetcode?.submissionCalendar || {};
+    if (typeof lcCalendar === 'string') {
+      try {
+        lcCalendar = JSON.parse(lcCalendar);
+      } catch (e) {
+        lcCalendar = {};
+      }
+    }
+    Object.entries(lcCalendar || {}).forEach(([timestamp, count]) => {
+      try {
+        const dateStr = new Date(Number(timestamp) * 1000).toISOString().split('T')[0];
+        if (heatmap[dateStr] !== undefined) {
+          heatmap[dateStr].count += Number(count);
+          heatmap[dateStr].platforms.leetcode += Number(count);
+        }
+      } catch (e) { }
+    });
+
+    const ghContributions = student.platformStats?.github?.contributions || [];
+    if (Array.isArray(ghContributions)) {
+      ghContributions.forEach(item => {
+        if (item && item.date) {
+          const dateStr = item.date;
+          if (heatmap[dateStr] !== undefined) {
+            const c = Number(item.contributionCount || item.count || 0);
+            heatmap[dateStr].count += c;
+            heatmap[dateStr].platforms.github += c;
+          }
+        }
+      });
+    }
+
+    const Activity = require('../models/Activity');
+    const dbActivities = await Activity.find({
+      userId: student._id,
+      timestamp: { $gte: startDate }
+    });
+
+    dbActivities.forEach(act => {
+      try {
+        const dateStr = act.timestamp.toISOString().split('T')[0];
+        if (heatmap[dateStr] !== undefined) {
+          heatmap[dateStr].activities.push({
+            id: act._id,
+            platform: act.platform,
+            type: act.type,
+            title: act.title,
+            link: act.link || '',
+            timestamp: act.timestamp
+          });
+        }
+      } catch (e) {}
+    });
+
+    return res.json(Object.values(heatmap).sort((a, b) => a.date.localeCompare(b.date)));
+  } catch (err) {
+    console.error('Heatmap error:', err);
+    return res.status(500).json({ message: 'Failed to fetch heatmap data' });
   }
 });
 
@@ -274,7 +451,12 @@ router.get('/me/resume', async (req, res) => {
       return res.sendFile(filePath);
     }
 
-    const buffer = await buildResumePdfBuffer(user);
+    const template = req.query.template || 'template_a';
+    const sections = req.query.sections 
+      ? req.query.sections.split(',') 
+      : ['academic', 'profiles', 'experience', 'projects', 'certifications', 'achievements'];
+
+    const buffer = await buildResumePdfBuffer(user, { template, sections });
     user.resume = {
       ...(user.resume || {}),
       mode: 'auto',

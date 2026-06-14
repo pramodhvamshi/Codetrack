@@ -21,11 +21,15 @@ export function RegisterPage() {
     year: '',
     overallGpa: '',
     leetcodeUsername: '',
-    codechefUsername: ''
+    codechefUsername: '',
+    gfgUsername: '',
+    githubUsername: '',
+    rememberMe: false
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isStudent = form.role === 'student';
 
@@ -43,7 +47,8 @@ export function RegisterPage() {
         name: form.name,
         email: form.email,
         password: form.password,
-        role: form.role
+        role: form.role,
+        rememberMe: form.rememberMe
       };
 
       if (isStudent) {
@@ -55,7 +60,9 @@ export function RegisterPage() {
           year: form.year,
           overallGpa: Number(form.overallGpa),
           leetcodeUsername: form.leetcodeUsername,
-          codechefUsername: form.codechefUsername
+          codechefUsername: form.codechefUsername,
+          gfgUsername: form.gfgUsername,
+          githubUsername: form.githubUsername
         });
       }
 
@@ -78,7 +85,7 @@ export function RegisterPage() {
   return (
     <div className="ct-layout">
       <header className="ct-header">
-        <div className="ct-header-title">CodeTrack · Academic Coding Analytics</div>
+        <div className="ct-header-title">CodeTrack · Medha Charitable Trust</div>
       </header>
 
       <main className="ct-main">
@@ -115,13 +122,29 @@ export function RegisterPage() {
             <div className="ct-grid-2" style={{ marginTop: '1rem' }}>
               <div>
                 <label className="ct-label">Password *</label>
-                <input
-                  className="ct-input"
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  required
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="ct-input"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    style={{ paddingRight: '2.5rem' }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    style={{
+                      position: 'absolute', right: '0.65rem', top: '50%',
+                      transform: 'translateY(-50%)', background: 'none',
+                      border: 'none', cursor: 'pointer', color: '#9ca3af',
+                      fontSize: '1rem', padding: 0, lineHeight: 1,
+                    }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -285,8 +308,41 @@ export function RegisterPage() {
                     />
                   </div>
                 </div>
+
+                <div className="ct-grid-2" style={{ marginTop: '1rem' }}>
+                  <div>
+                    <label className="ct-label">GeeksforGeeks</label>
+                    <input
+                      className="ct-input"
+                      value={form.gfgUsername}
+                      onChange={(e) => handleChange('gfgUsername', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="ct-label">GitHub</label>
+                    <input
+                      className="ct-input"
+                      value={form.githubUsername}
+                      onChange={(e) => handleChange('githubUsername', e.target.value)}
+                    />
+                  </div>
+                </div>
               </>
             )}
+
+            <div style={{ marginTop: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={form.rememberMe}
+                onChange={(e) => handleChange('rememberMe', e.target.checked)}
+                style={{ cursor: 'pointer' }}
+              />
+              <label htmlFor="rememberMe" className="ct-label" style={{ marginBottom: 0, cursor: 'pointer', userSelect: 'none' }}>
+                Remember Me
+              </label>
+            </div>
 
             {error && (
               <div style={{ color: '#f87171', marginTop: '1rem', fontSize: '0.85rem' }}>

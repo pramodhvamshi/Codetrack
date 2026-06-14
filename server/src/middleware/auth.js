@@ -4,7 +4,20 @@ const User = require('../models/User');
 
 async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  let token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) {
+    if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    } else if (req.headers.cookie) {
+      const cookies = {};
+      req.headers.cookie.split(';').forEach(c => {
+        const parts = c.split('=');
+        cookies[parts.shift().trim()] = decodeURIComponent(parts.join('=')).trim();
+      });
+      token = cookies['accessToken'];
+    }
+  }
 
   if (!token) {
     return res.status(401).json({ message: 'Authentication token missing' });

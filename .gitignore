@@ -1,0 +1,51 @@
+# ====================
+# Root-level .gitignore
+# ====================
+
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build outputs ─────────────────────────────────────────
+dist/
+build/
+out/
+
+# ── Environment / Secrets ─────────────────────────────────
+.env
+.env.*
+!.env.example        # keep the example template committed
+
+# ── Logs ──────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS generated ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors / IDEs ────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Temporary / scratch files ─────────────────────────────
+*.local
+gfg-response.json
+test-gfg.js
+test-lc.js
+inspect-gfg.js
+
+# ── Package manager lock files (keep package-lock.json) ───
+# yarn.lock   # uncomment if using yarn only

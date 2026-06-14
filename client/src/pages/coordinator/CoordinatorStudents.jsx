@@ -6,8 +6,9 @@ import { api } from '../../api/client';
 import styles from '../../styles/StudentList.module.css';
 
 const SORT_OPTIONS = [
-  { value: 'scores.totalScore:desc', label: 'Score (High → Low)' },
-  { value: 'scores.totalScore:asc', label: 'Score (Low → High)' },
+  { value: 'scores.weightedRankScore:desc', label: 'Readiness Score (High → Low)' },
+  { value: 'scores.weightedRankScore:asc', label: 'Readiness Score (Low → High)' },
+  { value: 'scores.totalScore:desc', label: 'Legacy CP Score (High → Low)' },
   { value: 'name:asc', label: 'Name (A → Z)' },
   { value: 'name:desc', label: 'Name (Z → A)' },
   { value: 'year:asc', label: 'Year (1 → 4)' },
@@ -25,7 +26,7 @@ export function CoordinatorStudents() {
     year: '',
     scoreMin: '',
     scoreMax: '',
-    sortBy: 'scores.totalScore',
+    sortBy: 'scores.weightedRankScore',
     sortOrder: 'desc'
   });
   const [loading, setLoading] = useState(true);
@@ -83,7 +84,10 @@ export function CoordinatorStudents() {
     const [field, order] = filters.sortBy.split('.');
     list.sort((a, b) => {
       let va, vb;
-      if (field === 'scores' && order === 'totalScore') {
+      if (field === 'scores' && order === 'weightedRankScore') {
+        va = Math.round(a.scores?.weightedRankScore ?? a.score ?? a.scores?.totalScore ?? 0);
+        vb = Math.round(b.scores?.weightedRankScore ?? b.score ?? b.scores?.totalScore ?? 0);
+      } else if (field === 'scores' && order === 'totalScore') {
         va = Math.round(a.scores?.totalScore ?? a.score ?? 0);
         vb = Math.round(b.scores?.totalScore ?? b.score ?? 0);
       } else if (field === 'name') {
@@ -111,7 +115,7 @@ export function CoordinatorStudents() {
       year: '',
       scoreMin: '',
       scoreMax: '',
-      sortBy: 'scores.totalScore',
+      sortBy: 'scores.weightedRankScore',
       sortOrder: 'desc'
     });
   };
@@ -223,7 +227,7 @@ export function CoordinatorStudents() {
             <div className={styles.cardGrid}>
               {filteredAndSorted.map((student) => {
                 const initial = student.name ? student.name.charAt(0).toUpperCase() : '?';
-                const score = student.score ?? student.scores?.totalScore ?? 0;
+                const score = student.scores?.weightedRankScore ?? student.score ?? student.scores?.totalScore ?? 0;
                 return (
                   <Link
                     key={student.id}
@@ -242,15 +246,26 @@ export function CoordinatorStudents() {
                       <span>{student.branch}</span>
                       <span>Year {student.year}</span>
                     </div>
-                    <div className={styles.platformBadges}>
-                      {student.platforms?.leetcode && (
-                        <span className={styles.badge}>LeetCode</span>
-                      )}
-                      {student.platforms?.codechef && (
-                        <span className={styles.badge}>CodeChef</span>
-                      )}
-                      {student.platforms?.hackerrank && (
-                        <span className={styles.badge}>HackerRank</span>
+                    <div className={styles.platformBadges} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', gap: '0.2rem' }}>
+                        {student.platforms?.leetcode && (
+                          <span className={styles.badge}>LeetCode</span>
+                        )}
+                        {student.platforms?.codechef && (
+                          <span className={styles.badge}>CodeChef</span>
+                        )}
+                        {student.platforms?.hackerrank && (
+                          <span className={styles.badge}>HackerRank</span>
+                        )}
+                      </div>
+                      
+                      {student.resumeInfo?.hasResume ? (
+                        <div style={{ display: 'flex', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                          <span style={{ color: '#22c55e' }}>📝 {student.resumeInfo.score}%</span>
+                          <span style={{ color: '#a855f7' }}>⚡ {student.resumeInfo.atsScore}%</span>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>⚠️ No Resume</span>
                       )}
                     </div>
                   </Link>

@@ -97,15 +97,53 @@ const PlatformStatsSchema = new mongoose.Schema(
     leetcode: {
       username: { type: String },
       problemsSolved: { type: Number, default: 0 },
+      easySolved: { type: Number, default: 0 },
+      mediumSolved: { type: Number, default: 0 },
+      hardSolved: { type: Number, default: 0 },
       contestCount: { type: Number, default: 0 },
       rating: { type: Number, default: 0 },
-      lastSyncAt: { type: Date }
+      ranking: { type: Number, default: 0 },
+      lastSyncAt: { type: Date },
+      submissionCalendar: { type: mongoose.Schema.Types.Mixed, default: {} },
+      badges: { type: Array, default: [] },
+      badgeCount: { type: Number, default: 0 },
+      recentSubmissions: { type: Array, default: [] }
     },
     codechef: {
       username: { type: String },
       problemsSolved: { type: Number, default: 0 },
       contestCount: { type: Number, default: 0 },
       rating: { type: Number, default: 0 },
+      currentRating: { type: Number, default: 0 },
+      highestRating: { type: Number, default: 0 },
+      stars: { type: String, default: '1★' },
+      globalRank: { type: Number, default: 0 },
+      countryRank: { type: String, default: 'Inactive' },
+      lastSyncAt: { type: Date }
+    },
+    geeksforgeeks: {
+      username: { type: String },
+      problemsSolved: { type: Number, default: 0 },
+      codingScore: { type: Number, default: 0 },
+      instituteRank: { type: Number, default: 0 },
+      globalRank: { type: Number, default: 0 },
+      monthlyScore: { type: Number, default: 0 },
+      streak: { type: Number, default: 0 },
+      lastSyncAt: { type: Date },
+      totalProblemsSolved: { type: Number, default: 0 },
+      basicProblemsSolved: { type: Number, default: 0 },
+      easyProblemsSolved: { type: Number, default: 0 },
+      mediumProblemsSolved: { type: Number, default: 0 },
+      hardProblemsSolved: { type: Number, default: 0 },
+      languageStats: { type: mongoose.Schema.Types.Mixed, default: {} }
+    },
+    github: {
+      username: { type: String },
+      reposCount: { type: Number, default: 0 },
+      starsCount: { type: Number, default: 0 },
+      followersCount: { type: Number, default: 0 },
+      followingCount: { type: Number, default: 0 },
+      contributions: { type: Array, default: [] },
       lastSyncAt: { type: Date }
     }
   },
@@ -116,8 +154,13 @@ const ScoreSchema = new mongoose.Schema(
   {
     lcScore: { type: Number, default: 0 },
     ccScore: { type: Number, default: 0 },
+    gfgScore: { type: Number, default: 0 },
+    ghScore: { type: Number, default: 0 },
     hrScore: { type: Number, default: 0 },
-    totalScore: { type: Number, default: 0 }
+    activityScore: { type: Number, default: 0 },
+    consistencyScore: { type: Number, default: 0 },
+    totalScore: { type: Number, default: 0 },
+    weightedRankScore: { type: Number, default: 0 }
   },
   { _id: false }
 );
@@ -140,11 +183,18 @@ const UserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['student', 'coordinator'], required: true },
     mssid: {
-  type: String,
-  required: false,
-  trim: true
-}
-,
+      type: String,
+      required: false,
+      trim: true
+    },
+    bio: {
+      type: String,
+      default: ""
+    },
+    graduationYear: {
+      type: String,
+      default: ""
+    },
 
     /* Academic */
     college: { type: String },
@@ -156,17 +206,27 @@ const UserSchema = new mongoose.Schema(
     /* Coding Profiles */
     leetcodeUsername: { type: String },
     codechefUsername: { type: String },
+    gfgUsername: { type: String },
+    githubUsername: { type: String },
     githubUrl: { type: String },
     linkedinUrl: { type: String },
 
     /* Manual Coding Platform */
-    hackerrank: { type: HackerRankSchema, default: () => ({}) },
+    hackerrank: { type: HackerRankSchema, default: null }, // Optional, can be null
 
     /* Platform Analytics */
     platformStats: { type: PlatformStatsSchema, default: () => ({}) },
     scores: { type: ScoreSchema, default: () => ({}) },
 
-    /* Activity */
+    /* Unified Activity Streak Metrics */
+    currentStreak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
+    activeDaysCount: { type: Number, default: 0 },
+    consistencyPercentage: { type: Number, default: 0 },
+    monthlyActivityCount: { type: Number, default: 0 },
+    yearlyActivityCount: { type: Number, default: 0 },
+
+    /* Activity Status */
     activityStatus: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
     lastPlatformSyncAt: { type: Date },
     lastProfileUpdateAt: { type: Date },
@@ -177,7 +237,7 @@ const UserSchema = new mongoose.Schema(
     profileCompletedAt: { type: Date },
 
     /* Resume Sections */
-    workExperience: { type: [WorkExperienceSchema], default: [] }, // 🔥 NEW
+    workExperience: { type: [WorkExperienceSchema], default: [] },
     certifications: { type: [CertificationSchema], default: [] },
     achievements: { type: [AchievementSchema], default: [] },
     hackathons: { type: [HackathonSchema], default: [] },
@@ -191,5 +251,6 @@ const UserSchema = new mongoose.Schema(
 /* 🔎 Indexes for long-term stability */
 UserSchema.index({ email: 1 });
 UserSchema.index({ 'scores.totalScore': -1 });
+UserSchema.index({ 'scores.weightedRankScore': -1 });
 
 module.exports = mongoose.model('User', UserSchema);
