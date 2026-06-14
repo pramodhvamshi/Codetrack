@@ -101,28 +101,30 @@ export function HeatmapWidget({ data = [], showDetails = true }) {
 
   return (
     <>
-      <div className="heatmap-wrapper" style={{ display: 'flex', gap: '0.8rem' }}>
-        {/* Weekday labels */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.4rem 0', fontSize: '0.65rem', color: 'var(--text-muted)', flexShrink: 0 }}>
-          {weekdays.map((day, idx) => (
-            <div key={idx} style={{ height: 10, lineHeight: '10px' }}>{day}</div>
-          ))}
-        </div>
-        <div className="heatmap-grid" style={{ gridAutoColumns: '10px' }}>
-          {cells.map((cell, idx) => {
-            if (cell.pad) {
-              return <div key={`pad-${idx}`} style={{ width: 10, height: 10, opacity: 0 }} />;
-            }
-            return (
-              <div
-                key={cell.date}
-                className={`heatmap-cell ${getLevelClass(cell.count)}`}
-                onClick={() => setSelectedCell(cell)}
-                title={`${cell.date}: ${cell.count} activities`}
-                style={{ cursor: 'pointer' }}
-              />
-            );
-          })}
+      <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+        <div className="heatmap-wrapper" style={{ display: 'flex', gap: '0.8rem', minWidth: 'max-content' }}>
+          {/* Weekday labels */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.4rem 0', fontSize: '0.65rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+            {weekdays.map((day, idx) => (
+              <div key={idx} style={{ height: 10, lineHeight: '10px' }}>{day}</div>
+            ))}
+          </div>
+          <div className="heatmap-grid" style={{ gridAutoColumns: '10px' }}>
+            {cells.map((cell, idx) => {
+              if (cell.pad) {
+                return <div key={`pad-${idx}`} style={{ width: 10, height: 10, opacity: 0 }} />;
+              }
+              return (
+                <div
+                  key={cell.date}
+                  className={`heatmap-cell ${getLevelClass(cell.count)}`}
+                  onClick={() => setSelectedCell(cell)}
+                  title={`${cell.date}: ${cell.count} activities`}
+                  style={{ cursor: 'pointer' }}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
 

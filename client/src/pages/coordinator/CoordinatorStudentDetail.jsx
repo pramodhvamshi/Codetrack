@@ -118,12 +118,15 @@ export function CoordinatorStudentDetail() {
     return [
       { name: 'LeetCode', solved: stats.leetcode?.problemsSolved || 0 },
       { name: 'CodeChef', solved: stats.codechef?.problemsSolved || 0 },
-      { name: 'GFG', solved: stats.geeksforgeeks?.problemsSolved || 0 },
-      { name: 'HackerRank', solved: student.hackerrank?.totalProblemsSolved || 0 }
+      { name: 'GFG', solved: stats.geeksforgeeks?.problemsSolved || 0 }
     ].filter(d => d.solved > 0);
   }, [student]);
 
-  const COLORS = ['#F59E0B', '#ef4444', '#22C55E', '#8B5CF6'];
+  const defaultVer = useMemo(() => {
+    return (studentResumes.generated || []).find(v => v.isDefault) || (studentResumes.uploaded || []).find(u => u.isDefault);
+  }, [studentResumes]);
+
+  const COLORS = ['#F59E0B', '#ef4444', '#22C55E'];
 
   if (loading || !student) {
     return (
@@ -138,7 +141,20 @@ export function CoordinatorStudentDetail() {
   const lc = stats.leetcode || {};
   const cc = stats.codechef || {};
   const gfg = stats.geeksforgeeks || {};
-  const hr = student.hackerrank || {};
+  const gh = stats.github || {};
+
+  // Safe GitHub Fallbacks
+  const githubRepos = gh.reposCount || 0;
+  const githubFollowers = gh.followersCount || 0;
+  const githubFollowing = gh.followingCount || 0;
+  const githubStars = gh.starsCount || 0;
+  const githubContributions = Array.isArray(gh.contributions)
+    ? gh.contributions.reduce((sum, d) => sum + (d.contributionCount || 0), 0)
+    : 0;
+  const activeContributionDays = Array.isArray(gh.contributions)
+    ? gh.contributions.filter(d => (d.contributionCount || 0) > 0).length
+    : 0;
+
 
   const handleDownloadResume = () => {
     if (!resumeBlobUrl) return;
@@ -188,11 +204,39 @@ export function CoordinatorStudentDetail() {
               Weighted Score: <strong>{Math.round(scores.weightedRankScore || 0)}</strong>
             </span>
             <span className="ct-chip" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
-              Total Solved: <strong>{(lc.problemsSolved || 0) + (cc.problemsSolved || 0) + (gfg.problemsSolved || 0) + (hr.totalProblemsSolved || 0)}</strong>
+              Total Solved: <strong>{(lc.problemsSolved || 0) + (cc.problemsSolved || 0) + (gfg.problemsSolved || 0)}</strong>
             </span>
             <span className="ct-pill" style={{ color: student.activityStatus === 'active' ? '#22C55E' : '#9ca3af', borderColor: student.activityStatus === 'active' ? '#22C55E' : '#9ca3af', background: 'rgba(255,255,255,0.02)' }}>
               {student.activityStatus === 'active' ? '● Active' : '○ Inactive'}
             </span>
+          </div>
+        </div>
+
+        {/* 6 CP/GITHUB ANALYTICS CARDS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1.2rem' }}>
+          <div className="ct-card" style={{ borderLeft: '4px solid #F59E0B', background: 'var(--grad-score)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>LeetCode Solved</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800 }}>{lc.problemsSolved || 0}</h2>
+          </div>
+          <div className="ct-card" style={{ borderLeft: '4px solid #22C55E', background: 'var(--grad-gfg)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>GFG Solved</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800 }}>{gfg.totalProblemsSolved || gfg.problemsSolved || 0}</h2>
+          </div>
+          <div className="ct-card" style={{ borderLeft: '4px solid #ef4444', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(17, 24, 39, 0.95))' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>CodeChef Solved</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800 }}>{cc.problemsSolved || 0}</h2>
+          </div>
+          <div className="ct-card" style={{ borderLeft: '4px solid #8B5CF6', background: 'var(--grad-gh)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>GitHub Repos</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800 }}>{githubRepos}</h2>
+          </div>
+          <div className="ct-card" style={{ borderLeft: '4px solid #a855f7', background: 'var(--grad-consistency)' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>GitHub Followers</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800 }}>{githubFollowers}</h2>
+          </div>
+          <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-blue)', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(17, 24, 39, 0.95))' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Coding Score</span>
+            <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{Math.round(scores.weightedRankScore || 0)}</h2>
           </div>
         </div>
 
@@ -320,16 +364,37 @@ export function CoordinatorStudentDetail() {
               </div>
             </div>
 
-            {/* HackerRank */}
-            <div className="ct-card" style={{ borderLeft: '4px solid #8B5CF6' }}>
+            {/* GitHub */}
+            <div className="ct-card" style={{ borderLeft: '4px solid #8B5CF6', gridColumn: 'span 2' }}>
               <h4 style={{ color: '#8B5CF6', margin: '0 0 0.8rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <img src="/HackerRank.svg" alt="HackerRank" style={{ width: 20, height: 20, objectFit: 'contain', borderRadius: 4 }} />
-                HackerRank
+                <Code size={20} />
+                GitHub Analytics: @{student.githubUsername || 'Not connected'}
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem' }}>
-                <span>Username: <strong>{hr.username || 'Not connected'}</strong></span>
-                <span>Solved: <strong>{hr.totalProblemsSolved || 0}</strong></span>
-                <span>Badges / Stars: <strong>{hr.badgeCount || 0}</strong></span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.8rem' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub Repositories</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{githubRepos}</h3>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub Followers</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{githubFollowers}</h3>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub Following</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{githubFollowing}</h3>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub Stars</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{githubStars}</h3>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>GitHub Contributions</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{githubContributions}</h3>
+                </div>
+                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Active Contribution Days</span>
+                  <h3 style={{ margin: '0.2rem 0 0 0', fontSize: '1.2rem', fontWeight: 700 }}>{activeContributionDays}</h3>
+                </div>
               </div>
             </div>
 
@@ -485,57 +550,29 @@ export function CoordinatorStudentDetail() {
                 </div>
               )}
 
-              {/* LIST OF AVAILABLE RESUMES */}
-              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '1rem' }}>
-                <h4 style={{ margin: '0 0 0.4rem 0' }}>Resume Versions</h4>
-                
-                {/* Generated builder resumes */}
-                {studentResumes.generated?.map(v => (
-                  <div 
-                    key={v._id} 
-                    onClick={() => { setSelectedResumeId(v._id); loadResumeBlob(v._id); }}
-                    style={{
-                      padding: '0.5rem 0.8rem',
-                      background: selectedResumeId === v._id ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255,255,255,0.01)',
-                      border: selectedResumeId === v._id ? '1px solid var(--accent-blue)' : '1px solid rgba(255,255,255,0.04)',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{v.name} {v.isDefault ? '⭐' : ''}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#22c55e' }}>{v.completenessScore}%</span>
+              {/* ACTIVE RESUME CARD */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1.25rem', borderLeft: '4px solid var(--accent-blue)' }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#f3f4f6' }}>Active Resume</h4>
+                {defaultVer ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.85rem' }}>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Title: </span>
+                      <strong>{defaultVer.name || defaultVer.originalName}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Template / Type: </span>
+                      <span className="ct-chip" style={{ fontSize: '0.75rem', padding: '0.1rem 0.4rem', textTransform: 'capitalize' }}>
+                        {defaultVer.templateKey ? defaultVer.templateKey.replace('_', ' ') : defaultVer.fileType?.toUpperCase() || 'Uploaded PDF'}
+                      </span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Last Updated: </span>
+                      <strong>{new Date(defaultVer.updatedAt || defaultVer.uploadedAt).toLocaleDateString()}</strong>
                     </div>
                   </div>
-                ))}
-
-                {/* Uploaded credentials */}
-                {studentResumes.uploaded && studentResumes.uploaded.length > 0 && (
-                  <div style={{ marginTop: '0.4rem' }}>
-                    <h5 style={{ margin: '0 0 0.3rem 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Uploaded Credentials</h5>
-                    {studentResumes.uploaded.map(u => (
-                      <div 
-                        key={u._id} 
-                        onClick={() => { setSelectedResumeId(u._id); loadResumeBlob(u._id); }}
-                        style={{
-                          padding: '0.5rem 0.8rem',
-                          background: selectedResumeId === u._id ? 'rgba(59, 130, 246, 0.08)' : 'rgba(255,255,255,0.01)',
-                          border: selectedResumeId === u._id ? '1px solid var(--accent-blue)' : '1px solid rgba(255,255,255,0.04)',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem',
-                          marginBottom: '0.3rem'
-                        }}
-                      >
-                        <div style={{ fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-                          <span>{u.originalName} {u.isDefault ? '⭐' : ''}</span>
-                          <span style={{ fontSize: '0.7rem', padding: '1px 3px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px' }}>
-                            {u.fileType.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                ) : (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    No active/default resume set by the student.
                   </div>
                 )}
               </div>
@@ -543,7 +580,7 @@ export function CoordinatorStudentDetail() {
             </div>
 
             {/* RIGHT SIDE: RESUME PDF IFRAME PREVIEW */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                   <FileText size={18} color="var(--accent-blue)" /> Secured PDF Resume Preview
@@ -566,7 +603,7 @@ export function CoordinatorStudentDetail() {
                   </div>
                 )}
                 {!loadingResume && !resumeBlobUrl && (
-                  <span style={{ color: 'var(--text-muted)' }}>Resume preview not available. Select another resume from the list.</span>
+                  <span style={{ color: 'var(--text-muted)' }}>No active resume available for this student.</span>
                 )}
                 {!loadingResume && resumeBlobUrl && (
                   <iframe 

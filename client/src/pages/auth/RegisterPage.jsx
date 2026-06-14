@@ -90,7 +90,7 @@ export function RegisterPage() {
 
       <main className="ct-main">
         <div className="ct-card" style={{ maxWidth: 700, margin: '3.5rem auto' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Create account</h2>
+          <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Student Registration</h2>
 
           <form onSubmit={handleSubmit}>
             {/* ACCOUNT DETAILS */}
@@ -148,32 +148,19 @@ export function RegisterPage() {
               </div>
 
               <div>
-                <label className="ct-label">Role *</label>
-                <select
+                <label className="ct-label">MSSID *</label>
+                <input
                   className="ct-input"
-                  value={form.role}
-                  onChange={(e) => handleChange('role', e.target.value)}
-                >
-                  <option value="student">Student</option>
-                  <option value="coordinator">Coordinator</option>
-                </select>
+                  value={form.mssid}
+                  onChange={(e) => handleChange('mssid', e.target.value)}
+                  placeholder="MSS2022022"
+                  required
+                />
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                  Example: MSS2022022
+                </div>
               </div>
             </div>
-            
-                {/* MSSID */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <label className="ct-label">MSSID *</label>
-                  <input
-                    className="ct-input"
-                    value={form.mssid}
-                    onChange={(e) => handleChange('mssid', e.target.value)}
-                    placeholder="MSS2022022"
-                    required
-                  />
-                  <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                    Example: MSS2022022
-                  </div>
-                </div>
 
             {/* STUDENT DETAILS */}
             {isStudent && (

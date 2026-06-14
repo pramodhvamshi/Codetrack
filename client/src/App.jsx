@@ -10,7 +10,14 @@ import { StudentResume } from './pages/student/StudentResume';
 import { CoordinatorDashboard } from './pages/coordinator/CoordinatorDashboard';
 import { CoordinatorStudents } from './pages/coordinator/CoordinatorStudents';
 import { CoordinatorStudentDetail } from './pages/coordinator/CoordinatorStudentDetail';
+import { CoordinatorStudentsList } from './pages/coordinator/CoordinatorStudentsList';
 
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminCoordinators } from './pages/admin/AdminCoordinators';
+import { AdminStudents } from './pages/admin/AdminStudents';
+import { AdminBugs } from './pages/admin/AdminBugs';
+
+import { ReportBugPage } from './pages/shared/ReportBugPage';
 import { LeaderboardPage } from './pages/shared/LeaderboardPage';
 import { PublicStudentProfile } from './pages/shared/PublicStudentProfile';
 import { LandingPage } from './pages/shared/LandingPage';
@@ -121,10 +128,111 @@ function AppRoutes() {
         />
 
         <Route
+          path="/coordinator/students/all"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/active"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/inactive"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/placement-ready"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/needs-improvement"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/at-risk"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorStudentsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/coordinator/students/:id"
           element={
             <ProtectedRoute role="coordinator">
               <CoordinatorStudentDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/coordinators"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCoordinators />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminStudents />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/bugs"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminBugs />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* BUG REPORTING */}
+        <Route
+          path="/report-bug"
+          element={
+            <ProtectedRoute>
+              <ReportBugPage />
             </ProtectedRoute>
           }
         />

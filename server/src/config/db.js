@@ -13,6 +13,10 @@ async function connectDB() {
     
     // Seed default resume templates
     await seedTemplates();
+
+    // Seed default admin account
+    const { seedAdmin } = require('../services/adminSeeder');
+    await seedAdmin();
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('MongoDB connection error:', err.message);

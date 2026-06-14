@@ -135,6 +135,7 @@ router.get('/students', async (req, res) => {
       branch,
       college,
       year,
+      currentYear,
       hostel,
       name,
       page = 1,
@@ -147,8 +148,17 @@ router.get('/students', async (req, res) => {
 
     if (branch) filter.branch = String(branch);
     if (college) filter.college = String(college);
-    if (year) filter.year = String(year);
     if (hostel) filter.hostel = String(hostel);
+
+    let queryYear = year;
+    if (currentYear) {
+      if (currentYear === '1st Year') queryYear = '1';
+      else if (currentYear === '2nd Year') queryYear = '2';
+      else if (currentYear === '3rd Year') queryYear = '3';
+      else if (currentYear === '4th Year') queryYear = '4';
+      else if (currentYear !== 'All Years') queryYear = currentYear;
+    }
+    if (queryYear) filter.year = String(queryYear);
 
     if (status) {
       filter.activityStatus = String(status);
@@ -218,6 +228,70 @@ router.get('/students', async (req, res) => {
       ResumeFile.find({ userId: { $in: studentIds }, isDefault: true })
     ]);
 
+    // Construct the pipeline stages before sort/skip/limit for summary metrics
+    const summaryStatsPipeline = [
+      { $match: filter },
+      {
+        $addFields: {
+          totalSolved: {
+            $add: [
+              { $ifNull: ["$platformStats.leetcode.problemsSolved", 0] },
+              { $ifNull: ["$platformStats.codechef.problemsSolved", 0] },
+              { $ifNull: ["$platformStats.geeksforgeeks.problemsSolved", 0] },
+              { $ifNull: ["$hackerrank.totalProblemsSolved", 0] }
+            ]
+          }
+        }
+      }
+    ];
+
+    if (readiness === 'ready') {
+      summaryStatsPipeline.push({
+        $match: {
+          totalSolved: { $gte: 300 },
+          activityStatus: 'active'
+        }
+      });
+    } else if (readiness === 'needs_improvement') {
+      summaryStatsPipeline.push({
+        $match: {
+          totalSolved: { $gte: 100, $lt: 300 }
+        }
+      });
+    } else if (readiness === 'at_risk') {
+      summaryStatsPipeline.push({
+        $match: {
+          totalSolved: { $lt: 100 }
+        }
+      });
+    }
+
+    summaryStatsPipeline.push({
+      $group: {
+        _id: null,
+        totalStudents: { $sum: 1 },
+        avgCodingScore: { $avg: { $ifNull: ["$scores.weightedRankScore", 0] } },
+        totalLeetCodeSolved: { $sum: { $ifNull: ["$platformStats.leetcode.problemsSolved", 0] } },
+        totalGFGSolved: { $sum: { $ifNull: ["$platformStats.geeksforgeeks.totalProblemsSolved", "$platformStats.geeksforgeeks.problemsSolved", 0] } },
+        totalCodeChefSolved: { $sum: { $ifNull: ["$platformStats.codechef.problemsSolved", 0] } },
+        avgLeetCodeSolved: { $avg: { $ifNull: ["$platformStats.leetcode.problemsSolved", 0] } },
+        avgGFGSolved: { $avg: { $ifNull: ["$platformStats.geeksforgeeks.totalProblemsSolved", "$platformStats.geeksforgeeks.problemsSolved", 0] } },
+        avgCodeChefSolved: { $avg: { $ifNull: ["$platformStats.codechef.problemsSolved", 0] } }
+      }
+    });
+
+    const summaryResult = await User.aggregate(summaryStatsPipeline);
+    const summary = summaryResult[0] || {
+      totalStudents: 0,
+      avgCodingScore: 0,
+      totalLeetCodeSolved: 0,
+      totalGFGSolved: 0,
+      totalCodeChefSolved: 0,
+      avgLeetCodeSolved: 0,
+      avgGFGSolved: 0,
+      avgCodeChefSolved: 0
+    };
+
     const versionsMap = new Map(defaultVersions.map(v => [String(v.userId), v]));
     const filesMap = new Map(defaultFiles.map(f => [String(f.userId), f]));
 
@@ -236,12 +310,19 @@ router.get('/students', async (req, res) => {
         id: s._id,
         name: s.name,
         email: s.email,
+        mssid: s.mssid || '',
         college: s.college,
         hostel: s.hostel,
         branch: s.branch,
         year: s.year,
+        currentYear: s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : `${s.year} Year`,
         score: s.scores?.totalScore || 0,
         scores: s.scores,
+        leetcodeSolved: s.platformStats?.leetcode?.problemsSolved || s.platformStats?.leetcode?.totalSolved || 0,
+        gfgSolved: s.platformStats?.geeksforgeeks?.totalProblemsSolved || s.platformStats?.geeksforgeeks?.problemsSolved || 0,
+        codechefSolved: s.platformStats?.codechef?.problemsSolved || 0,
+        githubRepos: s.platformStats?.github?.reposCount || 0,
+        codingScore: s.scores?.weightedRankScore || 0,
         activityStatus: s.activityStatus,
         platforms: {
           leetcode: !!s.leetcodeUsername,
@@ -256,13 +337,24 @@ router.get('/students', async (req, res) => {
     const colleges = [...new Set(allStudents.map((s) => s.college).filter(Boolean))];
     const branches = [...new Set(allStudents.map((s) => s.branch).filter(Boolean))];
     const years = [...new Set(allStudents.map((s) => s.year).filter(Boolean))].sort();
+    const currentYears = years.map(y => y === '1' ? '1st Year' : y === '2' ? '2nd Year' : y === '3' ? '3rd Year' : y === '4' ? '4th Year' : `${y} Year`);
 
     return res.json({
       students: studentsList,
       total,
       page: Number(page),
       limit: Number(limit),
-      filters: { colleges, branches, years }
+      summary: {
+        totalStudents: summary.totalStudents || 0,
+        avgCodingScore: Math.round(summary.avgCodingScore || 0),
+        totalLeetCodeSolved: summary.totalLeetCodeSolved || 0,
+        totalGFGSolved: summary.totalGFGSolved || 0,
+        totalCodeChefSolved: summary.totalCodeChefSolved || 0,
+        avgLeetCodeSolved: Math.round(summary.avgLeetCodeSolved || 0),
+        avgGFGSolved: Math.round(summary.avgGFGSolved || 0),
+        avgCodeChefSolved: Math.round(summary.avgCodeChefSolved || 0)
+      },
+      filters: { colleges, branches, years, currentYears }
     });
   } catch (err) {
     console.error('Coordinator students list error', err);
@@ -303,7 +395,7 @@ router.get('/export-data', async (req, res) => {
         CodeChefRating: cc.currentRating || cc.rating || 0,
         CodeChefContests: cc.contestCount || 0,
         GFGUsername: s.gfgUsername || '',
-        GFGSolved: gfg.problemsSolved || 0,
+        GFGSolved: gfg.totalProblemsSolved || gfg.problemsSolved || 0,
         GitHubUsername: s.githubUsername || '',
         GitHubRepos: gh.reposCount || 0,
         GitHubContributions: gh.contributions?.length || 0
@@ -347,34 +439,87 @@ router.get('/students/:id/timeline', async (req, res) => {
   }
 });
 
-// GET student heatmap for coordinator
+// GET student heatmap for coordinator (complete activity aggregates)
 router.get('/students/:id/heatmap', async (req, res) => {
   try {
-    const Activity = require('../models/Activity');
-    const activities = await Activity.find({ userId: req.params.id })
-      .sort({ timestamp: 1 });
+    const student = await User.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
 
     const heatmap = {};
-    activities.forEach(act => {
-      const dateStr = new Date(act.timestamp).toISOString().split('T')[0];
-      if (!heatmap[dateStr]) {
-        heatmap[dateStr] = {
-          date: dateStr,
-          count: 0,
-          activities: []
-        };
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setMonth(today.getMonth() - 6);
+    startDate.setHours(0, 0, 0, 0);
+
+    const curr = new Date(startDate);
+    while (curr <= today) {
+      const dateStr = curr.toISOString().split('T')[0];
+      heatmap[dateStr] = {
+        date: dateStr,
+        count: 0,
+        platforms: { leetcode: 0, github: 0 },
+        activities: []
+      };
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    let lcCalendar = student.platformStats?.leetcode?.submissionCalendar || {};
+    if (typeof lcCalendar === 'string') {
+      try {
+        lcCalendar = JSON.parse(lcCalendar);
+      } catch (e) {
+        lcCalendar = {};
       }
-      heatmap[dateStr].count += 1;
-      heatmap[dateStr].activities.push({
-        platform: act.platform,
-        type: act.type,
-        title: act.title,
-        link: act.link,
-        timestamp: act.timestamp
-      });
+    }
+    Object.entries(lcCalendar || {}).forEach(([timestamp, count]) => {
+      try {
+        const dateStr = new Date(Number(timestamp) * 1000).toISOString().split('T')[0];
+        if (heatmap[dateStr] !== undefined) {
+          heatmap[dateStr].count += Number(count);
+          heatmap[dateStr].platforms.leetcode += Number(count);
+        }
+      } catch (e) { }
     });
 
-    return res.json(Object.values(heatmap));
+    const ghContributions = student.platformStats?.github?.contributions || [];
+    if (Array.isArray(ghContributions)) {
+      ghContributions.forEach(item => {
+        if (item && item.date) {
+          const dateStr = item.date;
+          if (heatmap[dateStr] !== undefined) {
+            const c = Number(item.contributionCount || item.count || 0);
+            heatmap[dateStr].count += c;
+            heatmap[dateStr].platforms.github += c;
+          }
+        }
+      });
+    }
+
+    const Activity = require('../models/Activity');
+    const dbActivities = await Activity.find({
+      userId: student._id,
+      timestamp: { $gte: startDate }
+    });
+
+    dbActivities.forEach(act => {
+      try {
+        const dateStr = act.timestamp.toISOString().split('T')[0];
+        if (heatmap[dateStr] !== undefined) {
+          heatmap[dateStr].activities.push({
+            id: act._id,
+            platform: act.platform,
+            type: act.type,
+            title: act.title,
+            link: act.link || '',
+            timestamp: act.timestamp
+          });
+        }
+      } catch (e) {}
+    });
+
+    return res.json(Object.values(heatmap).sort((a, b) => a.date.localeCompare(b.date)));
   } catch (err) {
     console.error('Coordinator student heatmap error:', err);
     return res.status(500).json({ message: 'Failed to fetch heatmap' });
@@ -458,7 +603,6 @@ router.get('/students/:id/resumes/:resumeId/download', async (req, res) => {
     const resumeId = req.params.resumeId;
     const ResumeFile = require('../models/ResumeFile');
     const ResumeVersion = require('../models/ResumeVersion');
-    const User = require('../models/User');
 
     const student = await User.findById(studentId);
     if (!student) {
@@ -471,12 +615,34 @@ router.get('/students/:id/resumes/:resumeId/download', async (req, res) => {
       if (!file.isDefault) {
         return res.status(403).json({ message: 'Unauthorized: This resume is hidden by the student' });
       }
-      if (file.storagePath.startsWith('http')) {
-        return res.redirect(file.storagePath);
+
+      // Use fileUrl if available (Cloudinary / remote URL)
+      if (file.fileUrl && (file.fileUrl.startsWith('http://') || file.fileUrl.startsWith('https://'))) {
+        return res.redirect(file.fileUrl);
       }
+
+      // fileUrl as local path (e.g. "/uploads/...") – serve from disk
       const path = require('path');
-      const filePath = path.join(__dirname, '..', 'uploads', file.storagePath);
-      return res.sendFile(filePath);
+      const fs = require('fs');
+      // Try storagePath relative to uploads dir
+      const localPath = path.join(__dirname, '..', 'uploads', file.storagePath || file.fileName || '');
+      if (fs.existsSync(localPath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="' + encodeURIComponent(file.originalName) + '"');
+        return res.sendFile(localPath);
+      }
+
+      // If fileUrl is a local URL path like /uploads/...
+      if (file.fileUrl && file.fileUrl.startsWith('/uploads/')) {
+        const localFromUrl = path.join(__dirname, '..', '..', file.fileUrl);
+        if (fs.existsSync(localFromUrl)) {
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', 'inline; filename="' + encodeURIComponent(file.originalName) + '"');
+          return res.sendFile(localFromUrl);
+        }
+      }
+
+      return res.status(404).json({ message: 'Resume file not found on disk' });
     }
 
     // 2. Try finding as builder version
@@ -497,8 +663,9 @@ router.get('/students/:id/resumes/:resumeId/download', async (req, res) => {
       content: version.content
     });
 
+    const safeName = encodeURIComponent((version.title || 'resume').toLowerCase().replace(/\s+/g, '-'));
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${version.name.toLowerCase().replace(/\s+/g, '-')}.pdf"`);
+    res.setHeader('Content-Disposition', 'inline; filename="' + safeName + '.pdf"');
     return res.send(buffer);
   } catch (err) {
     console.error('Coordinator student resume download error:', err);
@@ -586,4 +753,3 @@ router.post('/students/:id/sync', async (req, res) => {
 });
 
 module.exports = router;
-

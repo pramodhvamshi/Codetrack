@@ -15,10 +15,13 @@ export function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      navigate(
-        user.role === 'coordinator' ? '/coordinator/dashboard' : '/student/dashboard',
-        { replace: true }
-      );
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user.role === 'coordinator') {
+        navigate('/coordinator/dashboard', { replace: true });
+      } else {
+        navigate('/student/dashboard', { replace: true });
+      }
     }
   }, [user, navigate]);
 
@@ -33,10 +36,13 @@ export function LoginPage() {
         rememberMe
       });
       login(res.token, res.user);
-      navigate(
-        res.user.role === 'student' ? '/student/dashboard' : '/coordinator/dashboard',
-        { replace: true }
-      );
+      if (res.user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (res.user.role === 'coordinator') {
+        navigate('/coordinator/dashboard', { replace: true });
+      } else {
+        navigate('/student/dashboard', { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

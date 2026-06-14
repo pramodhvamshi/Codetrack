@@ -19,16 +19,36 @@ router.get('/monthly', authMiddleware, async (req, res) => {
       {
         $match: {
           timestamp: { $gte: startOfMonth, $lt: endOfMonth },
-          platform: { $in: ['leetcode', 'codechef', 'geeksforgeeks'] },
+          platform: { $in: ['leetcode', 'geeksforgeeks'] },
           type: 'solved'
         }
       },
       {
         $group: {
           _id: "$userId",
-          monthlyScore: {
-            $sum: { $ifNull: [ "$meta.increment", 1 ] }
+          leetcodeSolved: {
+            $sum: {
+              $cond: [
+                { $eq: ["$platform", "leetcode"] },
+                { $ifNull: ["$meta.increment", 1] },
+                0
+              ]
+            }
+          },
+          gfgSolved: {
+            $sum: {
+              $cond: [
+                { $eq: ["$platform", "geeksforgeeks"] },
+                { $ifNull: ["$meta.increment", 1] },
+                0
+              ]
+            }
           }
+        }
+      },
+      {
+        $addFields: {
+          monthlyScore: { $add: ["$leetcodeSolved", "$gfgSolved"] }
         }
       },
       {
@@ -49,7 +69,12 @@ router.get('/monthly', authMiddleware, async (req, res) => {
         }
       },
       {
-        $sort: { monthlyScore: -1, "studentInfo.name": 1 }
+        $sort: {
+          monthlyScore: -1,
+          leetcodeSolved: -1,
+          gfgSolved: -1,
+          "studentInfo.name": 1
+        }
       },
       {
         $limit: 10
@@ -60,17 +85,26 @@ router.get('/monthly', authMiddleware, async (req, res) => {
           userId: "$_id",
           name: "$studentInfo.name",
           branch: "$studentInfo.branch",
+          leetcodeSolved: 1,
+          gfgSolved: 1,
           monthlyScore: 1
         }
       }
     ]);
 
-    let ranks = monthlyAggregation.map((item, idx) => ({
+    const activeAggregation = monthlyAggregation.filter(item => (item.leetcodeSolved || 0) > 0 || (item.gfgSolved || 0) > 0);
+    if (activeAggregation.length === 0) {
+      return res.json([]);
+    }
+
+    let ranks = activeAggregation.map((item, idx) => ({
       rank: idx + 1,
       userId: item.userId,
       name: item.name,
       branch: item.branch || '-',
-      monthlyScore: item.monthlyScore
+      leetcodeSolved: item.leetcodeSolved || 0,
+      gfgSolved: item.gfgSolved || 0,
+      monthlyScore: item.monthlyScore || 0
     }));
 
     if (ranks.length < 10) {
@@ -89,6 +123,8 @@ router.get('/monthly', authMiddleware, async (req, res) => {
           userId: s._id,
           name: s.name,
           branch: s.branch || '-',
+          leetcodeSolved: 0,
+          gfgSolved: 0,
           monthlyScore: 0
         });
       });

@@ -11,6 +11,8 @@ const coordinatorRoutes = require('./routes/coordinator');
 const leaderboardRoutes = require('./routes/leaderboard');
 const profileRoutes = require('./routes/profiles');
 const resumeRoutes = require('./routes/resume');
+const adminRoutes = require('./routes/admin');
+const bugRoutes = require('./routes/bugs');
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -83,6 +85,8 @@ app.use('/api/student', studentRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/profiles', profileRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/bugs', bugRoutes);
 
 // Fallback
 app.use((req, res) => {

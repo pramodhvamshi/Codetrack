@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://driving-resilient-afflicted.ngrok-free.dev/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
 
 let currentToken = null;
 let isRefreshing = false;
@@ -123,6 +123,23 @@ export const api = {
       {
         method: 'POST',
         body: formData
+      },
+      token
+    ),
+  deleteJson: (path, token) =>
+    request(
+      path,
+      {
+        method: 'DELETE'
+      },
+      token
+    ),
+  patchJson: (path, body, token) =>
+    request(
+      path,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(body)
       },
       token
     )

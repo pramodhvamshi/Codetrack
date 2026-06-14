@@ -232,7 +232,7 @@ export function CoordinatorDashboard() {
         {/* QUICK STATS CARD ROW */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.2rem' }}>
           
-          <div className="ct-card" onClick={() => handleOpenModal('total', 'All Onboarded Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-blue)', background: 'var(--grad-score)' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/all')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-blue)', background: 'var(--grad-score)' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Total Students</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.totalStudents || 0}</h2>
@@ -240,23 +240,23 @@ export function CoordinatorDashboard() {
             <Users size={24} color="var(--accent-blue)" />
           </div>
 
-          <div className="ct-card" onClick={() => handleOpenModal('active', 'Active Streak Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-green)', background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(17,24,39,0.95))' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/active')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-green)', background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(17,24,39,0.95))' }}>
             <div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Active Streaks</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Active Students</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.activeCount || 0}</h2>
             </div>
             <UserCheck size={24} color="var(--accent-green)" />
           </div>
 
-          <div className="ct-card" onClick={() => handleOpenModal('inactive', 'Inactive Profile Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-red)', background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(17,24,39,0.95))' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/inactive')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-red)', background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(17,24,39,0.95))' }}>
             <div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Inactive Profiles</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Inactive Students</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.inactiveCount || 0}</h2>
             </div>
             <UserX size={24} color="var(--accent-red)" />
           </div>
 
-          <div className="ct-card" onClick={() => handleOpenModal('ready', 'Placement Ready Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #3B82F6', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(17,24,39,0.95))' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/placement-ready')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #3B82F6', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(17,24,39,0.95))' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Placement Ready</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.readyCount || 0}</h2>
@@ -264,7 +264,7 @@ export function CoordinatorDashboard() {
             <Award size={24} color="#3B82F6" />
           </div>
 
-          <div className="ct-card" onClick={() => handleOpenModal('needs_improvement', 'Needs Improvement Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #F59E0B', background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(17,24,39,0.95))' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/needs-improvement')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #F59E0B', background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(17,24,39,0.95))' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Needs Improvement</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.needsImprovementCount || 0}</h2>
@@ -272,7 +272,7 @@ export function CoordinatorDashboard() {
             <BarChart3 size={24} color="#F59E0B" />
           </div>
 
-          <div className="ct-card" onClick={() => handleOpenModal('at_risk', 'At Risk Students')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #EF4444', background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(17,24,39,0.95))' }}>
+          <div className="ct-card" onClick={() => navigate('/coordinator/students/at-risk')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #EF4444', background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(17,24,39,0.95))' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>At Risk</span>
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 850 }}>{data.atRiskCount || 0}</h2>

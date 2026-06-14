@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export function AppShell({ active, children }) {
-  const { user, logout } = useAuth();
+  const { user, token, login, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -14,8 +14,31 @@ export function AppShell({ active, children }) {
     navigate('/login', { replace: true });
   };
 
+  const handleRevertImpersonation = async () => {
+    try {
+      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const res = await fetch(`${backendBase}/admin/revert-impersonate`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token || ''}` // session cookies will carry the call, headers backup
+        }
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || 'Failed to revert impersonation');
+      }
+      const data = await res.json();
+      login(data.token, data.user);
+      navigate('/admin/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Failed to revert impersonation:', err);
+      alert('Failed to return to admin session.');
+    }
+  };
+
   const isStudent = user && user.role === 'student';
   const isCoordinator = user && user.role === 'coordinator';
+  const isAdmin = user && user.role === 'admin';
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -51,17 +74,61 @@ export function AppShell({ active, children }) {
         { icon: '👤', label: 'My Profile', path: '/student/profile' },
         { icon: '📄', label: 'Resume Builder', path: '/student/resume' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '🐛', label: 'Report a Bug', path: '/report-bug' }
       ]
     : isCoordinator
     ? [
         { icon: '⚡', label: 'Dashboard', path: '/coordinator/dashboard' },
         { icon: '👥', label: 'Students', path: '/coordinator/students' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '🐛', label: 'Report a Bug', path: '/report-bug' }
+      ]
+    : isAdmin
+    ? [
+        { icon: '⚡', label: 'Admin Dashboard', path: '/admin/dashboard' },
+        { icon: '👥', label: 'Students', path: '/admin/students' },
+        { icon: '🛡️', label: 'Coordinators', path: '/admin/coordinators' },
+        { icon: '🐛', label: 'Bug Reports', path: '/admin/bugs' },
+        { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '➕', label: 'Report a Bug', path: '/report-bug' }
       ]
     : [];
 
   return (
     <div className="ct-layout">
+      {user?.isImpersonating && (
+        <div style={{
+          background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+          color: '#0b1120',
+          padding: '0.6rem 1.5rem',
+          textAlign: 'center',
+          fontWeight: 700,
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1.2rem',
+          zIndex: 9999
+        }}>
+          <span>Currently impersonating: <strong>{user.name}</strong></span>
+          <button
+            onClick={handleRevertImpersonation}
+            style={{
+              background: '#0b1120',
+              color: '#f59e0b',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.25rem 0.75rem',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+            }}
+          >
+            Return To Admin
+          </button>
+        </div>
+      )}
       <style>{`
         .ct-user-dropdown {
           position: relative;
@@ -181,6 +248,11 @@ export function AppShell({ active, children }) {
           color: var(--accent-purple);
           border-color: rgba(139,92,246,0.25);
         }
+        .ct-dropdown-role-badge.admin {
+          background: rgba(239,68,68,0.15);
+          color: var(--accent-red);
+          border-color: rgba(239,68,68,0.25);
+        }
         .ct-dropdown-items {
           padding: 0.4rem;
         }
@@ -250,6 +322,13 @@ export function AppShell({ active, children }) {
               navItem('Students', '/coordinator/students', 'coord-students'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
             ]}
+            {isAdmin && [
+              navItem('Dashboard', '/admin/dashboard', 'admin-dashboard'),
+              navItem('Coordinators', '/admin/coordinators', 'admin-coordinators'),
+              navItem('Students', '/admin/students', 'admin-students'),
+              navItem('Leaderboard', '/leaderboard', 'leaderboard'),
+              navItem('Bugs', '/admin/bugs', 'admin-bugs')
+            ]}
           </div>
 
           {user && (
@@ -277,8 +356,8 @@ export function AppShell({ active, children }) {
                     <div className="ct-dropdown-avatar-lg">{initials}</div>
                     <div style={{ minWidth: 0 }}>
                       <div className="ct-dropdown-user-name">{user.name}</div>
-                      <div className={`ct-dropdown-role-badge ${user.role === 'coordinator' ? 'coordinator' : ''}`}>
-                        {user.role === 'coordinator' ? '🎓 Coordinator' : '💻 Student'}
+                      <div className={`ct-dropdown-role-badge ${user.role === 'coordinator' ? 'coordinator' : user.role === 'admin' ? 'admin' : ''}`}>
+                        {user.role === 'admin' ? '👑 Admin' : user.role === 'coordinator' ? '🎓 Coordinator' : '💻 Student'}
                       </div>
                     </div>
                   </div>

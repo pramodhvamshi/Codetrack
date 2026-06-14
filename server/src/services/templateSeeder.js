@@ -2,75 +2,41 @@ const ResumeTemplate = require('../models/ResumeTemplate');
 
 const defaultTemplates = [
   {
-    name: 'Template A: Single Column ATS Friendly',
-    key: 'template_a',
+    name: 'Single Column – ATS Professional',
+    key: 'single_column',
     fileType: 'built-in',
     structure: {
-      atsScore: 95,
-      recommendedUseCase: 'SDE, Placement, ATS-focused',
-      description: 'A clean, single-column design optimized for ATS parsing, utilizing high readability layouts and linear content flows.'
+      atsScore: 96,
+      recommendedUseCase: 'SDE, Placement, All Industries',
+      description: 'A clean, single-column ATS-optimized layout with white background, dark text, and corporate styling. Perfect for all placement and job applications.'
     },
     isActive: true
   },
   {
-    name: 'Template B: Two Column Professional',
-    key: 'template_b',
-    fileType: 'built-in',
-    structure: {
-      atsScore: 90,
-      recommendedUseCase: 'SDE, Research, Management',
-      description: 'A balanced two-column design that positions personal details and core technical skills to the side, highlighting primary projects and work experience in the main section.'
-    },
-    isActive: true
-  },
-  {
-    name: 'Template C: Modern Placement Resume',
-    key: 'template_c',
-    fileType: 'built-in',
-    structure: {
-      atsScore: 92,
-      recommendedUseCase: 'Product, Internship, Modern',
-      description: 'An elegant template using sophisticated serif fonts, fine-line layout sections, and a signature violet accent color.'
-    },
-    isActive: true
-  },
-  {
-    name: 'Template D: Software Engineer Focused',
-    key: 'template_d',
-    fileType: 'built-in',
-    structure: {
-      atsScore: 93,
-      recommendedUseCase: 'SDE, Full Stack, Research',
-      description: 'A dense, developer-oriented layout focusing extensively on programming language proficiency, framework details, and project highlights.'
-    },
-    isActive: true
-  },
-  {
-    name: 'Template E: AI/ML Engineer Focused',
-    key: 'template_e',
+    name: 'Double Column – Professional',
+    key: 'double_column',
     fileType: 'built-in',
     structure: {
       atsScore: 91,
-      recommendedUseCase: 'AI/ML, Data Science, Research',
-      description: 'Optimized for machine learning and research roles, highlighting analytical projects, core models/libraries, and academic publications.'
-    },
-    isActive: true
-  },
-  {
-    name: 'Template F: Internship Focused',
-    key: 'template_f',
-    fileType: 'built-in',
-    structure: {
-      atsScore: 89,
-      recommendedUseCase: 'Internship, Academic, Entry-level',
-      description: 'Tailored for students seeking internships or co-ops, expanding education details, coursework, hackathons, and certifications.'
+      recommendedUseCase: 'SDE, Research, Management, Senior Roles',
+      description: 'A balanced two-column professional layout that organizes key skills and education on the left with experience and projects on the right. Corporate-grade, no colors.'
     },
     isActive: true
   }
 ];
 
+// Deprecated template keys to deactivate (in case they exist from previous seeding)
+const deprecatedKeys = ['template_a', 'template_b', 'template_c', 'template_d', 'template_e', 'template_f'];
+
 async function seedTemplates() {
   try {
+    // Deactivate all deprecated templates
+    await ResumeTemplate.updateMany(
+      { key: { $in: deprecatedKeys } },
+      { $set: { isActive: false } }
+    );
+
+    // Seed/update the two canonical templates
     for (const t of defaultTemplates) {
       await ResumeTemplate.findOneAndUpdate(
         { key: t.key },
@@ -79,7 +45,7 @@ async function seedTemplates() {
       );
     }
     // eslint-disable-next-line no-console
-    console.log('Resume templates seeded/updated successfully.');
+    console.log('Resume templates seeded/updated successfully (single_column, double_column).');
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Error seeding resume templates:', err.message);

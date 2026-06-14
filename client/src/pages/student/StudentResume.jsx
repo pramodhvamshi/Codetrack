@@ -21,9 +21,42 @@ export function StudentResume() {
   const [currentVersion, setCurrentVersion] = useState(null);
   
   // UI Panels state
-  const [selectedTemplate, setSelectedTemplate] = useState('template_a');
+  const [selectedTemplate, setSelectedTemplate] = useState('single_column');
   const [templatesList, setTemplatesList] = useState([]);
   const [editorMode, setEditorMode] = useState('builder'); // builder, uploads
+  const [previewTemplateModal, setPreviewTemplateModal] = useState(null);
+  const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
+
+  // Canonical template metadata
+  const templateMappings = {
+    single_column: {
+      category: 'single',
+      title: 'Single Column',
+      subtitle: 'ATS Professional',
+      description: 'Clean, single-column ATS-optimized layout. White background, dark text, no colors. Perfect for all placement and job applications.',
+      atsScore: 96,
+      tag: 'Recommended',
+      preview: '/single_column_preview.png'
+    },
+    double_column: {
+      category: 'double',
+      title: 'Double Column',
+      subtitle: 'Professional Layout',
+      description: 'Balanced two-column layout with skills/education on the left and experience/projects on the right. Corporate-grade, no colors.',
+      atsScore: 91,
+      tag: 'Professional',
+      preview: '/double_column_preview.png'
+    }
+  };
+
+  // Legacy key mapping (so old saved versions render correctly)
+  const LEGACY_KEY_MAP = {
+    template_a: 'single_column', template_c: 'single_column',
+    template_d: 'single_column', template_f: 'single_column',
+    template_b: 'double_column', template_e: 'double_column'
+  };
+
+  const resolveTemplateKey = (k) => LEGACY_KEY_MAP[k] || k || 'single_column';
   const [activeAccordion, setActiveAccordion] = useState('personal'); // personal, education, skills, projects, experience, achievements, profiles, custom
   const [uploading, setUploading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -117,7 +150,7 @@ export function StudentResume() {
   // Switch to select a specific version
   const selectVersion = (version) => {
     setCurrentVersion(version);
-    setSelectedTemplate(version.templateKey || 'template_a');
+    setSelectedTemplate(resolveTemplateKey(version.templateKey) || 'single_column');
     setFormData(version.content || {});
     setLayout(version.layout || {
       sectionsOrder: ['academic', 'profiles', 'experience', 'projects', 'certifications', 'achievements'],
@@ -652,40 +685,83 @@ export function StudentResume() {
           {/* BUILDER EDITOR MODE */}
           {editorMode === 'builder' && (
             <>
-              {/* ACCORDION 1: TEMPLATE SELECTION GALLERY */}
-              <div>
-                <div className="accordion-header" onClick={() => setActiveAccordion(activeAccordion === 'template' ? '' : 'template')}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Layout size={16} color="var(--accent-purple)" /> Template Selection Gallery
-                  </span>
-                  {activeAccordion === 'template' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </div>
-
-                {activeAccordion === 'template' && (
-                  <div className="accordion-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
-                      {templatesList.map(t => (
-                        <div 
-                          key={t.key} 
-                          className={`template-card ${selectedTemplate === t.key ? 'active' : ''}`}
-                          onClick={() => setSelectedTemplate(t.key)}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <strong style={{ fontSize: '0.8rem' }}>{t.name.split(':')[0]}</strong>
-                            <span style={{ fontSize: '0.7rem', padding: '1px 5px', borderRadius: '3px', background: 'var(--accent-blue)', color: '#0b1120', fontWeight: 'bold' }}>
-                              {t.structure?.atsScore || 85}% ATS
-                            </span>
-                          </div>
-                          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.structure?.description}</p>
-                          <div style={{ marginTop: '6px', fontSize: '0.7rem', color: 'var(--accent-green)' }}>
-                            🎯 {t.structure?.recommendedUseCase}
-                          </div>
-                        </div>
-                      ))}
+                {/* TEMPLATE SELECTION GALLERY */}
+                <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.2rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Layout size={18} color="var(--accent-purple)" /> Resume Template
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        Active: <strong style={{ color: '#fff' }}>{templateMappings[selectedTemplate]?.title || selectedTemplate}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        className="ct-button"
+                        style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                        onClick={() => setTemplateSelectorOpen(true)}
+                      >
+                        <Layout size={14} /> Change Template
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Two-card preview strip */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                    {Object.entries(templateMappings).map(([key, mapping]) => {
+                      const isActive = selectedTemplate === key;
+                      return (
+                        <div
+                          key={key}
+                          style={{
+                            border: isActive ? '2px solid var(--accent-blue)' : '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            background: isActive ? 'rgba(59,130,246,0.06)' : 'rgba(255,255,255,0.01)',
+                            cursor: 'pointer',
+                            transition: 'border-color 0.2s'
+                          }}
+                          onClick={() => setSelectedTemplate(key)}
+                        >
+                          {/* Preview thumbnail */}
+                          <div style={{ position: 'relative', height: '130px', overflow: 'hidden', background: '#f1f5f9' }}>
+                            <img
+                              src={mapping.preview}
+                              alt={mapping.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                            />
+                            {isActive && (
+                              <div style={{
+                                position: 'absolute', top: '6px', right: '6px',
+                                background: 'var(--accent-blue)', color: '#0b1120',
+                                fontSize: '0.65rem', fontWeight: '800',
+                                padding: '2px 7px', borderRadius: '3px'
+                              }}>✓ Selected</div>
+                            )}
+                          </div>
+                          {/* Info footer */}
+                          <div style={{ padding: '0.6rem 0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>{mapping.title}</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{mapping.subtitle}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.65rem', color: 'var(--accent-green)', fontWeight: 'bold' }}>🎯 {mapping.atsScore}%</span>
+                              <button
+                                type="button"
+                                className="ct-button-secondary"
+                                style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem' }}
+                                onClick={e => { e.stopPropagation(); setPreviewTemplateModal(key); }}
+                              >
+                                Preview
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
               {/* ACCORDION 2: SECTION REORDERER & VISIBILITY */}
               <div>
@@ -1242,6 +1318,48 @@ export function StudentResume() {
         </div>
 
       </div>
+
+      {/* TEMPLATE PREVIEW MODAL */}
+      {previewTemplateModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="ct-card" style={{ maxWidth: '800px', width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', gap: '1.2rem', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.8rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fff' }}>
+                <Eye size={20} color="var(--accent-purple)" /> Template Preview: {templateMappings[previewTemplateModal]?.title || previewTemplateModal}
+              </h3>
+              <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'var(--accent-blue)', color: '#0b1120', fontWeight: 'bold' }}>
+                {templateMappings[previewTemplateModal]?.atsScore || 85}% ATS Compatible
+              </span>
+            </div>
+
+            {/* Live Populated Resume Canvas Preview */}
+            <div style={{ flex: 1, overflowY: 'auto', background: '#e2e8f0', borderRadius: '6px', padding: '1rem', maxHeight: '60vh' }}>
+              <ResumePreviewHTML 
+                templateKey={previewTemplateModal}
+                layout={layout}
+                content={formData}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
+              <button className="ct-button-secondary" onClick={() => setPreviewTemplateModal(null)}>Close</button>
+              <button 
+                className="ct-button" 
+                disabled={selectedTemplate === previewTemplateModal}
+                onClick={() => {
+                  setSelectedTemplate(previewTemplateModal);
+                  setPreviewTemplateModal(null);
+                }}
+              >
+                {selectedTemplate === previewTemplateModal ? 'Selected' : 'Use Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

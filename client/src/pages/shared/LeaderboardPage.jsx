@@ -152,12 +152,33 @@ export function LeaderboardPage() {
           flexDirection: 'column',
           gap: '1rem'
         }}>
+          <style>{`
+            @media (min-width: 768px) {
+              .monthly-desktop-table {
+                display: table !important;
+              }
+              .monthly-mobile-cards {
+                display: none !important;
+              }
+            }
+            @media (max-width: 767px) {
+              .monthly-desktop-table {
+                display: none !important;
+              }
+              .monthly-mobile-cards {
+                display: flex !important;
+                flex-direction: column;
+                gap: 0.8rem;
+              }
+            }
+          `}</style>
+          
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', color: '#f3f4f6' }}>
               <Flame color="#ef4444" fill="#ef4444" size={20} /> Top Coders of the Month
             </h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Based on monthly solved count (LeetCode + GFG + CodeChef)
+              Based on LeetCode and GeeksForGeeks activity during the current month
             </span>
           </div>
           
@@ -167,79 +188,97 @@ export function LeaderboardPage() {
             </div>
           ) : monthlyRows.length === 0 ? (
             <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              No monthly activity recorded yet.
+              No coding activity recorded this month.
             </div>
           ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '0.75rem'
-            }}>
-              {monthlyRows.map((coder) => {
-                let medal = '';
-                let borderCol = 'rgba(255, 255, 255, 0.05)';
-                let bgGradient = 'rgba(255, 255, 255, 0.01)';
-                if (coder.rank === 1) {
-                  medal = '🥇';
-                  borderCol = 'rgba(245, 158, 11, 0.4)';
-                  bgGradient = 'rgba(245, 158, 11, 0.05)';
-                } else if (coder.rank === 2) {
-                  medal = '🥈';
-                  borderCol = 'rgba(156, 163, 175, 0.4)';
-                  bgGradient = 'rgba(156, 163, 175, 0.05)';
-                } else if (coder.rank === 3) {
-                  medal = '🥉';
-                  borderCol = 'rgba(180, 83, 9, 0.4)';
-                  bgGradient = 'rgba(180, 83, 9, 0.05)';
-                }
-                return (
-                  <div
+            <>
+              {/* DESKTOP/TABLET TABLE VIEW */}
+              <div className="monthly-desktop-table" style={{ overflowX: 'auto', display: 'none', width: '100%' }}>
+                <table className="ct-table" style={{ margin: 0, width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '60px' }}>Rank</th>
+                      <th>Student</th>
+                      <th>Branch</th>
+                      <th style={{ color: '#F59E0B' }}>LeetCode Solved</th>
+                      <th style={{ color: '#22C55E' }}>GFG Solved</th>
+                      <th style={{ textAlign: 'right', color: 'var(--accent-purple)' }}>Monthly Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyRows.map((coder) => (
+                      <tr key={coder.userId}>
+                        <td style={{ fontWeight: 600 }}>#{coder.rank}</td>
+                        <td>
+                          <span
+                            onClick={() => navigate(`/student/profile/view/${coder.userId}`)}
+                            style={{
+                              cursor: 'pointer',
+                              fontWeight: 600,
+                              color: 'var(--accent-blue)',
+                              textDecoration: 'underline'
+                            }}
+                          >
+                            {coder.name}
+                          </span>
+                        </td>
+                        <td>{coder.branch}</td>
+                        <td>{coder.leetcodeSolved || 0}</td>
+                        <td>{coder.gfgSolved || 0}</td>
+                        <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: 'var(--accent-purple)' }}>
+                          {coder.monthlyScore}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS VIEW */}
+              <div className="monthly-mobile-cards" style={{ display: 'none' }}>
+                {monthlyRows.map((coder) => (
+                  <div 
                     key={coder.userId}
+                    className="ct-card"
                     style={{
-                      padding: '0.75rem 1rem',
-                      borderRadius: '12px',
-                      background: bgGradient,
-                      border: `1px solid ${borderCol}`,
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.5rem'
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                      padding: '1rem',
+                      background: 'rgba(255, 255, 255, 0.01)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-                        {medal || `#${coder.rank}`}
-                      </span>
-                      <div style={{ minWidth: 0 }}>
-                        <div
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                          #{coder.rank}
+                        </span>
+                        <span 
+                          onClick={() => navigate(`/student/profile/view/${coder.userId}`)}
                           style={{
                             fontWeight: 600,
-                            color: '#f3f4f6',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            fontSize: '0.85rem',
-                            cursor: 'pointer'
+                            color: 'var(--accent-blue)',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem'
                           }}
-                          onClick={() => navigate(`/student/profile/view/${coder.userId}`)}
                         >
                           {coder.name}
-                        </div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                          {coder.branch}
-                        </div>
+                        </span>
                       </div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-purple)' }}>
+                        {coder.monthlyScore} pts
+                      </span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-purple)' }}>
-                        {coder.monthlyScore}
-                      </div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>solved</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <span>Branch: {coder.branch}</span>
+                      <span>LC: {coder.leetcodeSolved || 0} | GFG: {coder.gfgSolved || 0}</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 

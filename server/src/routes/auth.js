@@ -31,6 +31,7 @@ function setAuthCookies(res, { accessToken, refreshToken }, rememberMe = false) 
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
+    path: '/',
     maxAge: 15 * 60 * 1000 // 15 mins
   });
 
@@ -38,6 +39,7 @@ function setAuthCookies(res, { accessToken, refreshToken }, rememberMe = false) 
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
+    path: '/',
     maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 // 30 days or 1 day
   });
 }
@@ -51,7 +53,6 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password,
-      role,
       mssid,
       college,
       hostel,
@@ -65,28 +66,24 @@ router.post('/register', async (req, res) => {
       rememberMe
     } = req.body;
 
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: 'Name, email, password and role are required' });
+    const role = 'student';
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
-    if (!['student', 'coordinator'].includes(role)) {
-      return res.status(400).json({ message: 'Invalid role' });
-    }
-
-    if (role === 'student') {
-      if (
-        !college ||
-        !hostel ||
-        !branch ||
-        !year ||
-        overallGpa == null ||
-        !leetcodeUsername ||
-        !codechefUsername
-      ) {
-        return res.status(400).json({
-          message: 'All academic and platform fields are required for students'
-        });
-      }
+    if (
+      !college ||
+      !hostel ||
+      !branch ||
+      !year ||
+      overallGpa == null ||
+      !leetcodeUsername ||
+      !codechefUsername
+    ) {
+      return res.status(400).json({
+        message: 'All academic and platform fields are required for students'
+      });
     }
 
     const existing = await User.findOne({ email });
@@ -101,18 +98,18 @@ router.post('/register', async (req, res) => {
       email,
       passwordHash,
       role,
-      mssid: role === 'student' ? mssid : undefined,
-      college: role === 'student' ? college : undefined,
-      hostel: role === 'student' ? hostel : undefined,
-      branch: role === 'student' ? branch : undefined,
-      year: role === 'student' ? year : undefined,
-      overallGpa: role === 'student' ? Number(overallGpa) : undefined,
-      leetcodeUsername: role === 'student' ? leetcodeUsername : undefined,
-      codechefUsername: role === 'student' ? codechefUsername : undefined,
-      gfgUsername: role === 'student' ? gfgUsername : undefined,
-      githubUsername: role === 'student' ? githubUsername : undefined,
-      isOnboarded: role === 'student',
-      profileCompletedAt: role === 'student' ? new Date() : undefined,
+      mssid,
+      college,
+      hostel,
+      branch,
+      year,
+      overallGpa: Number(overallGpa),
+      leetcodeUsername,
+      codechefUsername,
+      gfgUsername,
+      githubUsername,
+      isOnboarded: true,
+      profileCompletedAt: new Date(),
       lastProfileUpdateAt: new Date()
     });
 
@@ -126,7 +123,8 @@ router.post('/register', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isOnboarded: user.isOnboarded
+        isOnboarded: user.isOnboarded,
+        isImpersonating: false
       }
     });
   } catch (err) {
@@ -150,6 +148,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    if (user.isActive === false) {
+      return res.status(403).json({ message: 'Account deactivated. Please contact administrator.' });
+    }
+
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -158,6 +160,16 @@ router.post('/login', async (req, res) => {
     const tokens = generateTokens(user, rememberMe);
     setAuthCookies(res, tokens, rememberMe);
 
+    let isImpersonating = false;
+    if (req.headers.cookie) {
+      const cookies = {};
+      req.headers.cookie.split(';').forEach(c => {
+        const parts = c.split('=');
+        cookies[parts.shift().trim()] = decodeURI(parts.join('='));
+      });
+      isImpersonating = !!cookies['adminAccessToken'];
+    }
+
     return res.json({
       token: tokens.accessToken,
       user: {
@@ -165,7 +177,8 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isOnboarded: user.isOnboarded
+        isOnboarded: user.isOnboarded,
+        isImpersonating
       }
     });
   } catch (err) {
@@ -178,8 +191,10 @@ router.post('/login', async (req, res) => {
  * LOGOUT
  */
 router.post('/logout', (req, res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  res.clearCookie('accessToken', { path: '/' });
+  res.clearCookie('refreshToken', { path: '/' });
+  res.clearCookie('adminAccessToken', { path: '/' });
+  res.clearCookie('adminRefreshToken', { path: '/' });
   return res.json({ message: 'Logout successful' });
 });
 
@@ -189,15 +204,23 @@ router.post('/logout', (req, res) => {
 router.post('/refresh', async (req, res) => {
   try {
     let refreshToken = null;
+    let isImpersonating = false;
 
-    // Parse refresh token from cookie
-    if (req.headers.cookie) {
+    // Prefer cookie-parser populated cookies (always available since we added cookie-parser)
+    if (req.cookies && req.cookies.refreshToken) {
+      refreshToken = req.cookies.refreshToken;
+      isImpersonating = !!req.cookies.adminAccessToken;
+    } else if (req.headers.cookie) {
+      // Fallback: manual parse with quote stripping
       const cookies = {};
       req.headers.cookie.split(';').forEach(c => {
         const parts = c.split('=');
-        cookies[parts.shift().trim()] = decodeURI(parts.join('='));
+        const key = parts.shift().trim();
+        const val = decodeURIComponent(parts.join('=')).trim().replace(/^"|"$/g, '');
+        cookies[key] = val;
       });
       refreshToken = cookies['refreshToken'];
+      isImpersonating = !!cookies['adminAccessToken'];
     }
 
     if (!refreshToken) {
@@ -211,6 +234,10 @@ router.post('/refresh', async (req, res) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
+    if (user.isActive === false) {
+      return res.status(403).json({ message: 'Account deactivated. Please contact administrator.' });
+    }
+
     // Generate new tokens
     const tokens = generateTokens(user, true);
     setAuthCookies(res, tokens, true);
@@ -222,7 +249,8 @@ router.post('/refresh', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        isOnboarded: user.isOnboarded
+        isOnboarded: user.isOnboarded,
+        isImpersonating
       }
     });
   } catch (err) {
@@ -230,5 +258,8 @@ router.post('/refresh', async (req, res) => {
     return res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
 });
+
+router.generateTokens = generateTokens;
+router.setAuthCookies = setAuthCookies;
 
 module.exports = router;
