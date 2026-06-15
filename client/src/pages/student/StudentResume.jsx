@@ -79,6 +79,12 @@ export function StudentResume() {
   // Resume Preview State
   const [previewResumeUrl, setPreviewResumeUrl] = useState(null);
 
+  useEffect(() => {
+    if (previewResumeUrl) {
+      console.log("StudentResume iframe src:", previewResumeUrl);
+    }
+  }, [previewResumeUrl]);
+
   // Local Form state for editing (will be synced to currentVersion and live preview)
   const [formData, setFormData] = useState({
     personalDetails: { name: '', email: '', phone: '', githubUrl: '', linkedinUrl: '', portfolioUrl: '', summary: '' },
@@ -322,14 +328,14 @@ export function StudentResume() {
   // Handle manual resume preview
   const handleOpenPreview = (url) => {
     if (!url) return;
-    const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+    const targetUrl = /^https?:\/\//i.test(url) ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
     setPreviewResumeUrl(targetUrl);
   };
 
   // Handle manual resume download
   const handleDownloadFile = async (url, filename) => {
     try {
-      const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+      const targetUrl = /^https?:\/\//i.test(url) ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
       const res = await fetch(targetUrl);
       if (!res.ok) throw new Error('File download failed');
       const blob = await res.blob();

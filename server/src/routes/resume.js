@@ -642,4 +642,77 @@ router.get('/tips', async (req, res) => {
   }
 });
 
+// GET /preview - Returns JSON containing the preview URL
+router.get('/preview', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const ResumeFile = require('../models/ResumeFile');
+    const ResumeVersion = require('../models/ResumeVersion');
+
+    const rootUrl = `${req.protocol}://${req.get('host')}`;
+
+    // 1. Check manual uploaded default resume
+    const defaultFile = await ResumeFile.findOne({ userId: user._id, isDefault: true });
+    if (defaultFile) {
+      const url = defaultFile.resumeUrl || defaultFile.storagePath;
+      if (url && /^https?:\/\//i.test(url)) {
+        console.log("Student Preview URL:", url);
+        return res.json({ resumeUrl: url });
+      }
+    }
+
+    // 2. Check manual mode manualUrl fallback
+    if (user.resume?.mode === 'manual' && user.resume?.manualUrl) {
+      if (/^https?:\/\//i.test(user.resume.manualUrl)) {
+        console.log("Student Preview URL:", user.resume.manualUrl);
+        return res.json({ resumeUrl: user.resume.manualUrl });
+      }
+    }
+
+    // 3. Otherwise builder version
+    const defaultVersion = await ResumeVersion.findOne({ userId: user._id, isDefault: true });
+    const activeVersion = defaultVersion || await ResumeVersion.findOne({ userId: user._id }).sort({ updatedAt: -1 });
+
+    if (activeVersion) {
+      const previewUrl = `${rootUrl}/api/student/resume/versions/${activeVersion._id}/preview`;
+      console.log("Student Preview URL:", previewUrl);
+      return res.json({ resumeUrl: previewUrl });
+    }
+
+    return res.status(404).json({ message: 'No default resume found to preview' });
+  } catch (err) {
+    console.error('Error in student preview endpoint:', err);
+    return res.status(500).json({ message: 'Failed to fetch preview URL' });
+  }
+});
+
+// GET /versions/:id/preview - Serve PDF inline for student preview
+router.get('/versions/:id/preview', async (req, res) => {
+  try {
+    const userId = req.currentUser._id;
+    const versionId = req.params.id;
+    const ResumeVersion = require('../models/ResumeVersion');
+
+    const version = await ResumeVersion.findOne({ _id: versionId, userId });
+    if (!version) {
+      return res.status(404).json({ message: 'Resume version not found' });
+    }
+
+    const { buildResumePdfBuffer } = require('../services/resumeService');
+    const buffer = await buildResumePdfBuffer(req.currentUser, {
+      template: version.templateKey,
+      sections: version.layout?.sectionsOrder,
+      hiddenSections: version.layout?.hiddenSections || [],
+      content: version.content
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="resume-preview.pdf"');
+    return res.send(buffer);
+  } catch (err) {
+    console.error('Error serving resume preview PDF:', err);
+    return res.status(500).json({ message: 'Failed to preview PDF' });
+  }
+});
+
 module.exports = router;

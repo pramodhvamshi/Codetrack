@@ -530,17 +530,6 @@ router.get('/students/:id/heatmap', async (req, res) => {
 router.get('/students/:id/resume', async (req, res) => {
   try {
     const studentId = req.params.id;
-    return res.json({ resumeUrl: `/api/coordinator/students/${studentId}/resume/preview/raw` });
-  } catch (err) {
-    console.error('Coordinator student resume error:', err);
-    return res.status(500).json({ message: 'Failed to generate student resume preview' });
-  }
-});
-
-// GET /students/:id/resume/preview/raw - Proxy to stream default student resume PDF inline
-router.get('/students/:id/resume/preview/raw', async (req, res) => {
-  try {
-    const studentId = req.params.id;
     const student = await User.findOne({ _id: studentId, role: 'student' });
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -549,47 +538,81 @@ router.get('/students/:id/resume/preview/raw', async (req, res) => {
     const ResumeFile = require('../models/ResumeFile');
     const ResumeVersion = require('../models/ResumeVersion');
 
+    const rootUrl = `${req.protocol}://${req.get('host')}`;
+    let resumeUrl = null;
+
+    // 1. Check manual uploaded default resume
     const defaultFile = await ResumeFile.findOne({ userId: studentId, isDefault: true });
     if (defaultFile) {
       const url = defaultFile.resumeUrl || defaultFile.storagePath;
-      if (url && /^https?:\/\//.test(url)) {
-        const axios = require('axios');
-        const response = await axios.get(url, { responseType: 'stream' });
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="manual-resume.pdf"');
-        return response.data.pipe(res);
-      }
-      return res.status(404).json({ message: 'Resume file URL not found or invalid' });
-    }
-
-    const defaultVersion = await ResumeVersion.findOne({ userId: studentId, isDefault: true });
-    if (defaultVersion) {
-      const { buildResumePdfBuffer } = require('../services/resumeService');
-      const buffer = await buildResumePdfBuffer(student, {
-        template: defaultVersion.templateKey,
-        sections: defaultVersion.layout?.sectionsOrder,
-        hiddenSections: defaultVersion.layout?.hiddenSections || [],
-        content: defaultVersion.content
-      });
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="resume-preview.pdf"`);
-      return res.send(buffer);
-    }
-
-    // Legacy fallback
-    if (student.resume?.mode === 'manual' && student.resume?.manualUrl) {
-      if (/^https?:\/\//.test(student.resume.manualUrl)) {
-        const axios = require('axios');
-        const response = await axios.get(student.resume.manualUrl, { responseType: 'stream' });
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="manual-resume.pdf"');
-        return response.data.pipe(res);
+      if (url && /^https?:\/\//i.test(url)) {
+        resumeUrl = url;
       }
     }
 
-    return res.status(404).json({ message: 'Default resume not found or hidden by the student' });
+    // 2. Check manual mode manualUrl fallback
+    if (!resumeUrl && student.resume?.mode === 'manual' && student.resume?.manualUrl) {
+      if (/^https?:\/\//i.test(student.resume.manualUrl)) {
+        resumeUrl = student.resume.manualUrl;
+      }
+    }
+
+    // 3. Otherwise builder version
+    if (!resumeUrl) {
+      const defaultVersion = await ResumeVersion.findOne({ userId: studentId, isDefault: true });
+      const activeVersion = defaultVersion || await ResumeVersion.findOne({ userId: studentId }).sort({ updatedAt: -1 });
+
+      if (activeVersion) {
+        resumeUrl = `${rootUrl}/api/coordinator/students/${studentId}/resumes/${activeVersion._id}/preview`;
+      }
+    }
+
+    if (!resumeUrl) {
+      return res.status(404).json({ message: 'No default resume found for this student' });
+    }
+
+    console.log("Coordinator Preview URL:", resumeUrl);
+    return res.json({ resumeUrl });
   } catch (err) {
-    console.error('Coordinator preview resume raw error:', err);
+    console.error('Coordinator student resume error:', err);
+    return res.status(500).json({ message: 'Failed to generate student resume preview' });
+  }
+});
+
+// GET /students/:id/resumes/:resumeId/preview - Stream generated builder PDF inline for coordinator
+router.get('/students/:id/resumes/:resumeId/preview', async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    const resumeId = req.params.resumeId;
+    const student = await User.findOne({ _id: studentId, role: 'student' });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    const ResumeVersion = require('../models/ResumeVersion');
+    const version = await ResumeVersion.findOne({ _id: resumeId, userId: studentId });
+    if (!version) {
+      return res.status(404).json({ message: 'Resume document not found' });
+    }
+
+    // Restrict coordinator to default/active resume
+    if (!version.isDefault) {
+      return res.status(403).json({ message: 'Unauthorized: This resume is not the default version' });
+    }
+
+    const { buildResumePdfBuffer } = require('../services/resumeService');
+    const buffer = await buildResumePdfBuffer(student, {
+      template: version.templateKey,
+      sections: version.layout?.sectionsOrder,
+      hiddenSections: version.layout?.hiddenSections || [],
+      content: version.content
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="resume-preview.pdf"');
+    return res.send(buffer);
+  } catch (err) {
+    console.error('Coordinator student resume preview error:', err);
     return res.status(500).json({ message: 'Failed to preview student resume' });
   }
 });

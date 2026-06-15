@@ -23,6 +23,12 @@ export function CoordinatorStudentDetail() {
 
   const [resumeBlobUrl, setResumeBlobUrl] = useState(null);
   const [loadingResume, setLoadingResume] = useState(false);
+
+  useEffect(() => {
+    if (resumeBlobUrl) {
+      console.log("CoordinatorStudentDetail iframe src:", resumeBlobUrl);
+    }
+  }, [resumeBlobUrl]);
   const [studentResumes, setStudentResumes] = useState({ generated: [], uploaded: [] });
   const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [resumeAnalytics, setResumeAnalytics] = useState(null);
@@ -62,7 +68,7 @@ export function CoordinatorStudentDetail() {
       const previewRes = await api.getJson(`/coordinator/students/${id}/resume`, token);
       if (!previewRes || !previewRes.resumeUrl) throw new Error('Resume URL unavailable');
       
-      const targetUrl = previewRes.resumeUrl.startsWith('http')
+      const targetUrl = /^https?:\/\//i.test(previewRes.resumeUrl)
         ? previewRes.resumeUrl
         : `${backendBase.replace('/api', '')}${previewRes.resumeUrl}`;
         

@@ -94,7 +94,7 @@ export function AdminBugs() {
   // Adjust base URL for screenshots which are stored in the server uploads folder
   const getAbsoluteScreenshotUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http')) {
+    if (/^https?:\/\//i.test(url)) {
       return url;
     }
     if (url.startsWith('/uploads')) {
