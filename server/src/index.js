@@ -67,12 +67,6 @@ app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
 
-// Static files for uploads (certificates, screenshots, manual resumes)
-app.use(
-  '/uploads',
-  express.static(path.join(__dirname, 'uploads'))
-);
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'MEDHA CODE TRACK API is running' });

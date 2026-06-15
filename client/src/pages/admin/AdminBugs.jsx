@@ -87,10 +87,11 @@ export function AdminBugs() {
 
   const backendBase = `${API_BASE_URL}/api`;
   // Adjust base URL for screenshots which are stored in the server uploads folder
-  const getAbsoluteScreenshotUrl = (relativeUrl) => {
-    if (!relativeUrl) return '';
+  const getAbsoluteScreenshotUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//.test(url)) return url;
     const serverUrl = backendBase.replace('/api', '');
-    return `${serverUrl}${relativeUrl}`;
+    return `${serverUrl}${url}`;
   };
 
   const openBugDetails = (bug) => {

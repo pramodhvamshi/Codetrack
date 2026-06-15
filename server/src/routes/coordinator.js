@@ -540,12 +540,13 @@ router.get('/students/:id/resume', async (req, res) => {
 
     const defaultFile = await ResumeFile.findOne({ userId: studentId, isDefault: true });
     if (defaultFile) {
-      if (defaultFile.storagePath.startsWith('http')) {
+      if (defaultFile.resumeUrl && /^https?:\/\//.test(defaultFile.resumeUrl)) {
+        return res.redirect(defaultFile.resumeUrl);
+      }
+      if (defaultFile.storagePath && /^https?:\/\//.test(defaultFile.storagePath)) {
         return res.redirect(defaultFile.storagePath);
       }
-      const path = require('path');
-      const filePath = path.join(__dirname, '..', 'uploads', defaultFile.storagePath);
-      return res.sendFile(filePath);
+      return res.status(404).json({ message: 'Resume file URL not found or invalid' });
     }
 
     const defaultVersion = await ResumeVersion.findOne({ userId: studentId, isDefault: true });
@@ -563,10 +564,10 @@ router.get('/students/:id/resume', async (req, res) => {
     }
 
     // Legacy fallback
-    if (student.resume?.mode === 'manual' && student.resume?.manualPath) {
-      const path = require('path');
-      const filePath = path.join(__dirname, '..', 'uploads', student.resume.manualPath);
-      return res.sendFile(filePath);
+    if (student.resume?.mode === 'manual' && student.resume?.manualUrl) {
+      if (/^https?:\/\//.test(student.resume.manualUrl)) {
+        return res.redirect(student.resume.manualUrl);
+      }
     }
 
     return res.status(404).json({ message: 'Default resume not found or hidden by the student' });
@@ -616,33 +617,17 @@ router.get('/students/:id/resumes/:resumeId/download', async (req, res) => {
         return res.status(403).json({ message: 'Unauthorized: This resume is hidden by the student' });
       }
 
-      // Use fileUrl if available (Cloudinary / remote URL)
-      if (file.fileUrl && (file.fileUrl.startsWith('http://') || file.fileUrl.startsWith('https://'))) {
-        return res.redirect(file.fileUrl);
+      // Use resumeUrl if available (Cloudinary / remote URL)
+      if (file.resumeUrl && /^https?:\/\//.test(file.resumeUrl)) {
+        return res.redirect(file.resumeUrl);
       }
 
-      // fileUrl as local path (e.g. "/uploads/...") – serve from disk
-      const path = require('path');
-      const fs = require('fs');
-      // Try storagePath relative to uploads dir
-      const localPath = path.join(__dirname, '..', 'uploads', file.storagePath || file.fileName || '');
-      if (fs.existsSync(localPath)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + encodeURIComponent(file.originalName) + '"');
-        return res.sendFile(localPath);
+      // Let's also support storagePath if it starts with http
+      if (file.storagePath && /^https?:\/\//.test(file.storagePath)) {
+        return res.redirect(file.storagePath);
       }
 
-      // If fileUrl is a local URL path like /uploads/...
-      if (file.fileUrl && file.fileUrl.startsWith('/uploads/')) {
-        const localFromUrl = path.join(__dirname, '..', '..', file.fileUrl);
-        if (fs.existsSync(localFromUrl)) {
-          res.setHeader('Content-Type', 'application/pdf');
-          res.setHeader('Content-Disposition', 'inline; filename="' + encodeURIComponent(file.originalName) + '"');
-          return res.sendFile(localFromUrl);
-        }
-      }
-
-      return res.status(404).json({ message: 'Resume file not found on disk' });
+      return res.status(404).json({ message: 'Resume file URL not found or invalid' });
     }
 
     // 2. Try finding as builder version

@@ -9,7 +9,6 @@ const ResumeScore = require('../models/ResumeScore');
 const ResumeLayout = require('../models/ResumeLayout');
 const CustomSection = require('../models/CustomSection');
 const path = require('path');
-const fs = require('fs');
 
 const router = express.Router();
 
@@ -52,10 +51,13 @@ router.post('/templates/upload', upload.single('templateFile'), async (req, res)
       return res.status(400).json({ message: 'Only PDF or DOCX templates are supported' });
     }
 
+    const { uploadResumeFile } = require('../services/storageService');
+    const storageResult = await uploadResumeFile(req.file);
+
     const newTemplate = new ResumeTemplate({
       name,
       key,
-      filePath: path.basename(req.file.path),
+      filePath: storageResult.url,
       fileType: fileExt,
       structure: {
         description: description || 'Custom template uploaded by administrator.',
@@ -539,8 +541,6 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const fileType = path.extname(originalName).substring(1).toLowerCase();
 
     if (fileType !== 'pdf' && fileType !== 'docx') {
-      // Remove invalid files
-      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: 'Only PDF and DOCX files are allowed' });
     }
 
@@ -553,23 +553,19 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const { uploadResumeFile } = require('../services/storageService');
     const storageResult = await uploadResumeFile(req.file);
 
-    // storageResult.publicId => Cloudinary public_id or local filename (for deletion)
-    // storageResult.url      => full public URL for viewing
     const resumeFile = new ResumeFile({
       userId,
-      fileName: storageResult.fileName || originalName,
-      originalName,
+      originalFileName: originalName,
       fileType,
       fileSize: req.file.size,
-      storagePath: storageResult.publicId,  // used for deletion
-      fileUrl: storageResult.url,            // used for viewing
+      publicId: storageResult.publicId,
+      resumeUrl: storageResult.url,
       isDefault: true,
       source: 'uploaded'
     });
 
     await resumeFile.save();
 
-    // No need to parse the file; return empty details to keep the frontend happy
     const extractedData = { name: '', email: '', phone: '', skills: [] };
 
     return res.status(201).json({
@@ -595,7 +591,7 @@ router.delete('/files/:id', async (req, res) => {
     }
 
     const { deleteResumeFile } = require('../services/storageService');
-    await deleteResumeFile(file.storagePath);
+    await deleteResumeFile(file.publicId);
 
     await ResumeFile.deleteOne({ _id: fileId, userId });
     return res.json({ message: 'Resume file deleted successfully' });

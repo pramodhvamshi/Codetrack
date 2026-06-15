@@ -13,6 +13,8 @@ const BugReportSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     screenshotUrls: [{ type: String }],
+    screenshotUrl: { type: String },
+    screenshotPublicId: { type: String },
     category: {
       type: String,
       enum: ['Dashboard', 'Profile', 'Leaderboard', 'Heatmap', 'Resume', 'Authentication', 'Coordinator', 'Other'],

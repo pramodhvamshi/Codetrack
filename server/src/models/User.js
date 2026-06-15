@@ -168,11 +168,21 @@ const ScoreSchema = new mongoose.Schema(
 const ResumeSchema = new mongoose.Schema(
   {
     mode: { type: String, enum: ['auto', 'manual'], default: 'auto' },
-    manualPath: { type: String },
-    lastGeneratedAt: { type: Date }
+    manualUrl: { type: String },
+    manualPublicId: { type: String },
+    lastGeneratedAt: { type: Date },
+    uploadedAt: { type: Date }
   },
-  { _id: false }
+  { 
+    _id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+ResumeSchema.virtual('manualPath')
+  .get(function() { return this.manualUrl; })
+  .set(function(val) { this.manualUrl = val; });
 
 /* ================= USER SCHEMA ================= */
 

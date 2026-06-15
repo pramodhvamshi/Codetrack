@@ -1,77 +1,79 @@
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
-// Simple Cloudinary setup placeholder (can be configured in production via env)
-let cloudinary;
-try {
-  if (process.env.CLOUDINARY_URL) {
-    cloudinary = require('cloudinary').v2;
-  }
-} catch (e) {
-  // Cloudinary module not installed yet, fall back to local disk
+/**
+ * Helper to upload a buffer stream to Cloudinary
+ */
+async function uploadToCloudinary(fileBuffer, folder, resourceType = 'auto') {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: resourceType },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id
+        });
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
 }
 
 /**
- * Saves a file buffer/temp file securely.
+ * Saves a file buffer securely to Cloudinary.
  * Returns file details:
- *   - url:        publicly accessible URL for viewing
- *   - publicId:   Cloudinary public_id (for deletion) or local filename
- *   - fileName:   the sanitised file name stored on disk / Cloudinary
+ *   - url:        secure URL for viewing (resumeUrl / fileUrl)
+ *   - publicId:   Cloudinary public_id (for deletion)
+ *   - fileName:   original file name
  */
 async function uploadResumeFile(file) {
-  if (cloudinary && process.env.CLOUDINARY_URL) {
-    return new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(
-        file.path,
-        { resource_type: 'raw', folder: 'resumes' },
-        (error, result) => {
-          if (error) return reject(error);
-
-          // Clean up temporary local file
-          try {
-            if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-          } catch (_) {}
-
-          resolve({
-            url: result.secure_url,       // full https Cloudinary URL
-            publicId: result.public_id,   // e.g. "resumes/myfile-1234"
-            fileName: file.originalname || file.filename
-          });
-        }
-      );
-    });
-  }
-
-  // Local development storage fallback
+  const result = await uploadToCloudinary(file.buffer, 'medha-code-track/resumes', 'raw');
   return {
-    url: `/uploads/${path.basename(file.path)}`,
-    publicId: path.basename(file.path),
-    fileName: file.originalname || file.filename
+    url: result.url,
+    publicId: result.publicId,
+    fileName: file.originalname
   };
 }
 
 /**
- * Deletes a file from storage by its publicId.
+ * Deletes a file from Cloudinary by its publicId.
  */
 async function deleteResumeFile(publicId) {
-  if (cloudinary && process.env.CLOUDINARY_URL) {
-    return new Promise((resolve, reject) => {
-      cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }, (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      });
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }, (error, result) => {
+      if (error) reject(error);
+      else resolve(result);
     });
-  }
+  });
+}
 
-  // Local dev cleanup
-  const localPath = path.join(__dirname, '..', 'uploads', publicId);
-  if (fs.existsSync(localPath)) {
-    fs.unlinkSync(localPath);
-  }
-  return { status: 'deleted' };
+/**
+ * Uploads a bug report screenshot to Cloudinary
+ */
+async function uploadBugScreenshot(file) {
+  const result = await uploadToCloudinary(file.buffer, 'medha-code-track/bug-reports', 'image');
+  return {
+    url: result.url,
+    publicId: result.publicId,
+    fileName: file.originalname
+  };
+}
+
+/**
+ * Deletes a bug report screenshot from Cloudinary
+ */
+async function deleteBugScreenshot(publicId) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, { resource_type: 'image' }, (error, result) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
+  });
 }
 
 module.exports = {
   uploadResumeFile,
-  deleteResumeFile
+  deleteResumeFile,
+  uploadBugScreenshot,
+  deleteBugScreenshot
 };

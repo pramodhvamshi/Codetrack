@@ -1,24 +1,12 @@
-const path = require('path');
 const express = require('express');
 const multer = require('multer');
 const { authMiddleware } = require('../middleware/auth');
 const BugReport = require('../models/BugReport');
+const { uploadBugScreenshot } = require('../services/storageService');
 
 const router = express.Router();
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext).replace(/\s+/g, '-');
-    const unique = Date.now();
-    cb(null, `bug-${base}-${unique}${ext}`);
-  }
-});
+const storage = multer.memoryStorage();
 
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
 
@@ -47,7 +35,13 @@ router.post('/', authMiddleware, upload.array('screenshots', 5), async (req, res
     }
 
     const files = req.files || [];
-    const screenshotUrls = files.map(file => `/uploads/${file.filename}`);
+    
+    // Upload files to Cloudinary in parallel
+    const uploadPromises = files.map(file => uploadBugScreenshot(file));
+    const uploadResults = await Promise.all(uploadPromises);
+    
+    const screenshotUrls = uploadResults.map(res => res.url);
+    const firstResult = uploadResults[0] || null;
 
     const newBug = await BugReport.create({
       userId: req.currentUser._id,
@@ -57,6 +51,8 @@ router.post('/', authMiddleware, upload.array('screenshots', 5), async (req, res
       title,
       description,
       screenshotUrls,
+      screenshotUrl: firstResult ? firstResult.url : undefined,
+      screenshotPublicId: firstResult ? firstResult.publicId : undefined,
       category,
       severity,
       status: 'Open'

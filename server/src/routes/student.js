@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const { syncPlatformsForUser } = require('../services/platformSyncService');
@@ -347,12 +346,15 @@ router.post(
         return res.status(400).json({ message: 'Title and issuer are required' });
       }
 
+      const { uploadResumeFile } = require('../services/storageService');
+      const storageResult = req.file ? await uploadResumeFile(req.file) : null;
+
       const cert = {
         title,
         issuer,
         date: date ? new Date(date) : undefined,
         credentialLink,
-        filePath: req.file ? path.basename(req.file.path) : undefined
+        filePath: storageResult ? storageResult.url : undefined
       };
 
       user.certifications.push(cert);
@@ -408,6 +410,9 @@ router.post(
           .json({ message: 'Name, mode (online/offline) and teamType (team/individual) are required' });
       }
 
+      const { uploadResumeFile } = require('../services/storageService');
+      const storageResult = req.file ? await uploadResumeFile(req.file) : null;
+
       const hackathon = {
         name,
         mode,
@@ -415,7 +420,7 @@ router.post(
         role,
         outcome,
         date: date ? new Date(date) : undefined,
-        certificatePath: req.file ? path.basename(req.file.path) : undefined
+        certificatePath: storageResult ? storageResult.url : undefined
       };
 
       user.hackathons.push(hackathon);
@@ -442,19 +447,23 @@ router.post(
         return res.status(400).json({ message: 'Project name is required' });
       }
 
-      const project = {
-  name,
-  highlights: Array.isArray(highlights) ? highlights.slice(0, 3) : [],
-  techStack: Array.isArray(techStack)
-    ? techStack
-    : typeof techStack === 'string'
-      ? techStack.split(',').map((s) => s.trim())
-      : [],
-  githubUrl,
-  liveUrl,
-  screenshotPaths: (req.files || []).map((f) => path.basename(f.path))
-};
+      const { uploadBugScreenshot } = require('../services/storageService');
+      const screenshotPaths = req.files && req.files.length > 0
+        ? await Promise.all(req.files.map(async (f) => (await uploadBugScreenshot(f)).url))
+        : [];
 
+      const project = {
+        name,
+        highlights: Array.isArray(highlights) ? highlights.slice(0, 3) : [],
+        techStack: Array.isArray(techStack)
+          ? techStack
+          : typeof techStack === 'string'
+            ? techStack.split(',').map((s) => s.trim())
+            : [],
+        githubUrl,
+        liveUrl,
+        screenshotPaths
+      };
 
       user.projects.push(project);
       await markManualActivity(user);
@@ -495,9 +504,10 @@ router.get('/me/resume', async (req, res) => {
     const user = req.currentUser;
     const mode = req.query.mode || user.resume?.mode || 'auto';
 
-    if (mode === 'manual' && user.resume?.manualPath) {
-      const filePath = path.join(__dirname, '..', 'uploads', user.resume.manualPath);
-      return res.sendFile(filePath);
+    if (mode === 'manual' && user.resume?.manualUrl) {
+      if (/^https?:\/\//.test(user.resume.manualUrl)) {
+        return res.redirect(user.resume.manualUrl);
+      }
     }
 
     const template = req.query.template || 'template_a';
@@ -534,14 +544,30 @@ router.post(
       }
 
       const user = req.currentUser;
+
+      // Clean up previous manual resume file from Cloudinary to avoid garbage accumulation
+      if (user.resume?.manualPublicId) {
+        const { deleteResumeFile } = require('../services/storageService');
+        try {
+          await deleteResumeFile(user.resume.manualPublicId);
+        } catch (delErr) {
+          console.error('Failed to delete old manual resume from Cloudinary:', delErr);
+        }
+      }
+
+      const { uploadResumeFile } = require('../services/storageService');
+      const storageResult = await uploadResumeFile(req.file);
+
       user.resume = {
         ...(user.resume || {}),
         mode: 'manual',
-        manualPath: path.basename(req.file.path)
+        manualUrl: storageResult.url,
+        manualPublicId: storageResult.publicId,
+        uploadedAt: new Date()
       };
       await markManualActivity(user);
 
-      return res.status(201).json({ message: 'Manual resume uploaded' });
+      return res.status(201).json({ message: 'Manual resume uploaded', resume: user.resume });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Upload manual resume error', err);
