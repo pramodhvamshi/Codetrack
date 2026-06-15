@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { API_BASE_URL } from '../api/client';
+import { api, API_BASE_URL } from '../api/client';
 
 export function AppShell({ active, children }) {
   const { user, token, login, logout } = useAuth();
@@ -17,18 +17,7 @@ export function AppShell({ active, children }) {
 
   const handleRevertImpersonation = async () => {
     try {
-      const backendBase = `${API_BASE_URL}/api`;
-      const res = await fetch(`${backendBase}/admin/revert-impersonate`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token || ''}` // session cookies will carry the call, headers backup
-        }
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Failed to revert impersonation');
-      }
-      const data = await res.json();
+      const data = await api.postJson(`/admin/revert-impersonate`, {}, token);
       login(data.token, data.user);
       navigate('/admin/dashboard', { replace: true });
     } catch (err) {

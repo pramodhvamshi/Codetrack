@@ -101,20 +101,7 @@ export function AdminStudents() {
     if (!window.confirm(`Are you sure you want to log in as ${student.name}?`)) return;
 
     try {
-      const backendBase = `${API_BASE_URL}/api`;
-      const res = await fetch(`${backendBase}/admin/impersonate/${student._id}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Impersonation request failed');
-      }
-
-      const data = await res.json();
+      const data = await api.postJson(`/admin/impersonate/${student._id}`, {}, token);
       login(data.token, data.user);
       navigate('/student/dashboard', { replace: true });
     } catch (err) {

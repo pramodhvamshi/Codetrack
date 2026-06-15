@@ -18,8 +18,16 @@ const router = express.Router();
  */
 router.post('/revert-impersonate', authMiddleware, async (req, res) => {
   try {
-    const adminAccessToken = req.cookies.adminAccessToken;
-    const adminRefreshToken = req.cookies.adminRefreshToken;
+    console.log("Revert Impersonate Raw Cookies:", req.cookies);
+    console.log("Revert Impersonate Cookies:", {
+      accessToken: !!req.cookies?.accessToken,
+      refreshToken: !!req.cookies?.refreshToken,
+      adminAccessToken: !!req.cookies?.adminAccessToken,
+      adminRefreshToken: !!req.cookies?.adminRefreshToken,
+    });
+
+    const adminAccessToken = req.cookies?.adminAccessToken;
+    const adminRefreshToken = req.cookies?.adminRefreshToken;
 
     if (!adminAccessToken || !adminRefreshToken) {
       return res.status(400).json({ message: 'No admin session to revert to' });
