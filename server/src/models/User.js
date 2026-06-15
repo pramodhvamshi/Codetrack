@@ -186,7 +186,15 @@ const UserSchema = new mongoose.Schema(
     mssid: {
       type: String,
       required: false,
-      trim: true
+      trim: true,
+      unique: true,
+      sparse: true,
+      set: function(val) {
+        if (typeof val === 'string' && val.trim() === '') {
+          return undefined;
+        }
+        return val;
+      }
     },
     bio: {
       type: String,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { Shield, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, X, AlertCircle } from 'lucide-react';
 
 export function AdminCoordinators() {
@@ -63,7 +63,7 @@ export function AdminCoordinators() {
         };
         if (form.password) payload.password = form.password;
 
-        const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+        const backendBase = `${API_BASE_URL}/api`;
         const res = await fetch(`${backendBase}/admin/coordinators/${editingCoord._id}`, {
           method: 'PUT',
           headers: {
@@ -81,7 +81,7 @@ export function AdminCoordinators() {
         // Create coordinator
         if (!form.password) throw new Error('Password is required for new coordinators');
 
-        const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+        const backendBase = `${API_BASE_URL}/api`;
         const res = await fetch(`${backendBase}/admin/coordinators`, {
           method: 'POST',
           headers: {
@@ -113,7 +113,7 @@ export function AdminCoordinators() {
 
   const handleToggleStatus = async (coord) => {
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/coordinators/${coord._id}/status`, {
         method: 'PATCH',
         headers: {
@@ -137,7 +137,7 @@ export function AdminCoordinators() {
     if (!window.confirm(`Are you sure you want to delete coordinator ${coord.name}?`)) return;
 
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/coordinators/${coord._id}`, {
         method: 'DELETE',
         headers: {

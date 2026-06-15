@@ -44,6 +44,17 @@ function setAuthCookies(res, { accessToken, refreshToken }, rememberMe = false) 
   });
 }
 
+const PASSWORD_BLACKLIST = [
+  "password",
+  "password123",
+  "admin123",
+  "welcome123",
+  "medha123",
+  "password@123",
+  "admin@123",
+  "medha@123"
+];
+
 /**
  * REGISTER
  */
@@ -68,46 +79,105 @@ router.post('/register', async (req, res) => {
 
     const role = 'student';
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
+    // 1. Trim all inputs
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const trimmedPassword = typeof password === 'string' ? password.trim() : '';
+    const trimmedMssid = typeof mssid === 'string' ? mssid.trim().toUpperCase() : '';
+    const trimmedCollege = typeof college === 'string' ? college.trim() : '';
+    const trimmedHostel = typeof hostel === 'string' ? hostel.trim() : '';
+    const trimmedBranch = typeof branch === 'string' ? branch.trim() : '';
+    const trimmedYear = typeof year === 'string' ? year.trim() : '';
+    const trimmedLeetcode = typeof leetcodeUsername === 'string' ? leetcodeUsername.trim() : '';
+    const trimmedCodechef = typeof codechefUsername === 'string' ? codechefUsername.trim() : '';
+    const trimmedGfg = typeof gfgUsername === 'string' ? gfgUsername.trim() : '';
+    const trimmedGithub = typeof githubUsername === 'string' ? githubUsername.trim() : '';
+
+    const errors = {};
+
+    // 2. Perform field validations
+    if (!trimmedName) {
+      errors.name = 'Name is required';
     }
 
-    if (
-      !college ||
-      !hostel ||
-      !branch ||
-      !year ||
-      overallGpa == null ||
-      !leetcodeUsername ||
-      !codechefUsername
-    ) {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!trimmedEmail) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(trimmedEmail)) {
+      errors.email = 'Please enter a valid Gmail address ending with @gmail.com';
+    }
+
+    const mssidRegex = /^MSS\d{7}$/;
+    if (!trimmedMssid) {
+      errors.mssid = 'MSSID is required';
+    } else if (!mssidRegex.test(trimmedMssid)) {
+      errors.mssid = 'MSSID must be in the format MSS2020012';
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,32}$/;
+    if (!trimmedPassword) {
+      errors.password = 'Password is required';
+    } else if (!passwordRegex.test(trimmedPassword)) {
+      errors.password = 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.';
+    } else {
+      const lowercasePw = trimmedPassword.toLowerCase();
+      const isBlacklisted = PASSWORD_BLACKLIST.some(item => lowercasePw === item || lowercasePw.includes(item));
+      if (isBlacklisted) {
+        errors.password = 'Password is too weak. Please avoid common passwords like "Password@123", "Medha@123", or similar variations.';
+      }
+    }
+
+    if (!trimmedCollege) errors.college = 'College is required';
+    if (!trimmedHostel) errors.hostel = 'Hostel is required';
+    if (!trimmedBranch) errors.branch = 'Branch is required';
+    if (!trimmedYear) errors.year = 'Year is required';
+    if (overallGpa == null || String(overallGpa).trim() === '') {
+      errors.overallGpa = 'Overall GPA is required';
+    }
+    if (!trimmedLeetcode) errors.leetcodeUsername = 'LeetCode username is required';
+    if (!trimmedCodechef) errors.codechefUsername = 'CodeChef username is required';
+
+    // 3. Database uniqueness checks if formatting was otherwise correct
+    if (!errors.email && trimmedEmail) {
+      const existingEmail = await User.findOne({ email: trimmedEmail });
+      if (existingEmail) {
+        errors.email = 'Email already exists';
+      }
+    }
+
+    if (!errors.mssid && trimmedMssid) {
+      const existingMssid = await User.findOne({ mssid: trimmedMssid });
+      if (existingMssid) {
+        errors.mssid = 'MSSID already exists';
+      }
+    }
+
+    // 4. Return structured error response if validation fails
+    if (Object.keys(errors).length > 0) {
       return res.status(400).json({
-        message: 'All academic and platform fields are required for students'
+        success: false,
+        message: 'Validation failed',
+        errors
       });
     }
 
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(409).json({ message: 'Email already registered' });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(trimmedPassword, 10);
 
     const user = await User.create({
-      name,
-      email,
+      name: trimmedName,
+      email: trimmedEmail,
       passwordHash,
       role,
-      mssid,
-      college,
-      hostel,
-      branch,
-      year,
+      mssid: trimmedMssid,
+      college: trimmedCollege,
+      hostel: trimmedHostel,
+      branch: trimmedBranch,
+      year: trimmedYear,
       overallGpa: Number(overallGpa),
-      leetcodeUsername,
-      codechefUsername,
-      gfgUsername,
-      githubUsername,
+      leetcodeUsername: trimmedLeetcode,
+      codechefUsername: trimmedCodechef,
+      gfgUsername: trimmedGfg,
+      githubUsername: trimmedGithub,
       isOnboarded: true,
       profileCompletedAt: new Date(),
       lastProfileUpdateAt: new Date()
@@ -117,7 +187,7 @@ router.post('/register', async (req, res) => {
     setAuthCookies(res, tokens, rememberMe);
 
     return res.status(201).json({
-      token: tokens.accessToken, // send access token back for client-side headers fallback
+      token: tokens.accessToken,
       user: {
         id: user._id,
         name: user.name,

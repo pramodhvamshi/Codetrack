@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { 
   Trophy, Award, Code, Activity, Calendar, FileText, 
   ExternalLink, Download, ArrowLeft, RefreshCw
@@ -27,7 +27,7 @@ export function CoordinatorStudentDetail() {
   const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [resumeAnalytics, setResumeAnalytics] = useState(null);
 
-  const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+  const backendBase = `${API_BASE_URL}/api`;
 
   const loadAllStudentData = async () => {
     if (!token || !id) return;

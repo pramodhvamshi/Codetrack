@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { AlertCircle, Upload, X, CheckCircle } from 'lucide-react';
 
 const CATEGORIES = [
@@ -80,7 +80,7 @@ export function ReportBugPage() {
       });
 
       // Submit via fetch since it has multipart form data
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/bugs`, {
         method: 'POST',
         headers: {

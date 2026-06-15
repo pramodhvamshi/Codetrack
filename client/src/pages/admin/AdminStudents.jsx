@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { Search, Eye, Key, ToggleLeft, ToggleRight, RefreshCw, X, AlertCircle } from 'lucide-react';
 
 export function AdminStudents() {
@@ -39,7 +39,7 @@ export function AdminStudents() {
 
   const handleToggleStatus = async (student) => {
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/students/${student._id}/status`, {
         method: 'PATCH',
         headers: {
@@ -73,7 +73,7 @@ export function AdminStudents() {
     setResetLoading(true);
 
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/students/${targetStudent._id}/reset-password`, {
         method: 'POST',
         headers: {
@@ -101,7 +101,7 @@ export function AdminStudents() {
     if (!window.confirm(`Are you sure you want to log in as ${student.name}?`)) return;
 
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/impersonate/${student._id}`, {
         method: 'POST',
         headers: {

@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://medhacodetrack-api.vercel.app'
+).replace(/\/$/, "");
 
 let currentToken = null;
 let isRefreshing = false;
@@ -37,13 +41,13 @@ async function request(path, options = {}, token) {
     credentials: 'include'
   };
 
-  let res = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
+  let res = await fetch(`${API_BASE_URL}/api${path}`, fetchOptions);
 
   if (res.status === 401 && path !== '/auth/refresh' && path !== '/auth/login' && path !== '/auth/logout') {
     if (!isRefreshing) {
       isRefreshing = true;
       try {
-        const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -70,7 +74,7 @@ async function request(path, options = {}, token) {
     const retryOrigRequest = new Promise((resolve) => {
       subscribeTokenRefresh((newToken) => {
         headers.Authorization = `Bearer ${newToken}`;
-        resolve(fetch(`${API_BASE_URL}${path}`, { ...fetchOptions, headers }));
+        resolve(fetch(`${API_BASE_URL}/api${path}`, { ...fetchOptions, headers }));
       });
     });
 

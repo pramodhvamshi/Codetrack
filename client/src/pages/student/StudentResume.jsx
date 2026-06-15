@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useTransition } from 'react';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { ResumePreviewHTML } from '../../components/ResumePreviewHTML';
 import { 
   ArrowUp, ArrowDown, Eye, EyeOff, Download, 
@@ -97,7 +97,7 @@ export function StudentResume() {
     hiddenSections: []
   });
 
-  const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+  const backendBase = `${API_BASE_URL}/api`;
 
   // Load all initial data (versions, uploads, active templates)
   const loadInitialData = async () => {

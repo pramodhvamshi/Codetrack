@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { API_BASE_URL } from '../api/client';
 
 export function AppShell({ active, children }) {
   const { user, token, login, logout } = useAuth();
@@ -16,7 +17,7 @@ export function AppShell({ active, children }) {
 
   const handleRevertImpersonation = async () => {
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/revert-impersonate`, {
         method: 'POST',
         headers: {

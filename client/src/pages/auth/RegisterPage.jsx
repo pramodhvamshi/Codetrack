@@ -11,6 +11,7 @@ export function RegisterPage() {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'student',
 
     // student-only fields
@@ -29,23 +30,160 @@ export function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [backendErrors, setBackendErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [touched, setTouched] = useState({
+    email: false,
+    mssid: false,
+    password: false,
+    confirmPassword: false
+  });
 
   const isStudent = form.role === 'student';
 
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'email': {
+        const val = value.trim().toLowerCase();
+        if (!val) return 'Email is required';
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!emailRegex.test(val)) {
+          return 'Please enter a valid Gmail address ending with @gmail.com';
+        }
+        return '';
+      }
+      case 'mssid': {
+        const val = value.trim().toUpperCase();
+        if (!val) return 'MSSID is required';
+        const mssidRegex = /^MSS\d{7}$/;
+        if (!mssidRegex.test(val)) {
+          return 'MSSID must be in the format MSS2020012';
+        }
+        return '';
+      }
+      case 'password': {
+        const val = value;
+        if (!val) return 'Password is required';
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#])[A-Za-z\d@$!%*?&^#]{8,32}$/;
+        if (!passwordRegex.test(val)) {
+          return 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.';
+        }
+        // Blacklist check
+        const PASSWORD_BLACKLIST = [
+          "password", "password123", "admin123", "welcome123", "medha123",
+          "password@123", "admin@123", "medha@123"
+        ];
+        const lowercasePw = val.toLowerCase();
+        const isBlacklisted = PASSWORD_BLACKLIST.some(item => lowercasePw === item || lowercasePw.includes(item));
+        if (isBlacklisted) {
+          return 'Password is too weak (common patterns like "Password@123" or "Medha@123" are blacklisted).';
+        }
+        return '';
+      }
+      case 'confirmPassword': {
+        if (!value) return 'Confirm Password is required';
+        if (value !== form.password) {
+          return 'Passwords do not match.';
+        }
+        return '';
+      }
+      default:
+        return '';
+    }
   };
+
+  const getPasswordStrength = (pw) => {
+    if (!pw) return { label: '', color: '', percentage: 0 };
+    
+    const hasMinLength = pw.length >= 8 && pw.length <= 32;
+    const hasUpper = /[A-Z]/.test(pw);
+    const hasLower = /[a-z]/.test(pw);
+    const hasDigit = /\d/.test(pw);
+    const hasSpecial = /[@$!%*?&^#]/.test(pw);
+    
+    const PASSWORD_BLACKLIST = [
+      "password", "password123", "admin123", "welcome123", "medha123",
+      "password@123", "admin@123", "medha@123"
+    ];
+    const lowercasePw = pw.toLowerCase();
+    const isBlacklisted = PASSWORD_BLACKLIST.some(item => lowercasePw === item || lowercasePw.includes(item));
+
+    if (isBlacklisted || pw.length < 8) {
+      return { label: 'Weak', color: 'var(--accent-red)', percentage: 25 };
+    }
+
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUpper) score++;
+    if (hasLower) score++;
+    if (hasDigit) score++;
+    if (hasSpecial) score++;
+
+    if (score <= 2) {
+      return { label: 'Weak', color: 'var(--accent-red)', percentage: 25 };
+    } else if (score === 3) {
+      return { label: 'Medium', color: 'var(--accent-orange)', percentage: 50 };
+    } else if (score === 4) {
+      return { label: 'Strong', color: '#3B82F6', percentage: 75 };
+    } else {
+      return { label: 'Very Strong', color: 'var(--accent-green)', percentage: 100 };
+    }
+  };
+
+  const handleChange = (field, value) => {
+    let finalValue = value;
+    if (field === 'mssid') {
+      finalValue = value.toUpperCase();
+    }
+    setForm((prev) => ({ ...prev, [field]: finalValue }));
+    if (['email', 'mssid', 'password', 'confirmPassword'].includes(field)) {
+      setTouched((prev) => ({ ...prev, [field]: true }));
+    }
+    if (backendErrors[field]) {
+      setBackendErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[field];
+        return copy;
+      });
+    }
+  };
+
+  const emailError = (touched.email ? validateField('email', form.email) : '') || backendErrors.email;
+  const mssidError = (touched.mssid ? validateField('mssid', form.mssid) : '') || backendErrors.mssid;
+  const passwordError = (touched.password ? validateField('password', form.password) : '') || backendErrors.password;
+  const confirmPasswordError = (touched.confirmPassword ? validateField('confirmPassword', form.confirmPassword) : '') || backendErrors.confirmPassword;
+  const strength = getPasswordStrength(form.password);
+
+  const hasFrontendErrors = 
+    validateField('email', form.email) ||
+    validateField('mssid', form.mssid) ||
+    validateField('password', form.password) ||
+    validateField('confirmPassword', form.confirmPassword);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setBackendErrors({});
+
+    if (hasFrontendErrors) {
+      setError('Please resolve all validation errors before submitting.');
+      setTouched({
+        email: true,
+        mssid: true,
+        password: true,
+        confirmPassword: true
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const payload = {
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
         role: form.role,
         rememberMe: form.rememberMe
@@ -53,16 +191,16 @@ export function RegisterPage() {
 
       if (isStudent) {
         Object.assign(payload, {
-          mssid: form.mssid,
-          college: form.college,
-          hostel: form.hostel,
-          branch: form.branch,
-          year: form.year,
+          mssid: form.mssid.trim().toUpperCase(),
+          college: form.college.trim(),
+          hostel: form.hostel.trim(),
+          branch: form.branch.trim(),
+          year: form.year.trim(),
           overallGpa: Number(form.overallGpa),
-          leetcodeUsername: form.leetcodeUsername,
-          codechefUsername: form.codechefUsername,
-          gfgUsername: form.gfgUsername,
-          githubUsername: form.githubUsername
+          leetcodeUsername: form.leetcodeUsername.trim(),
+          codechefUsername: form.codechefUsername.trim(),
+          gfgUsername: form.gfgUsername.trim(),
+          githubUsername: form.githubUsername.trim()
         });
       }
 
@@ -76,7 +214,17 @@ export function RegisterPage() {
         { replace: true }
       );
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed && parsed.errors) {
+          setBackendErrors(parsed.errors);
+          setError(parsed.message || 'Registration failed');
+        } else {
+          setError(parsed.message || 'Registration failed');
+        }
+      } catch (e) {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -119,6 +267,18 @@ export function RegisterPage() {
                   onChange={(e) => handleChange('email', e.target.value)}
                   required
                 />
+                {touched.email && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    marginTop: '0.25rem',
+                    color: emailError ? 'var(--accent-red)' : 'var(--accent-green)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}>
+                    {emailError ? `✗ ${emailError}` : '✓ Gmail address is valid.'}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -148,21 +308,103 @@ export function RegisterPage() {
                     {showPassword ? '🙈' : '👁️'}
                   </button>
                 </div>
+                <div style={{ fontSize: '0.72rem', color: '#9ca3af', marginTop: '0.25rem', lineHeight: '1.25' }}>
+                  8–32 characters, uppercase, lowercase, number and special character required.
+                </div>
+                {touched.password && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    marginTop: '0.25rem',
+                    color: passwordError ? 'var(--accent-red)' : 'var(--accent-green)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}>
+                    {passwordError ? `✗ ${passwordError}` : '✓ Password format is valid.'}
+                  </div>
+                )}
+                {form.password && (
+                  <div style={{ marginTop: '0.4rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', marginBottom: '0.2rem' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Password Strength:</span>
+                      <span style={{ fontWeight: 600, color: strength.color }}>{strength.label}</span>
+                    </div>
+                    <div style={{ height: '4px', background: '#374151', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${strength.percentage}%`,
+                        background: strength.color,
+                        transition: 'width 0.3s ease, background-color 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
-                <label className="ct-label">MSSID *</label>
-                <input
-                  className="ct-input"
-                  value={form.mssid}
-                  onChange={(e) => handleChange('mssid', e.target.value)}
-                  placeholder="MSS2022022"
-                  required
-                />
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                  Example: MSS2022022
+                <label className="ct-label">Confirm Password *</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="ct-input"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={form.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                    style={{ paddingRight: '2.5rem' }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    style={{
+                      position: 'absolute', right: '0.65rem', top: '50%',
+                      transform: 'translateY(-50%)', background: 'none',
+                      border: 'none', cursor: 'pointer', color: '#9ca3af',
+                      fontSize: '1rem', padding: 0, lineHeight: 1,
+                    }}
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  >
+                    {showConfirmPassword ? '🙈' : '👁️'}
+                  </button>
                 </div>
+                {touched.confirmPassword && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    marginTop: '0.25rem',
+                    color: confirmPasswordError ? 'var(--accent-red)' : 'var(--accent-green)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}>
+                    {confirmPasswordError ? `✗ ${confirmPasswordError}` : '✓ Passwords match.'}
+                  </div>
+                )}
               </div>
+            </div>
+
+            <div style={{ marginTop: '1rem' }}>
+              <label className="ct-label">MSSID *</label>
+              <input
+                className="ct-input"
+                value={form.mssid}
+                onChange={(e) => handleChange('mssid', e.target.value)}
+                placeholder="MSS2020012"
+                required
+              />
+              <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+                Format: MSS2020012
+              </div>
+              {touched.mssid && (
+                <div style={{
+                  fontSize: '0.75rem',
+                  marginTop: '0.25rem',
+                  color: mssidError ? 'var(--accent-red)' : 'var(--accent-green)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  {mssidError ? `✗ ${mssidError}` : '✓ MSSID format is valid.'}
+                </div>
+              )}
             </div>
 
             {/* STUDENT DETAILS */}

@@ -159,6 +159,7 @@ export function PublicStudentProfile() {
   // Editing details
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [modalErrors, setModalErrors] = useState({});
   const [collegeSearchOpen, setCollegeSearchOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
@@ -246,6 +247,7 @@ export function PublicStudentProfile() {
     setSaving(true);
     setError(null);
     setSuccess(false);
+    setModalErrors({});
     try {
       await api.putJson('/student/me/profile', editForm, token);
       setSuccess(true);
@@ -253,7 +255,17 @@ export function PublicStudentProfile() {
       setIsEditModalOpen(false);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err.message || 'Failed to save changes');
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed && parsed.errors) {
+          setModalErrors(parsed.errors);
+          setError(parsed.message || 'Failed to save changes');
+        } else {
+          setError(parsed.message || 'Failed to save changes');
+        }
+      } catch (e) {
+        setError(err.message || 'Failed to save changes');
+      }
       setTimeout(() => setError(null), 5000);
     } finally {
       setSaving(false);
@@ -366,7 +378,42 @@ export function PublicStudentProfile() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>MSSID (Student ID)</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.mssid} onChange={e => setEditForm({ ...editForm, mssid: e.target.value })} />
+                  <input
+                    className="ct-input"
+                    style={{ width: '100%' }}
+                    value={editForm.mssid}
+                    onChange={e => {
+                      const val = e.target.value.toUpperCase();
+                      setEditForm({ ...editForm, mssid: val });
+                      if (modalErrors.mssid) {
+                        setModalErrors(prev => {
+                          const copy = { ...prev };
+                          delete copy.mssid;
+                          return copy;
+                        });
+                      }
+                    }}
+                  />
+                  {editForm.mssid ? (
+                    /^MSS\d{7}$/.test(editForm.mssid) ? (
+                      <div style={{ fontSize: '0.75rem', color: '#22C55E', marginTop: '0.2rem' }}>
+                        ✓ MSSID format is valid
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.75rem', color: '#F59E0B', marginTop: '0.2rem', lineHeight: '1.25' }}>
+                        ⚠️ Invalid MSSID format. Correct format is MSS2020012. (You can still save, but correct it to avoid legacy mismatches).
+                      </div>
+                    )
+                  ) : (
+                    <div style={{ fontSize: '0.75rem', color: '#F59E0B', marginTop: '0.2rem' }}>
+                      ⚠️ MSSID is required for students
+                    </div>
+                  )}
+                  {modalErrors.mssid && (
+                    <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem' }}>
+                      ✗ {modalErrors.mssid}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -516,7 +563,7 @@ export function PublicStudentProfile() {
             )}
             {isOwner && (
               <button 
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={() => { setModalErrors({}); setIsEditModalOpen(true); }}
                 className="ct-button-secondary"
                 style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
               >

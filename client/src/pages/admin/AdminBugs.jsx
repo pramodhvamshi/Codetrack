@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 import { Bug, RefreshCw, Calendar, AlertTriangle, User, ExternalLink, X } from 'lucide-react';
 
 export function AdminBugs() {
@@ -35,7 +35,7 @@ export function AdminBugs() {
 
   const handleStatusChange = async (bugId, newStatus) => {
     try {
-      const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+      const backendBase = `${API_BASE_URL}/api`;
       const res = await fetch(`${backendBase}/admin/bugs/${bugId}`, {
         method: 'PATCH',
         headers: {
@@ -85,7 +85,7 @@ export function AdminBugs() {
     return true;
   });
 
-  const backendBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api';
+  const backendBase = `${API_BASE_URL}/api`;
   // Adjust base URL for screenshots which are stored in the server uploads folder
   const getAbsoluteScreenshotUrl = (relativeUrl) => {
     if (!relativeUrl) return '';

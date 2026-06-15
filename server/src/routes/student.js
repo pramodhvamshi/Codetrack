@@ -86,69 +86,118 @@ router.put('/me/profile', async (req, res) => {
       validateGitHub
     } = require('../services/validationService');
 
-    // 1. Perform platform username validations if they changed
-    if (leetcodeUsername !== undefined && leetcodeUsername !== user.leetcodeUsername) {
-      if (leetcodeUsername) {
-        const isValid = await validateLeetCode(leetcodeUsername);
+    const errors = {};
+
+    // 1. Trim & validate name if provided
+    let trimmedName = name;
+    if (name !== undefined) {
+      trimmedName = typeof name === 'string' ? name.trim() : '';
+      if (!trimmedName) {
+        errors.name = 'Name is required';
+      }
+    }
+
+    // 2. Trim, uppercase & validate mssid if provided
+    let trimmedMssid = mssid;
+    if (mssid !== undefined) {
+      trimmedMssid = typeof mssid === 'string' ? mssid.trim().toUpperCase() : '';
+      // Only validate format and uniqueness if it changed from the current value
+      if (trimmedMssid !== user.mssid) {
+        if (!trimmedMssid) {
+          errors.mssid = 'MSSID is required';
+        } else {
+          const mssidRegex = /^MSS\d{7}$/;
+          if (!mssidRegex.test(trimmedMssid)) {
+            errors.mssid = 'MSSID must be in the format MSS2020012';
+          } else {
+            // Check uniqueness against other users
+            const existingMssid = await User.findOne({ mssid: trimmedMssid, _id: { $ne: user._id } });
+            if (existingMssid) {
+              errors.mssid = 'MSSID already exists';
+            }
+          }
+        }
+      }
+    }
+
+    // 3. Return structured error response if validation fails
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors
+      });
+    }
+
+    // 4. Perform platform username validations if they changed
+    const trimmedLeetcode = leetcodeUsername !== undefined && typeof leetcodeUsername === 'string' ? leetcodeUsername.trim() : leetcodeUsername;
+    const trimmedCodechef = codechefUsername !== undefined && typeof codechefUsername === 'string' ? codechefUsername.trim() : codechefUsername;
+    const trimmedGfg = gfgUsername !== undefined && typeof gfgUsername === 'string' ? gfgUsername.trim() : gfgUsername;
+    const trimmedGithub = githubUsername !== undefined && typeof githubUsername === 'string' ? githubUsername.trim() : githubUsername;
+
+    if (trimmedLeetcode !== undefined && trimmedLeetcode !== user.leetcodeUsername) {
+      if (trimmedLeetcode) {
+        const isValid = await validateLeetCode(trimmedLeetcode);
         if (!isValid) {
           return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
         }
-        user.leetcodeUsername = leetcodeUsername;
+        user.leetcodeUsername = trimmedLeetcode;
       } else {
         user.leetcodeUsername = undefined;
       }
     }
 
-    if (codechefUsername !== undefined && codechefUsername !== user.codechefUsername) {
-      if (codechefUsername) {
-        const isValid = await validateCodeChef(codechefUsername);
+    if (trimmedCodechef !== undefined && trimmedCodechef !== user.codechefUsername) {
+      if (trimmedCodechef) {
+        const isValid = await validateCodeChef(trimmedCodechef);
         if (!isValid) {
           return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
         }
-        user.codechefUsername = codechefUsername;
+        user.codechefUsername = trimmedCodechef;
       } else {
         user.codechefUsername = undefined;
       }
     }
 
-    if (gfgUsername !== undefined && gfgUsername !== user.gfgUsername) {
-      if (gfgUsername) {
-        const isValid = await validateGeeksforGeeks(gfgUsername);
+    if (trimmedGfg !== undefined && trimmedGfg !== user.gfgUsername) {
+      if (trimmedGfg) {
+        const isValid = await validateGeeksforGeeks(trimmedGfg);
         if (!isValid) {
           return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
         }
-        user.gfgUsername = gfgUsername;
+        user.gfgUsername = trimmedGfg;
       } else {
         user.gfgUsername = undefined;
       }
     }
 
-    if (githubUsername !== undefined && githubUsername !== user.githubUsername) {
-      if (githubUsername) {
-        const isValid = await validateGitHub(githubUsername);
+    if (trimmedGithub !== undefined && trimmedGithub !== user.githubUsername) {
+      if (trimmedGithub) {
+        const isValid = await validateGitHub(trimmedGithub);
         if (!isValid) {
           return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
         }
-        user.githubUsername = githubUsername;
-        user.githubUrl = `https://github.com/${githubUsername}`;
+        user.githubUsername = trimmedGithub;
+        user.githubUrl = `https://github.com/${trimmedGithub}`;
       } else {
         user.githubUsername = undefined;
         user.githubUrl = undefined;
       }
     }
 
-    if (name != null) user.name = name;
-    if (college != null) user.college = college;
-    if (hostel != null) user.hostel = hostel;
-    if (branch != null) user.branch = branch;
-    if (year != null) user.year = year;
+    if (trimmedName != null) user.name = trimmedName;
+    if (college != null) user.college = typeof college === 'string' ? college.trim() : college;
+    if (hostel != null) user.hostel = typeof hostel === 'string' ? hostel.trim() : hostel;
+    if (branch != null) user.branch = typeof branch === 'string' ? branch.trim() : branch;
+    if (year != null) user.year = typeof year === 'string' ? year.trim() : year;
     if (overallGpa != null) user.overallGpa = overallGpa;
-    if (linkedinUrl != null) user.linkedinUrl = linkedinUrl;
-    if (mssid !== undefined) user.mssid = mssid;
-    if (bio !== undefined) user.bio = bio;
+    if (linkedinUrl != null) user.linkedinUrl = typeof linkedinUrl === 'string' ? linkedinUrl.trim() : linkedinUrl;
+    if (trimmedMssid !== undefined) user.mssid = trimmedMssid;
+    if (bio !== undefined) user.bio = typeof bio === 'string' ? bio.trim() : bio;
     if (graduationYear !== undefined) {
-      user.graduationYear = graduationYear;
-      user.year = graduationYear; // maintain year/graduationYear parity
+      const gYear = typeof graduationYear === 'string' ? graduationYear.trim() : graduationYear;
+      user.graduationYear = gYear;
+      user.year = gYear; // maintain year/graduationYear parity
     }
 
     if (hackerrank !== undefined) {
