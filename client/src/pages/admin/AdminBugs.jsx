@@ -16,6 +16,11 @@ export function AdminBugs() {
   const [selectedBug, setSelectedBug] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
 
+  // Screenshot Lightbox States
+  const [screenshotModalUrl, setScreenshotModalUrl] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [imageError, setImageError] = useState(false);
+
   const loadBugs = async () => {
     if (!token) return;
     setLoading(true);
@@ -89,14 +94,25 @@ export function AdminBugs() {
   // Adjust base URL for screenshots which are stored in the server uploads folder
   const getAbsoluteScreenshotUrl = (url) => {
     if (!url) return '';
-    if (/^https?:\/\//.test(url)) return url;
+    if (url.startsWith('http')) {
+      return url;
+    }
+    if (url.startsWith('/uploads')) {
+      return `${API_BASE_URL.replace('/api', '')}${url}`;
+    }
     const serverUrl = backendBase.replace('/api', '');
     return `${serverUrl}${url}`;
   };
 
   const openBugDetails = (bug) => {
     setSelectedBug(bug);
+    setImageError(false);
     setActiveImage(bug.screenshotUrls?.[0] ? getAbsoluteScreenshotUrl(bug.screenshotUrls[0]) : null);
+  };
+
+  const handleThumbnailClick = (absUrl) => {
+    setImageError(false);
+    setActiveImage(absUrl);
   };
 
   return (
@@ -296,26 +312,41 @@ export function AdminBugs() {
                     <>
                       {/* Big image preview */}
                       {activeImage && (
-                        <div style={{
-                          width: '100%', height: '180px', border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: '8px', overflow: 'hidden', background: '#050810',
-                          position: 'relative'
-                        }}>
-                          <img src={activeImage} alt="screenshot" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                          <a
-                            href={activeImage}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              position: 'absolute', bottom: '8px', right: '8px',
-                              background: 'rgba(0,0,0,0.7)', padding: '0.3rem 0.5rem',
-                              borderRadius: '4px', display: 'flex', alignItems: 'center',
-                              gap: '0.2rem', fontSize: '0.7rem', color: 'var(--accent-blue)',
-                              textDecoration: 'none', border: '1px solid rgba(255,255,255,0.1)'
-                            }}
-                          >
-                            Open ↗
-                          </a>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <div style={{
+                            width: '100%', height: '180px', border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px', overflow: 'hidden', background: '#050810',
+                            position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                          }}>
+                            {imageError ? (
+                              <div style={{ color: 'var(--accent-red)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                ⚠️ Screenshot unavailable
+                              </div>
+                            ) : (
+                              <img 
+                                src={activeImage} 
+                                alt="screenshot" 
+                                onError={() => setImageError(true)}
+                                style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
+                                onClick={() => {
+                                  setImageError(false);
+                                  setScreenshotModalUrl(activeImage);
+                                }}
+                              />
+                            )}
+                          </div>
+                          {!imageError && (
+                            <button
+                              className="ct-button"
+                              style={{ padding: '0.35rem 0.8rem', fontSize: '0.75rem', alignSelf: 'flex-start' }}
+                              onClick={() => {
+                                setImageError(false);
+                                setScreenshotModalUrl(activeImage);
+                              }}
+                            >
+                              🔍 View Screenshot
+                            </button>
+                          )}
                         </div>
                       )}
 
@@ -329,7 +360,7 @@ export function AdminBugs() {
                               key={idx}
                               src={absUrl}
                               alt={`thumb-${idx}`}
-                              onClick={() => setActiveImage(absUrl)}
+                              onClick={() => handleThumbnailClick(absUrl)}
                               style={{
                                 width: '50px', height: '50px', objectFit: 'cover',
                                 borderRadius: '4px', cursor: 'pointer',
@@ -374,7 +405,99 @@ export function AdminBugs() {
           </div>
         )}
 
-      </div>
-    </AppShell>
-  );
+      {/* SCREENSHOT LIGHTBOX MODAL */}
+      {screenshotModalUrl && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '1rem'
+        }}>
+          {/* Top control bar */}
+          <div style={{
+            width: '100%', maxWidth: '90vw', display: 'flex', justifyContent: 'space-between',
+            alignItems: 'center', color: '#fff', marginBottom: '1rem'
+          }}>
+            <h3 style={{ margin: 0 }}>Screenshot Inspector</h3>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button 
+                className="ct-button-secondary" 
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                onClick={() => setZoomLevel(prev => Math.min(prev + 0.25, 3))}
+              >
+                ➕ Zoom In
+              </button>
+              <button 
+                className="ct-button-secondary" 
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                onClick={() => setZoomLevel(prev => Math.max(prev - 0.25, 0.5))}
+              >
+                ➖ Zoom Out
+              </button>
+              <button 
+                className="ct-button-secondary" 
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                onClick={() => setZoomLevel(1)}
+              >
+                🔄 Reset Zoom
+              </button>
+              <a 
+                href={screenshotModalUrl} 
+                target="_blank" 
+                rel="noreferrer"
+                className="ct-button-secondary"
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.2rem', textDecoration: 'none' }}
+              >
+                ↗ Open in New Tab
+              </a>
+              <button 
+                className="ct-button"
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = screenshotModalUrl;
+                  a.download = `screenshot-${Date.now()}.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                }}
+              >
+                📥 Download
+              </button>
+              <button 
+                onClick={() => {
+                  setScreenshotModalUrl(null);
+                  setZoomLevel(1);
+                }}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '1.4rem', cursor: 'pointer', marginLeft: '0.5rem' }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Image Container with Zoom */}
+          <div style={{
+            flex: 1, width: '100%', maxWidth: '90vw', maxHeight: '80vh',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+            background: '#040711'
+          }}>
+            <img 
+              src={screenshotModalUrl} 
+              alt="Screenshot Inspector Zoomed" 
+              style={{
+                transform: `scale(${zoomLevel})`,
+                transition: 'transform 0.15s ease-out',
+                maxWidth: '95%',
+                maxHeight: '95%',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+    </div>
+  </AppShell>
+);
 }

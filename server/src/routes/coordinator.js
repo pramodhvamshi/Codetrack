@@ -526,8 +526,19 @@ router.get('/students/:id/heatmap', async (req, res) => {
   }
 });
 
-// GET student resume for coordinator
+// GET student resume preview details for coordinator
 router.get('/students/:id/resume', async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    return res.json({ resumeUrl: `/api/coordinator/students/${studentId}/resume/preview/raw` });
+  } catch (err) {
+    console.error('Coordinator student resume error:', err);
+    return res.status(500).json({ message: 'Failed to generate student resume preview' });
+  }
+});
+
+// GET /students/:id/resume/preview/raw - Proxy to stream default student resume PDF inline
+router.get('/students/:id/resume/preview/raw', async (req, res) => {
   try {
     const studentId = req.params.id;
     const student = await User.findOne({ _id: studentId, role: 'student' });
@@ -540,11 +551,13 @@ router.get('/students/:id/resume', async (req, res) => {
 
     const defaultFile = await ResumeFile.findOne({ userId: studentId, isDefault: true });
     if (defaultFile) {
-      if (defaultFile.resumeUrl && /^https?:\/\//.test(defaultFile.resumeUrl)) {
-        return res.redirect(defaultFile.resumeUrl);
-      }
-      if (defaultFile.storagePath && /^https?:\/\//.test(defaultFile.storagePath)) {
-        return res.redirect(defaultFile.storagePath);
+      const url = defaultFile.resumeUrl || defaultFile.storagePath;
+      if (url && /^https?:\/\//.test(url)) {
+        const axios = require('axios');
+        const response = await axios.get(url, { responseType: 'stream' });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="manual-resume.pdf"');
+        return response.data.pipe(res);
       }
       return res.status(404).json({ message: 'Resume file URL not found or invalid' });
     }
@@ -559,21 +572,25 @@ router.get('/students/:id/resume', async (req, res) => {
         content: defaultVersion.content
       });
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="codetrack-resume-${studentId}.pdf"`);
+      res.setHeader('Content-Disposition', `inline; filename="resume-preview.pdf"`);
       return res.send(buffer);
     }
 
     // Legacy fallback
     if (student.resume?.mode === 'manual' && student.resume?.manualUrl) {
       if (/^https?:\/\//.test(student.resume.manualUrl)) {
-        return res.redirect(student.resume.manualUrl);
+        const axios = require('axios');
+        const response = await axios.get(student.resume.manualUrl, { responseType: 'stream' });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="manual-resume.pdf"');
+        return response.data.pipe(res);
       }
     }
 
     return res.status(404).json({ message: 'Default resume not found or hidden by the student' });
   } catch (err) {
-    console.error('Coordinator student resume error:', err);
-    return res.status(500).json({ message: 'Failed to generate student resume' });
+    console.error('Coordinator preview resume raw error:', err);
+    return res.status(500).json({ message: 'Failed to preview student resume' });
   }
 });
 

@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { api, API_BASE_URL } from '../../api/client';
 import { 
   Trophy, Award, Code, Activity, Calendar, FileText, 
-  ExternalLink, Download, ArrowLeft, RefreshCw
+  ExternalLink, Download, ArrowLeft, RefreshCw, Eye
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
@@ -26,6 +26,7 @@ export function CoordinatorStudentDetail() {
   const [studentResumes, setStudentResumes] = useState({ generated: [], uploaded: [] });
   const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [resumeAnalytics, setResumeAnalytics] = useState(null);
+  const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false);
 
   const backendBase = `${API_BASE_URL}/api`;
 
@@ -52,29 +53,22 @@ export function CoordinatorStudentDetail() {
     loadAllStudentData();
   }, [token, id]);
 
-  // Securely load PDF Resume blob url for selected resume
+  // Securely load PDF Resume url for selected resume
   const loadResumeBlob = async (resumeId) => {
     if (!token || !id) return;
     setLoadingResume(true);
     try {
-      const urlPath = resumeId 
-        ? `${backendBase}/coordinator/students/${id}/resumes/${resumeId}/download`
-        : `${backendBase}/coordinator/students/${id}/resume`;
-
-      const res = await fetch(urlPath, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      if (!res.ok) throw new Error('Resume unavailable');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setResumeBlobUrl(prevUrl => {
-        if (prevUrl) URL.revokeObjectURL(prevUrl);
-        return url;
-      });
+      // Fetch JSON previewUrl from backend preview endpoint
+      const previewRes = await api.getJson(`/coordinator/students/${id}/resume`, token);
+      if (!previewRes || !previewRes.resumeUrl) throw new Error('Resume URL unavailable');
+      
+      const targetUrl = previewRes.resumeUrl.startsWith('http')
+        ? previewRes.resumeUrl
+        : `${backendBase.replace('/api', '')}${previewRes.resumeUrl}`;
+        
+      setResumeBlobUrl(targetUrl);
     } catch (err) {
-      console.error('Failed to fetch resume blob:', err);
+      console.error('Failed to fetch resume preview URL:', err);
       setResumeBlobUrl(null);
     } finally {
       setLoadingResume(false);
@@ -156,14 +150,29 @@ export function CoordinatorStudentDetail() {
     : 0;
 
 
-  const handleDownloadResume = () => {
-    if (!resumeBlobUrl) return;
-    const a = document.createElement('a');
-    a.href = resumeBlobUrl;
-    a.download = `resume-${student.name}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadResume = async () => {
+    if (!selectedResumeId) return;
+    try {
+      const downloadUrl = `${backendBase}/coordinator/students/${id}/resumes/${selectedResumeId}/download`;
+      // Fetch as blob to force browser download dialog with correct filename
+      const res = await fetch(downloadUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `resume-${student.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to download resume: ' + err.message);
+    }
   };
 
   return (
@@ -579,39 +588,32 @@ export function CoordinatorStudentDetail() {
 
             </div>
 
-            {/* RIGHT SIDE: RESUME PDF IFRAME PREVIEW */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                  <FileText size={18} color="var(--accent-blue)" /> Secured PDF Resume Preview
-                </h3>
-                <button 
-                  className="ct-button" 
-                  onClick={handleDownloadResume}
-                  disabled={!resumeBlobUrl}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-                >
-                  <Download size={14} /> Download PDF
-                </button>
+            {/* RIGHT SIDE: PREVIEW/DOWNLOAD PORTAL */}
+            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', flex: 1, minHeight: '420px', background: '#0a0f1d' }}>
+              <FileText size={48} color="var(--accent-blue)" style={{ opacity: 0.7 }} />
+              <div style={{ textAlign: 'center' }}>
+                <h3 style={{ margin: '0 0 0.5rem 0' }}>Student PDF Resume</h3>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {defaultVer ? `Active Resume: ${defaultVer.name || defaultVer.originalName}` : 'No active resume set by student.'}
+                </p>
               </div>
-
-              <div style={{ flex: 1, background: '#0a0f1d', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', minHeight: '420px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                {loadingResume && (
-                  <div style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
-                    <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem auto' }} />
-                    Generating PDF...
-                  </div>
-                )}
-                {!loadingResume && !resumeBlobUrl && (
-                  <span style={{ color: 'var(--text-muted)' }}>No active resume available for this student.</span>
-                )}
-                {!loadingResume && resumeBlobUrl && (
-                  <iframe 
-                    title="Student Resume Preview" 
-                    src={resumeBlobUrl} 
-                    style={{ border: 'none', width: '100%', height: '100%' }} 
-                  />
-                )}
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button
+                  className="ct-button"
+                  disabled={!defaultVer}
+                  onClick={() => setIsResumePreviewOpen(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.2rem' }}
+                >
+                  <Eye size={16} /> Preview Resume
+                </button>
+                <button
+                  className="ct-button-secondary"
+                  disabled={!defaultVer}
+                  onClick={handleDownloadResume}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.2rem' }}
+                >
+                  <Download size={16} /> Download Resume
+                </button>
               </div>
             </div>
 
@@ -619,6 +621,50 @@ export function CoordinatorStudentDetail() {
         )}
 
       </div>
+      {/* COORDINATOR RESUME PREVIEW MODAL */}
+      {isResumePreviewOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="ct-card" style={{ maxWidth: '850px', width: '95%', height: '90vh', display: 'flex', flexDirection: 'column', gap: '1.2rem', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.8rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fff' }}>
+                <FileText size={20} color="var(--accent-blue)" /> Resume PDF Preview
+              </h3>
+              <button
+                onClick={() => setIsResumePreviewOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ flex: 1, background: '#0a0f1d', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {loadingResume && (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center' }}>
+                  <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem auto' }} />
+                  Loading Preview...
+                </div>
+              )}
+              {!loadingResume && !resumeBlobUrl && (
+                <span style={{ color: 'var(--text-muted)' }}>Resume preview failed to load.</span>
+              )}
+              {!loadingResume && resumeBlobUrl && (
+                <iframe 
+                  title="Student Resume Preview" 
+                  src={resumeBlobUrl} 
+                  style={{ border: 'none', width: '100%', height: '100%' }} 
+                />
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
+              <button className="ct-button-secondary" onClick={() => setIsResumePreviewOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

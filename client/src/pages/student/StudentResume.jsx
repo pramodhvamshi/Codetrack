@@ -76,6 +76,9 @@ export function StudentResume() {
   const [atsDetails, setAtsDetails] = useState({ score: 70, suggestions: [] });
   const [calculatingAts, setCalculatingAts] = useState(false);
 
+  // Resume Preview State
+  const [previewResumeUrl, setPreviewResumeUrl] = useState(null);
+
   // Local Form state for editing (will be synced to currentVersion and live preview)
   const [formData, setFormData] = useState({
     personalDetails: { name: '', email: '', phone: '', githubUrl: '', linkedinUrl: '', portfolioUrl: '', summary: '' },
@@ -313,6 +316,45 @@ export function StudentResume() {
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
       alert('Failed to download PDF: ' + err.message);
+    }
+  };
+
+  // Handle manual resume preview
+  const handleOpenPreview = (url) => {
+    if (!url) return;
+    const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+    setPreviewResumeUrl(targetUrl);
+  };
+
+  // Handle manual resume download
+  const handleDownloadFile = async (url, filename) => {
+    try {
+      const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+      const res = await fetch(targetUrl);
+      if (!res.ok) throw new Error('File download failed');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || 'resume.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      alert('Failed to download file: ' + err.message);
+    }
+  };
+
+  // Preview Active Generated Resume
+  const handlePreviewActiveResume = async () => {
+    if (!token || !currentVersion) return;
+    try {
+      await handleSave();
+      const previewUrl = `${backendBase}/student/resume/preview/raw?versionId=${currentVersion._id}&t=${Date.now()}`;
+      setPreviewResumeUrl(previewUrl);
+    } catch (err) {
+      alert('Failed to preview resume: ' + err.message);
     }
   };
 
@@ -1264,22 +1306,20 @@ export function StudentResume() {
                         >
                           {file.isDefault ? '★ Default' : 'Set Default'}
                         </button>
-                        <a 
-                          href={
-                            // fileUrl is the Cloudinary URL or local /uploads path; storagePath is the publicId for deletion
-                            file.fileUrl 
-                              ? (file.fileUrl.startsWith('http') ? file.fileUrl : `${backendBase.replace('/api', '')}${file.fileUrl}`)
-                              : (file.storagePath && file.storagePath.startsWith('http') 
-                                  ? file.storagePath 
-                                  : `${backendBase.replace('/api', '')}/uploads/${file.storagePath}`)
-                          } 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="ct-button-secondary" 
+                        <button
+                          className="ct-button-secondary"
                           style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }}
+                          onClick={() => handleOpenPreview(file.fileUrl || file.storagePath)}
                         >
-                          View
-                        </a>
+                          Preview
+                        </button>
+                        <button
+                          className="ct-button-secondary"
+                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }}
+                          onClick={() => handleDownloadFile(file.fileUrl || file.storagePath, file.originalName)}
+                        >
+                          Download
+                        </button>
                         <button 
                           className="ct-button-secondary" 
                           style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', color: 'var(--accent-red)' }}
@@ -1303,9 +1343,14 @@ export function StudentResume() {
             <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Compass size={14} color="var(--accent-purple)" /> Real-time Resume Canvas
             </span>
-            <button className="ct-button" style={{ padding: '0.35rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }} onClick={handleDownloadPDF}>
-              <Download size={12} /> Download PDF
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="ct-button-secondary" style={{ padding: '0.35rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }} onClick={handlePreviewActiveResume}>
+                <Eye size={12} /> Preview PDF
+              </button>
+              <button className="ct-button" style={{ padding: '0.35rem 0.8rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }} onClick={handleDownloadPDF}>
+                <Download size={12} /> Download PDF
+              </button>
+            </div>
           </div>
 
           <div style={{ padding: '1rem', background: '#e2e8f0', minHeight: 'calc(100% - 50px)', overflowY: 'auto' }}>
@@ -1355,6 +1400,45 @@ export function StudentResume() {
                 }}
               >
                 {selectedTemplate === previewTemplateModal ? 'Selected' : 'Use Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESUME PREVIEW MODAL */}
+      {previewResumeUrl && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="ct-card" style={{ maxWidth: '850px', width: '95%', height: '90vh', display: 'flex', flexDirection: 'column', gap: '1.2rem', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.8rem' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fff' }}>
+                <FileText size={20} color="var(--accent-blue)" /> Resume PDF Preview
+              </h3>
+              <button
+                onClick={() => setPreviewResumeUrl(null)}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ flex: 1, background: '#0a0f1d', borderRadius: '8px', overflow: 'hidden' }}>
+              <iframe 
+                title="Resume PDF Preview" 
+                src={previewResumeUrl} 
+                style={{ border: 'none', width: '100%', height: '100%' }} 
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.8rem' }}>
+              <button 
+                className="ct-button-secondary" 
+                onClick={() => setPreviewResumeUrl(null)}
+              >
+                Close
               </button>
             </div>
           </div>
