@@ -305,9 +305,9 @@ export function AppShell({ active, children }) {
       `}</style>
 
       <header className="ct-header">
-        <div className="ct-header-left">
-          <div className="ct-logo-mark" />
-          <span className="ct-logo-text">CodeTrack</span>
+        <div className="ct-header-left" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <span className="ct-logo-text">MEDHA CODE TRACK</span>
         </div>
         <div className="ct-header-right">
           <div className="ct-nav-group">

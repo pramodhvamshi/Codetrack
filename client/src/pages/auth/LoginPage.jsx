@@ -53,13 +53,16 @@ export function LoginPage() {
   return (
     <div className="ct-layout">
       <header className="ct-header">
-        <div className="ct-header-title">CodeTrack · Medha Charitable Trust</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <div className="ct-header-title" style={{ fontSize: '0.9rem', fontWeight: 600 }}>MEDHA CODE TRACK · Medha Charitable Trust</div>
+        </div>
       </header>
       <main className="ct-main">
         <div className="ct-card" style={{ maxWidth: 420, margin: '4rem auto 0' }}>
           <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Sign in</h2>
           <p style={{ fontSize: '0.9rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
-            Access your CodeTrack dashboard and leaderboard.
+            Access your MEDHA CODE TRACK dashboard and leaderboard.
           </p>
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '0.9rem' }}>
@@ -127,7 +130,7 @@ export function LoginPage() {
               textAlign: 'center'
             }}
           >
-            New to CodeTrack?{' '}
+            New to MEDHA CODE TRACK?{' '}
             <Link to="/register" style={{ textDecoration: 'underline' }}>
               Create account
             </Link>

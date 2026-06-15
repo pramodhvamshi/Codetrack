@@ -109,8 +109,8 @@ export function LandingPage() {
       {/* ── NAV ── */}
       <nav className="lp-nav">
         <div className="lp-nav-brand">
-          <span className="lp-nav-logomark" />
-          <span className="lp-nav-logotext">CodeTrack</span>
+          <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
+          <span className="lp-nav-logotext">MEDHA CODE TRACK</span>
           <span className="lp-nav-beta">v1.0 Beta</span>
         </div>
         <div className="lp-nav-actions">
@@ -165,12 +165,12 @@ export function LandingPage() {
       {/* ── WHY CODETRACK ── */}
       <section className="lp-section lp-why">
         <div className="lp-section-inner">
-          <div className="lp-section-eyebrow">Why CodeTrack?</div>
+          <div className="lp-section-eyebrow">Why MEDHA CODE TRACK?</div>
           <h2 className="lp-section-title">
             More than a coding tracker
           </h2>
           <p className="lp-section-desc">
-            CodeTrack helps students stay consistent in their coding journey while giving
+            MEDHA CODE TRACK helps students stay consistent in their coding journey while giving
             coordinators powerful insights into student performance, engagement, and placement readiness.
           </p>
 
@@ -212,7 +212,7 @@ export function LandingPage() {
           <div className="lp-section-eyebrow">Platform Integrations</div>
           <h2 className="lp-section-title">One platform. All your coding data.</h2>
           <p className="lp-section-desc">
-            CodeTrack automatically syncs data from the top competitive programming
+            MEDHA CODE TRACK automatically syncs data from the top competitive programming
             and coding practice platforms used by Medha Trust students.
           </p>
 
@@ -270,7 +270,7 @@ export function LandingPage() {
             <FeatureCard
               icon="📄"
               title="Resume Builder"
-              desc="Auto-generate a coding-focused resume from your CodeTrack profile with one click. Download as PDF."
+              desc="Auto-generate a coding-focused resume from your MEDHA CODE TRACK profile with one click. Download as PDF."
             />
             {/* Badges — already live */}
             <FeatureCard
@@ -312,7 +312,7 @@ export function LandingPage() {
             <span className="lp-gradient-text">coding journey?</span>
           </h2>
           <p className="lp-final-cta-sub">
-            Join your Medha Charitable Trust peers on CodeTrack today.
+            Join your Medha Charitable Trust peers on MEDHA CODE TRACK today.
           </p>
           <div className="lp-hero-ctas">
             <Link to="/register" className="lp-btn lp-btn-primary lp-btn-lg">
@@ -325,12 +325,12 @@ export function LandingPage() {
         </div>
         <div className="lp-orb lp-orb-cta" aria-hidden="true" />
       </section>
-
+ 
       {/* ── FOOTER ── */}
       <footer className="lp-footer">
-        <span className="lp-nav-logomark" />
+        <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 26, height: 26, objectFit: 'contain' }} />
         <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-          © 2025 CodeTrack · Built for Medha Charitable Trust · v1.0 Beta
+          © 2026 MEDHA CODE TRACK · Built for Medha Charitable Trust · v1.0 Beta
         </span>
       </footer>
     </div>

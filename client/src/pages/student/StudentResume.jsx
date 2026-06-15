@@ -499,7 +499,7 @@ export function StudentResume() {
     return (
       <AppShell active="student-resume">
         <div className="ct-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-          <RefreshCw className="animate-spin" size={24} style={{ marginRight: '8px' }} /> Loading CodeTrack Resume Studio...
+          <RefreshCw className="animate-spin" size={24} style={{ marginRight: '8px' }} /> Loading MEDHA CODE TRACK Resume Studio...
         </div>
       </AppShell>
     );
@@ -598,7 +598,7 @@ export function StudentResume() {
               <ShieldCheck size={20} /> Resume Extraction Results
             </h3>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              We parsed your uploaded resume and successfully extracted the following details. Confirm below to import them into your CodeTrack profile:
+              We parsed your uploaded resume and successfully extracted the following details. Confirm below to import them into your MEDHA CODE TRACK profile:
             </p>
             <div style={{ maxHeight: '250px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ marginBottom: '8px' }}><strong>Name:</strong> {parserModal.extractedData.name || 'Not found'}</div>

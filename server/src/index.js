@@ -75,7 +75,7 @@ app.use(
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'CodeTrack API is running' });
+  res.json({ status: 'ok', message: 'MEDHA CODE TRACK API is running' });
 });
 
 // Routes
@@ -96,6 +96,6 @@ app.use((req, res) => {
 const port = config.port;
 app.listen(port, () => {
   // eslint-disable-next-line no-console
-  console.log(`CodeTrack API listening on port ${port}`);
+  console.log(`MEDHA CODE TRACK API listening on port ${port}`);
 });
 

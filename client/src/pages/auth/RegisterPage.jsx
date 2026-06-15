@@ -85,7 +85,10 @@ export function RegisterPage() {
   return (
     <div className="ct-layout">
       <header className="ct-header">
-        <div className="ct-header-title">CodeTrack · Medha Charitable Trust</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          <div className="ct-header-title" style={{ fontSize: '0.9rem', fontWeight: 600 }}>MEDHA CODE TRACK · Medha Charitable Trust</div>
+        </div>
       </header>
 
       <main className="ct-main">
