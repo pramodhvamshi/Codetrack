@@ -186,6 +186,10 @@ router.post('/register', async (req, res) => {
     const tokens = generateTokens(user, rememberMe);
     setAuthCookies(res, tokens, rememberMe);
 
+    // Clear stale backup cookies on registration
+    res.clearCookie('adminAccessToken', { path: '/' });
+    res.clearCookie('adminRefreshToken', { path: '/' });
+
     return res.status(201).json({
       token: tokens.accessToken,
       user: {
@@ -230,15 +234,9 @@ router.post('/login', async (req, res) => {
     const tokens = generateTokens(user, rememberMe);
     setAuthCookies(res, tokens, rememberMe);
 
-    let isImpersonating = false;
-    if (req.headers.cookie) {
-      const cookies = {};
-      req.headers.cookie.split(';').forEach(c => {
-        const parts = c.split('=');
-        cookies[parts.shift().trim()] = decodeURI(parts.join('='));
-      });
-      isImpersonating = !!cookies['adminAccessToken'];
-    }
+    // Clear stale backup cookies on new login
+    res.clearCookie('adminAccessToken', { path: '/' });
+    res.clearCookie('adminRefreshToken', { path: '/' });
 
     return res.json({
       token: tokens.accessToken,
@@ -248,7 +246,7 @@ router.post('/login', async (req, res) => {
         email: user.email,
         role: user.role,
         isOnboarded: user.isOnboarded,
-        isImpersonating
+        isImpersonating: false
       }
     });
   } catch (err) {
@@ -320,7 +318,7 @@ router.post('/refresh', async (req, res) => {
         email: user.email,
         role: user.role,
         isOnboarded: user.isOnboarded,
-        isImpersonating
+        isImpersonating: isImpersonating && user.role !== 'admin'
       }
     });
   } catch (err) {

@@ -18,6 +18,7 @@ export function AppShell({ active, children }) {
   const handleRevertImpersonation = async () => {
     try {
       const data = await api.postJson(`/admin/revert-impersonate`, {}, token);
+      sessionStorage.setItem("impersonationActive", "false");
       login(data.token, data.user);
       navigate('/admin/dashboard', { replace: true });
     } catch (err) {
@@ -29,6 +30,7 @@ export function AppShell({ active, children }) {
   const isStudent = user && user.role === 'student';
   const isCoordinator = user && user.role === 'coordinator';
   const isAdmin = user && user.role === 'admin';
+  const isImpersonating = user?.isImpersonating || sessionStorage.getItem("impersonationActive") === "true";
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -86,7 +88,7 @@ export function AppShell({ active, children }) {
 
   return (
     <div className="ct-layout">
-      {user?.isImpersonating && (
+      {isImpersonating && (
         <div style={{
           background: 'linear-gradient(90deg, #f59e0b, #d97706)',
           color: '#0b1120',
@@ -100,7 +102,7 @@ export function AppShell({ active, children }) {
           gap: '1.2rem',
           zIndex: 9999
         }}>
-          <span>Currently impersonating: <strong>{user.name}</strong></span>
+          <span>Currently impersonating: <strong>{user?.name || ''}</strong></span>
           <button
             onClick={handleRevertImpersonation}
             style={{

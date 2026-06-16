@@ -102,6 +102,7 @@ export function AdminStudents() {
 
     try {
       const data = await api.postJson(`/admin/impersonate/${student._id}`, {}, token);
+      sessionStorage.setItem("impersonationActive", "true");
       login(data.token, data.user);
       navigate('/student/dashboard', { replace: true });
     } catch (err) {

@@ -14,8 +14,33 @@ export function LeaderboardPage() {
   const [leaderboardType, setLeaderboardType] = useState('global'); // 'global', 'college', 'branch', 'hostel', 'year'
 
   // Monthly leaderboard states
-  const [monthlyRows, setMonthlyRows] = useState([]);
+  const [monthlyRows, setMonthlyRows] = useState({
+    allYears: [],
+    firstYear: [],
+    secondYear: [],
+    thirdYear: [],
+    fourthYear: []
+  });
   const [monthlyLoading, setMonthlyLoading] = useState(true);
+  const [monthlyYearTab, setMonthlyYearTab] = useState('all'); // 'all', '1', '2', '3', '4'
+
+  const formatYear = (yr) => {
+    if (yr === '1' || yr === 1) return '1st Year';
+    if (yr === '2' || yr === 2) return '2nd Year';
+    if (yr === '3' || yr === 3) return '3rd Year';
+    if (yr === '4' || yr === 4) return '4th Year';
+    return yr ? `${yr} Year` : '-';
+  };
+
+  const monthlyKeyMap = {
+    all: 'allYears',
+    '1': 'firstYear',
+    '2': 'secondYear',
+    '3': 'thirdYear',
+    '4': 'fourthYear'
+  };
+  const activeMonthlyKey = monthlyKeyMap[monthlyYearTab] || 'allYears';
+  const currentMonthlyStudents = monthlyRows[activeMonthlyKey] || [];
 
   // Dropdown options loaded from API
   const [filterOptions, setFilterOptions] = useState({
@@ -55,7 +80,13 @@ export function LeaderboardPage() {
     setMonthlyLoading(true);
     try {
       const data = await api.getJson('/leaderboard/monthly', token);
-      setMonthlyRows(data);
+      setMonthlyRows(data || {
+        allYears: [],
+        firstYear: [],
+        secondYear: [],
+        thirdYear: [],
+        fourthYear: []
+      });
     } catch (err) {
       console.error('Failed to load monthly leaderboard:', err);
     } finally {
@@ -175,20 +206,40 @@ export function LeaderboardPage() {
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', color: '#f3f4f6' }}>
-              <Flame color="#ef4444" fill="#ef4444" size={20} /> Top Coders of the Month
+              🏆 Monthly Top Coders By Academic Year
             </h3>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Based on LeetCode and GeeksForGeeks activity during the current month
             </span>
+          </div>
+
+          {/* Monthly leaderboard year tabs */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+            {[
+              { key: 'all', label: 'All Years' },
+              { key: '1', label: '1st Year' },
+              { key: '2', label: '2nd Year' },
+              { key: '3', label: '3rd Year' },
+              { key: '4', label: '4th Year' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className="ct-nav-item"
+                style={monthlyYearTab === tab.key ? activeTabStyle : {}}
+                onClick={() => setMonthlyYearTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
           
           {monthlyLoading ? (
             <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Loading monthly standings...
             </div>
-          ) : monthlyRows.length === 0 ? (
+          ) : currentMonthlyStudents.length === 0 ? (
             <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              No coding activity recorded this month.
+              No coding activity recorded this month for this academic year.
             </div>
           ) : (
             <>
@@ -197,18 +248,21 @@ export function LeaderboardPage() {
                 <table className="ct-table" style={{ margin: 0, width: '100%' }}>
                   <thead>
                     <tr>
-                      <th style={{ width: '60px' }}>Rank</th>
+                      <th style={{ width: '120px' }}>Rank</th>
                       <th>Student</th>
                       <th>Branch</th>
+                      <th>Year</th>
                       <th style={{ color: '#F59E0B' }}>LeetCode Solved</th>
                       <th style={{ color: '#22C55E' }}>GFG Solved</th>
                       <th style={{ textAlign: 'right', color: 'var(--accent-purple)' }}>Monthly Score</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {monthlyRows.map((coder) => (
+                    {currentMonthlyStudents.map((coder) => (
                       <tr key={coder.userId}>
-                        <td style={{ fontWeight: 600 }}>#{coder.rank}</td>
+                        <td style={{ fontWeight: 600 }}>
+                          {coder.rank === 1 ? '🥇 Rank 1' : coder.rank === 2 ? '🥈 Rank 2' : coder.rank === 3 ? '🥉 Rank 3' : `#${coder.rank}`}
+                        </td>
                         <td>
                           <span
                             onClick={() => navigate(`/student/profile/view/${coder.userId}`)}
@@ -222,7 +276,8 @@ export function LeaderboardPage() {
                             {coder.name}
                           </span>
                         </td>
-                        <td>{coder.branch}</td>
+                        <td>{coder.branch || '-'}</td>
+                        <td>{formatYear(coder.year)}</td>
                         <td>{coder.leetcodeSolved || 0}</td>
                         <td>{coder.gfgSolved || 0}</td>
                         <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: 'var(--accent-purple)' }}>
@@ -236,7 +291,7 @@ export function LeaderboardPage() {
 
               {/* MOBILE CARDS VIEW */}
               <div className="monthly-mobile-cards" style={{ display: 'none' }}>
-                {monthlyRows.map((coder) => (
+                {currentMonthlyStudents.map((coder) => (
                   <div 
                     key={coder.userId}
                     className="ct-card"
@@ -252,7 +307,7 @@ export function LeaderboardPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-muted)' }}>
-                          #{coder.rank}
+                          {coder.rank === 1 ? '🥇 Rank 1' : coder.rank === 2 ? '🥈 Rank 2' : coder.rank === 3 ? '🥉 Rank 3' : `#${coder.rank}`}
                         </span>
                         <span 
                           onClick={() => navigate(`/student/profile/view/${coder.userId}`)}
@@ -272,7 +327,7 @@ export function LeaderboardPage() {
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      <span>Branch: {coder.branch}</span>
+                      <span>Branch: {coder.branch || '-'} | Year: {formatYear(coder.year)}</span>
                       <span>LC: {coder.leetcodeSolved || 0} | GFG: {coder.gfgSolved || 0}</span>
                     </div>
                   </div>

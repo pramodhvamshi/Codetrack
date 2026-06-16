@@ -16,6 +16,11 @@ export function AuthProvider({ children }) {
   const login = useCallback((newToken, newUser) => {
     setUser(newUser);
     setToken(newToken);
+    if (newUser && newUser.isImpersonating) {
+      sessionStorage.setItem("impersonationActive", "true");
+    } else {
+      sessionStorage.setItem("impersonationActive", "false");
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -26,6 +31,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
       setToken(null);
+      sessionStorage.removeItem("impersonationActive");
     }
   }, []);
 
@@ -50,11 +56,17 @@ export function AuthProvider({ children }) {
       const { token: newToken, user: newUser } = e.detail;
       setUser(newUser);
       setToken(newToken);
+      if (newUser && newUser.isImpersonating) {
+        sessionStorage.setItem("impersonationActive", "true");
+      } else {
+        sessionStorage.setItem("impersonationActive", "false");
+      }
     };
 
     const handleExpired = () => {
       setUser(null);
       setToken(null);
+      sessionStorage.removeItem("impersonationActive");
     };
 
     window.addEventListener('auth:refresh', handleRefresh);
