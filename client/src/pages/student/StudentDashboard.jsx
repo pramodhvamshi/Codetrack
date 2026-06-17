@@ -263,7 +263,13 @@ export function StudentDashboard() {
                   <img src="/LeetCode_logo_black.png" alt="LeetCode" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   LeetCode
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{lc.username || '-'}</span>
+                {lc.username ? (
+                  <a href={`https://leetcode.com/u/${lc.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                    @{lc.username} <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
                 <span>🧩 Solved: <strong>{lc.problemsSolved || 0}</strong></span>
@@ -280,7 +286,13 @@ export function StudentDashboard() {
                   <img src="/codechef.svg" alt="CodeChef" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   CodeChef
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{cc.username || '-'}</span>
+                {cc.username ? (
+                  <a href={`https://www.codechef.com/users/${cc.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                    @{cc.username} <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
                 <span>⭐ Current Rating: <strong>{cc.currentRating || cc.rating || 0}</strong></span>
@@ -298,7 +310,13 @@ export function StudentDashboard() {
                   <img src="/gfg.svg" alt="GeeksforGeeks" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   GeeksforGeeks
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{gfg.username || '-'}</span>
+                {gfg.username ? (
+                  <a href={`https://www.geeksforgeeks.org/user/${gfg.username}/`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                    @{gfg.username} <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
                 <span>🧩 Solved: <strong>{gfg.problemsSolved || 0}</strong></span>
@@ -315,13 +333,48 @@ export function StudentDashboard() {
                   <img src="/github.svg" alt="GitHub" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   GitHub
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{gh.username || '-'}</span>
+                {gh.username ? (
+                  <a href={`https://github.com/${gh.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                    @{gh.username} <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
                 <span>📦 Repositories: <strong>{gh.reposCount || 0}</strong></span>
                 <span>⭐ Stars: <strong>{gh.starsCount || 0}</strong></span>
                 <span>👥 Followers: <strong>{gh.followersCount || 0}</strong></span>
                 <span>🔗 Profile URL: <strong style={{ color: 'var(--accent-blue)', fontSize: '0.75rem' }}>View Profile</strong></span>
+              </div>
+            </Link>
+
+            {/* HackerRank */}
+            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#00EA64', background: 'linear-gradient(135deg, rgba(0, 234, 100, 0.1), rgba(17, 24, 39, 0.95))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: '#00EA64', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>🏆</span>
+                  HackerRank
+                </span>
+                {(me.hackerrankUsername || me.hackerrank?.username) ? (
+                  <a href={`https://www.hackerrank.com/profile/${me.hackerrankUsername || me.hackerrank?.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                    @{me.hackerrankUsername || me.hackerrank?.username} <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>-</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
+                <span>🧩 Solved: <strong>{me.hackerrank?.totalProblemsSolved || 0}</strong></span>
+                <span>🏅 Badges: <strong>{me.hackerrank?.badgeCount || 0}</strong></span>
+                {me.hackerrank?.skills && me.hackerrank.skills.length > 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
+                    {me.hackerrank.skills.slice(0, 3).map((sk, i) => (
+                      <span key={i} className="ct-pill" style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', background: 'rgba(255,255,255,0.05)' }}>{sk}</span>
+                    ))}
+                    {me.hackerrank.skills.length > 3 && <span>+{me.hackerrank.skills.length - 3} more</span>}
+                  </div>
+                )}
               </div>
             </Link>
 

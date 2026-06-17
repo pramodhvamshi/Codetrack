@@ -49,3 +49,8 @@ inspect-gfg.js
 
 # ── Package manager lock files (keep package-lock.json) ───
 # yarn.lock   # uncomment if using yarn only
+
+# Ignore .env files in both client and server directories
+client/.env.local
+server/.env.local
+.env.local

@@ -1,6 +1,15 @@
 const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
 
-dotenv.config();
+const envPathLocal = path.resolve(__dirname, '../../.env.local');
+const envPathDefault = path.resolve(__dirname, '../../.env');
+
+if (fs.existsSync(envPathLocal)) {
+  dotenv.config({ path: envPathLocal });
+} else {
+  dotenv.config({ path: envPathDefault });
+}
 
 const config = {
   port: process.env.PORT || 5000,

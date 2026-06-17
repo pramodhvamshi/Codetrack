@@ -150,15 +150,12 @@ router.get('/students', async (req, res) => {
     if (college) filter.college = String(college);
     if (hostel) filter.hostel = String(hostel);
 
-    let queryYear = year;
-    if (currentYear) {
-      if (currentYear === '1st Year') queryYear = '1';
-      else if (currentYear === '2nd Year') queryYear = '2';
-      else if (currentYear === '3rd Year') queryYear = '3';
-      else if (currentYear === '4th Year') queryYear = '4';
-      else if (currentYear !== 'All Years') queryYear = currentYear;
+    if (currentYear && currentYear !== 'All Years') {
+      filter.currentYear = String(currentYear);
+    } else if (year) {
+      const mapped = year === '1' ? '1st Year' : year === '2' ? '2nd Year' : year === '3' ? '3rd Year' : year === '4' ? '4th Year' : year;
+      filter.currentYear = String(mapped);
     }
-    if (queryYear) filter.year = String(queryYear);
 
     if (status) {
       filter.activityStatus = String(status);
@@ -214,8 +211,19 @@ router.get('/students', async (req, res) => {
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     pipeline.push({ $sort: sort });
 
-    const skip = (Number(page) - 1) * Number(limit);
-    pipeline.push({ $skip: skip }, { $limit: Number(limit) });
+    let skip = 0;
+    let parsedLimit = 10;
+    if (limit === 'all' || limit === 'All') {
+      parsedLimit = 1000000;
+    } else {
+      parsedLimit = Number(limit) || 10;
+      skip = (Number(page) - 1) * parsedLimit;
+    }
+
+    if (skip > 0) {
+      pipeline.push({ $skip: skip });
+    }
+    pipeline.push({ $limit: parsedLimit });
 
     const students = await User.aggregate(pipeline);
 
@@ -314,8 +322,8 @@ router.get('/students', async (req, res) => {
         college: s.college,
         hostel: s.hostel,
         branch: s.branch,
-        year: s.year,
-        currentYear: s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : `${s.year} Year`,
+        year: s.currentYear || (s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : s.year),
+        currentYear: s.currentYear || (s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : s.year),
         score: s.scores?.totalScore || 0,
         scores: s.scores,
         leetcodeSolved: s.platformStats?.leetcode?.problemsSolved || s.platformStats?.leetcode?.totalSolved || 0,
@@ -336,8 +344,8 @@ router.get('/students', async (req, res) => {
     const allStudents = await User.find({ role: 'student', isOnboarded: true });
     const colleges = [...new Set(allStudents.map((s) => s.college).filter(Boolean))];
     const branches = [...new Set(allStudents.map((s) => s.branch).filter(Boolean))];
-    const years = [...new Set(allStudents.map((s) => s.year).filter(Boolean))].sort();
-    const currentYears = years.map(y => y === '1' ? '1st Year' : y === '2' ? '2nd Year' : y === '3' ? '3rd Year' : y === '4' ? '4th Year' : `${y} Year`);
+    const years = [...new Set(allStudents.map((s) => s.currentYear || (s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : s.year)).filter(Boolean))].sort();
+    const currentYears = years;
 
     return res.json({
       students: studentsList,
@@ -417,11 +425,81 @@ router.get('/students/:id', async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    return res.json(student);
+    const StudentProfile = require('../models/StudentProfile');
+    const CodingProfile = require('../models/CodingProfile');
+    const profile = await StudentProfile.findOne({ userId: student._id });
+    const codingProfile = await CodingProfile.findOne({ userId: student._id });
+
+    return res.json({
+      student,
+      id: student._id,
+      name: student.name,
+      email: student.email,
+      role: student.role,
+      college: student.college,
+      hostel: student.hostel,
+      branch: student.branch,
+      year: student.year,
+      currentYear: student.currentYear || '1st Year',
+      overallGpa: student.overallGpa,
+      leetcodeUsername: student.leetcodeUsername,
+      codechefUsername: student.codechefUsername,
+      gfgUsername: student.gfgUsername,
+      githubUsername: student.githubUsername,
+      hackerrankUsername: student.hackerrankUsername,
+      githubUrl: student.githubUrl,
+      linkedinUrl: student.linkedinUrl,
+      hackerrank: student.hackerrank,
+      platformStats: student.platformStats,
+      scores: student.scores,
+      currentStreak: student.currentStreak,
+      longestStreak: student.longestStreak,
+      activeDaysCount: student.activeDaysCount,
+      consistencyPercentage: student.consistencyPercentage,
+      activityStatus: student.activityStatus,
+      
+      // From StudentProfile
+      personalDetails: profile?.personalDetails || {},
+      familyDetails: profile?.familyDetails || {},
+      education: profile?.education || [],
+      skills: profile?.skills || [],
+      projects: profile?.projects || [],
+      experiences: profile?.experiences || [],
+      certifications: profile?.certifications || [],
+      profileCompletion: profile?.profileCompletion || 0,
+      readinessProfile: profile?.readinessProfile || {},
+      
+      // From CodingProfile
+      codingProfile: codingProfile || {}
+    });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Coordinator student profile error', err);
     return res.status(500).json({ message: 'Failed to load student profile' });
+  }
+});
+
+// GET /students/:id/report/pdf
+router.get('/students/:id/report/pdf', async (req, res) => {
+  try {
+    const student = await User.findOne({ _id: req.params.id, role: 'student' });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    const StudentProfile = require('../models/StudentProfile');
+    const CodingProfile = require('../models/CodingProfile');
+    const profile = await StudentProfile.findOne({ userId: student._id });
+    const codingProfile = await CodingProfile.findOne({ userId: student._id });
+
+    const { buildStudentReportPdf } = require('../utils/pdfReport');
+    const buffer = await buildStudentReportPdf(student, profile, codingProfile);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="report-${student.name}.pdf"`);
+    return res.send(buffer);
+  } catch (err) {
+    console.error('Coordinator student report card PDF generation error:', err);
+    return res.status(500).json({ message: 'Failed to generate report card PDF' });
   }
 });
 

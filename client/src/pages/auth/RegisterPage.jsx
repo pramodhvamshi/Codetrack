@@ -25,6 +25,7 @@ export function RegisterPage() {
     codechefUsername: '',
     gfgUsername: '',
     githubUsername: '',
+    hackerrankUsername: '',
     rememberMe: false
   });
 
@@ -200,7 +201,8 @@ export function RegisterPage() {
           leetcodeUsername: form.leetcodeUsername.trim(),
           codechefUsername: form.codechefUsername.trim(),
           gfgUsername: form.gfgUsername.trim(),
-          githubUsername: form.githubUsername.trim()
+          githubUsername: form.githubUsername.trim(),
+          hackerrankUsername: form.hackerrankUsername.trim()
         });
       }
 
@@ -557,6 +559,18 @@ export function RegisterPage() {
                       className="ct-input"
                       value={form.githubUsername}
                       onChange={(e) => handleChange('githubUsername', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="ct-grid-2" style={{ marginTop: '1rem' }}>
+                  <div>
+                    <label className="ct-label">HackerRank Username</label>
+                    <input
+                      className="ct-input"
+                      value={form.hackerrankUsername}
+                      onChange={(e) => handleChange('hackerrankUsername', e.target.value)}
+                      placeholder="Optional"
                     />
                   </div>
                 </div>

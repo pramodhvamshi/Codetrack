@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
@@ -81,14 +81,190 @@ function computePlacementReadiness(s) {
   return { score: Math.min(100, score), strengths, improve };
 }
 
+export function HackerRankBadge({ name, starsCount, width = 100, height = 100 }) {
+  const officialGreen = "#15c25e";
+  const goldStar = "#F59E0B";
+
+  const normalized = name.toLowerCase().trim();
+  let iconContent = null;
+  
+  if (normalized.includes("problem solving")) {
+    iconContent = (
+      <path d="M50 22L57.27 36.73L73.54 39.1L61.77 50.57L64.55 66.77L50 59.12L35.45 66.77L38.23 50.57L26.46 39.1L42.73 36.73L50 22Z" fill="#F59E0B" />
+    );
+  } else if (normalized.includes("python")) {
+    iconContent = (
+      <g>
+        <path d="M49.5 24C41.5 24 40.5 27.5 40.5 30.5H45.5V31.5H38.5C35.5 31.5 33.5 33.5 33.5 37.5C33.5 41.5 36.5 43.5 40.5 43.5H42.5V41.5C42.5 38.5 44.5 36.5 47.5 36.5H53.5C56.5 36.5 57.5 34.5 57.5 31.5V28.5C57.5 25.5 55.5 24 49.5 24ZM45.5 27.5C46.3 27.5 47 28.2 47 29C47 29.8 46.3 30.5 45.5 30.5C44.7 30.5 44 29.8 44 29C44 28.2 44.7 27.5 45.5 27.5Z" fill="#38bdf8" />
+        <path d="M50.5 56C58.5 56 59.5 52.5 59.5 49.5H54.5V48.5H61.5C64.5 48.5 66.5 46.5 66.5 42.5C66.5 38.5 63.5 36.5 59.5 36.5H57.5V38.5C57.5 41.5 55.5 43.5 52.5 43.5H46.5C43.5 43.5 42.5 45.5 42.5 48.5V51.5C42.5 54.5 44.5 56 50.5 56ZM54.5 52.5C53.7 52.5 53 51.8 53 51C53 50.2 53.7 49.5 54.5 49.5C55.3 49.5 56 50.2 56 51C56 51.8 55.3 52.5 54.5 52.5Z" fill="#fbbf24" />
+      </g>
+    );
+  } else if (normalized.includes("sql")) {
+    iconContent = (
+      <g stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <ellipse cx="50" cy="32" rx="15" ry="6" fill="rgba(168, 85, 247, 0.2)" />
+        <path d="M35 32V42C35 45.3 41.7 48 50 48C58.3 48 65 45.3 65 42V32" fill="none" />
+        <path d="M35 42V52C35 55.3 41.7 58 50 58C58.3 58 65 55.3 65 52V42" fill="none" />
+      </g>
+    );
+  } else if (normalized.includes("java")) {
+    iconContent = (
+      <g stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M42 42C42 48 58 48 58 42" fill="none" />
+        <path d="M38 34H62V41C62 45 58 48 50 48C42 48 38 45 38 41V34Z" fill="rgba(239, 68, 68, 0.1)" />
+        <path d="M62 38C65 38 67 39 67 41C67 43 65 44 62 44" fill="none" />
+        <path d="M46 22C46 22 48 26 46 29" fill="none" />
+        <path d="M51 20C51 20 53 24 51 27" fill="none" />
+        <path d="M56 22C56 22 58 26 56 29" fill="none" />
+        <path d="M36 54H64" strokeWidth="2" fill="none" />
+      </g>
+    );
+  } else if (normalized.includes("javascript") || normalized.includes("js")) {
+    iconContent = (
+      <g>
+        <rect x="35" y="32" width="30" height="30" rx="4" fill="#F7DF1E" />
+        <text x="50" y="52" fill="#000000" fontSize="14" fontWeight="bold" fontFamily="Arial, sans-serif" textAnchor="middle">JS</text>
+      </g>
+    );
+  } else if (normalized.includes("c++") || normalized.includes("cpp")) {
+    iconContent = (
+      <g>
+        <circle cx="50" cy="45" r="16" fill="rgba(0, 132, 219, 0.15)" stroke="#00599C" strokeWidth="2" />
+        <text x="44" y="50" fill="#f3f4f6" fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">C</text>
+        <text x="56" y="47" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">+</text>
+        <text x="56" y="53" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">+</text>
+      </g>
+    );
+  } else if (normalized === "c") {
+    iconContent = (
+      <g>
+        <circle cx="50" cy="45" r="16" fill="rgba(59, 130, 246, 0.15)" stroke="#3B82F6" strokeWidth="2" />
+        <text x="50" y="51" fill="#f3f4f6" fontSize="16" fontWeight="bold" fontFamily="monospace" textAnchor="middle">C</text>
+      </g>
+    );
+  } else if (normalized.includes("ruby")) {
+    iconContent = (
+      <g>
+        <polygon points="50,28 62,36 65,50 57,62 43,62 35,50 38,36" fill="rgba(239,68,68,0.15)" stroke="#ef4444" strokeWidth="2" strokeLinejoin="round" />
+        <polygon points="50,33 59,40 62,50 55,59 45,59 38,50 41,40" fill="#ef4444" fillOpacity="0.7" />
+        <polygon points="50,38 56,43 58,50 53,56 47,56 42,50 44,43" fill="#fca5a5" />
+      </g>
+    );
+  } else if (normalized.includes("30 days of code") || normalized.includes("days of code")) {
+    iconContent = (
+      <g>
+        <rect x="34" y="30" width="32" height="28" rx="4" fill="none" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="34" y1="38" x2="66" y2="38" stroke="#f59e0b" strokeWidth="1.5" />
+        <line x1="41" y1="26" x2="41" y2="34" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+        <line x1="59" y1="26" x2="59" y2="34" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+        <text x="50" y="53" fill="#f59e0b" fontSize="13" fontWeight="bold" fontFamily="monospace" textAnchor="middle">30</text>
+      </g>
+    );
+  } else if (normalized.includes("10 days of javascript") || normalized.includes("days of javascript") || normalized.includes("days of js")) {
+    iconContent = (
+      <g>
+        <rect x="33" y="32" width="34" height="26" rx="4" fill="rgba(247,223,30,0.15)" stroke="#F7DF1E" strokeWidth="1.5" />
+        <text x="45" y="50" fill="#F7DF1E" fontSize="13" fontWeight="bold" fontFamily="monospace" textAnchor="middle">JS</text>
+        <text x="58" y="42" fill="#f3f4f6" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">10</text>
+      </g>
+    );
+  } else if (normalized.includes("10 days of statistics") || normalized.includes("days of statistics")) {
+    iconContent = (
+      <g stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round">
+        <line x1="36" y1="58" x2="36" y2="44" stroke="#8b5cf6" />
+        <line x1="44" y1="58" x2="44" y2="36" stroke="#a78bfa" />
+        <line x1="52" y1="58" x2="52" y2="40" stroke="#8b5cf6" />
+        <line x1="60" y1="58" x2="60" y2="30" stroke="#a78bfa" />
+        <polyline points="36,44 44,36 52,40 60,30" fill="none" stroke="#c4b5fd" strokeWidth="1.5" />
+      </g>
+    );
+  } else if (normalized.includes("react")) {
+    iconContent = (
+      <g fill="none" stroke="#61dafb" strokeWidth="1.8">
+        <ellipse cx="50" cy="45" rx="16" ry="6" transform="rotate(0,50,45)" />
+        <ellipse cx="50" cy="45" rx="16" ry="6" transform="rotate(60,50,45)" />
+        <ellipse cx="50" cy="45" rx="16" ry="6" transform="rotate(120,50,45)" />
+        <circle cx="50" cy="45" r="3" fill="#61dafb" stroke="none" />
+      </g>
+    );
+  } else {
+    iconContent = (
+      <path d="M38 36L26 45L38 54M62 36L74 45L62 54" fill="none" stroke="#9ca3af" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    );
+  }
+
+  const stars = [];
+  const totalStars = Number(starsCount) || 0;
+  for (let i = 0; i < totalStars; i++) {
+    let cx = 50;
+    let cy = 76;
+    if (totalStars > 1) {
+      const step = totalStars === 2 ? 16 : totalStars === 3 ? 12 : 9;
+      const mid = (totalStars - 1) / 2;
+      const offset = (i - mid) * step;
+      cx = 50 + offset;
+      const normOffset = (i - mid) / (mid || 1);
+      cy = 76 - (totalStars > 2 ? Math.abs(normOffset) * 3 : 0);
+    }
+    
+    stars.push(
+      <path
+        key={i}
+        d={`M${cx} ${cy - 4} L${cx + 1.2} ${cy - 1.2} L${cx + 4} ${cy - 0.8} L${cx + 1.8} ${cy + 1.2} L${cx + 2.5} ${cy + 4} L${cx} ${cy + 2.2} L${cx - 2.5} ${cy + 4} L${cx - 1.8} ${cy + 1.2} L${cx - 4} ${cy - 0.8} L${cx - 1.2} ${cy - 1.2} Z`}
+        fill={goldStar}
+      />
+    );
+  }
+
+  const heptagonPoints = [];
+  for (let i = 0; i < 7; i++) {
+    const angle = (i * 2 * Math.PI) / 7 - Math.PI / 2;
+    const x = 50 + 38 * Math.cos(angle);
+    const y = 48 + 38 * Math.sin(angle);
+    heptagonPoints.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  const heptagonStr = heptagonPoints.join(" ");
+
+  const innerHeptagonPoints = [];
+  for (let i = 0; i < 7; i++) {
+    const angle = (i * 2 * Math.PI) / 7 - Math.PI / 2;
+    const x = 50 + 33 * Math.cos(angle);
+    const y = 48 + 33 * Math.sin(angle);
+    innerHeptagonPoints.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  const innerHeptagonStr = innerHeptagonPoints.join(" ");
+
+  return (
+    <svg width={width} height={height} viewBox="0 0 100 100" style={{ filter: `drop-shadow(0px 4px 10px rgba(21, 194, 94, 0.15))` }}>
+      <defs>
+        <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="100%" stopColor="#0f172a" />
+        </linearGradient>
+        <linearGradient id="borderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={officialGreen} />
+          <stop offset="100%" stopColor="#0b4d24" />
+        </linearGradient>
+      </defs>
+      <polygon points={heptagonStr} fill="url(#badgeGrad)" stroke="url(#borderGrad)" strokeWidth="3" strokeLinejoin="round" />
+      <polygon points={innerHeptagonStr} fill="none" stroke="rgba(21, 194, 94, 0.3)" strokeWidth="1" strokeLinejoin="round" />
+      <g transform="translate(0, -3)">
+        {iconContent}
+      </g>
+      {stars}
+    </svg>
+  );
+}
+
 function computeAutoAchievements(s) {
   if (!s || !s.profile) return [];
   const p = s.profile;
   const lc = s.leetcode || {};
   const cc = s.codechef || {};
   const gfg = s.gfg || {};
+  const hr = p.hackerrank || {};
   
-  const totalSolved = (lc.totalSolved || 0) + (cc.problemsSolved || 0) + (gfg.totalProblemsSolved || 0);
+  const totalSolved = (lc.totalSolved || 0) + (cc.problemsSolved || 0) + (gfg.totalProblemsSolved || 0) + (hr.totalProblemsSolved || 0);
   const badges = [];
 
   if (totalSolved >= 500) badges.push({ icon: '🏆', title: '500 Problems Solved', desc: 'Exceptional problem-solving mastery', color: '#F59E0B' });
@@ -101,6 +277,20 @@ function computeAutoAchievements(s) {
 
   if ((lc.contestRating || 0) >= 2000) badges.push({ icon: '👑', title: 'LeetCode Knight+', desc: `Rating ${lc.contestRating}`, color: '#F59E0B' });
   else if ((lc.contestRating || 0) >= 1500) badges.push({ icon: '⚔️', title: 'LeetCode Guardian', desc: `Rating ${lc.contestRating}`, color: '#3B82F6' });
+
+  if (hr.skills && hr.skills.length > 0) {
+    hr.skills.forEach(skill => {
+      const match = skill.match(/(.*?)\s*\((\d+)★\)/);
+      const name = match ? match[1] : skill;
+      const stars = match ? match[2] : '0';
+      badges.push({ 
+        icon: <HackerRankBadge name={name} starsCount={stars} width={36} height={36} />, 
+        title: `HackerRank: ${name}`, 
+        desc: `Verified skill badge (${stars}★)`, 
+        color: '#15c25e' 
+      });
+    });
+  }
 
   return badges;
 }
@@ -143,6 +333,7 @@ const BRANCHES = [
 export function PublicStudentProfile() {
   const { id: routeId } = useParams();
   const { user, token } = useAuth();
+  const navigate = useNavigate();
 
   // If routeId is present, we view that student's profile. Else, load the logged-in student's profile directly.
   const id = routeId || user?.id;
@@ -361,185 +552,7 @@ export function PublicStudentProfile() {
 
 
 
-      {/* EDIT PROFILE MODAL */}
-      {isEditModalOpen && (
-        <div className="hm-modal-overlay" onClick={() => setIsEditModalOpen(false)}>
-          <div className="hm-modal hm-modal-large" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem' }}>
-              <h2 style={{ margin: 0, color: '#f3f4f6' }}>📝 Edit Profile Details</h2>
-              <button onClick={() => setIsEditModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-            </div>
-            
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              <div className="profile-form-row">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>Full Name</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} required />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>MSSID (Student ID)</label>
-                  <input
-                    className="ct-input"
-                    style={{ width: '100%' }}
-                    value={editForm.mssid}
-                    onChange={e => {
-                      const val = e.target.value.toUpperCase();
-                      setEditForm({ ...editForm, mssid: val });
-                      if (modalErrors.mssid) {
-                        setModalErrors(prev => {
-                          const copy = { ...prev };
-                          delete copy.mssid;
-                          return copy;
-                        });
-                      }
-                    }}
-                  />
-                  {editForm.mssid ? (
-                    /^MSS\d{7}$/.test(editForm.mssid) ? (
-                      <div style={{ fontSize: '0.75rem', color: '#22C55E', marginTop: '0.2rem' }}>
-                        ✓ MSSID format is valid
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: '0.75rem', color: '#F59E0B', marginTop: '0.2rem', lineHeight: '1.25' }}>
-                        ⚠️ Invalid MSSID format. Correct format is MSS2020012. (You can still save, but correct it to avoid legacy mismatches).
-                      </div>
-                    )
-                  ) : (
-                    <div style={{ fontSize: '0.75rem', color: '#F59E0B', marginTop: '0.2rem' }}>
-                      ⚠️ MSSID is required for students
-                    </div>
-                  )}
-                  {modalErrors.mssid && (
-                    <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '0.2rem' }}>
-                      ✗ {modalErrors.mssid}
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>Bio (Tagline)</label>
-                <textarea className="ct-input" style={{ width: '100%' }} value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} rows="2" />
-              </div>
-
-              <div className="profile-form-row">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', position: 'relative' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>College Name</label>
-                  <input
-                    className="ct-input"
-                    style={{ width: '100%' }}
-                    value={editForm.college}
-                    onChange={e => {
-                      setEditForm({ ...editForm, college: e.target.value });
-                      setCollegeSearchOpen(true);
-                    }}
-                    onFocus={() => setCollegeSearchOpen(true)}
-                    onBlur={() => {
-                      setTimeout(() => setCollegeSearchOpen(false), 200);
-                    }}
-                  />
-                  {collegeSearchOpen && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      background: '#1F2937',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      borderRadius: '8px',
-                      maxHeight: '150px',
-                      overflowY: 'auto',
-                      zIndex: 10,
-                      marginTop: '4px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-                    }}>
-                      {filteredColleges.map((c) => (
-                        <div
-                          key={c}
-                          style={{
-                            padding: '0.5rem 0.75rem',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            color: '#f3f4f6',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-                          }}
-                          onMouseDown={() => {
-                            setEditForm(prev => ({ ...prev, college: c }));
-                            setCollegeSearchOpen(false);
-                          }}
-                          className="suggestion-item"
-                        >
-                          {c}
-                        </div>
-                      ))}
-                      {filteredColleges.length === 0 && (
-                        <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: '#9ca3af' }}>
-                          No colleges match
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>Branch Name</label>
-                  <select className="ct-input" style={{ width: '100%', color: '#f3f4f6', background: '#111827' }} value={editForm.branch} onChange={e => setEditForm({ ...editForm, branch: e.target.value })}>
-                    <option value="">Select Branch</option>
-                    {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="profile-form-row">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>Graduation Year</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.graduationYear} onChange={e => setEditForm({ ...editForm, graduationYear: e.target.value })} placeholder="e.g. 2026" />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>Hostel Name</label>
-                  <select className="ct-input" style={{ width: '100%', color: '#f3f4f6', background: '#111827' }} value={editForm.hostel} onChange={e => setEditForm({ ...editForm, hostel: e.target.value })}>
-                    <option value="">Select Hostel</option>
-                    {HOSTELS.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>LinkedIn Profile URL</label>
-                <input className="ct-input" style={{ width: '100%' }} value={editForm.linkedinUrl} onChange={e => setEditForm({ ...editForm, linkedinUrl: e.target.value })} />
-              </div>
-
-              <div className="profile-form-row">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>LeetCode Username</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.leetcodeUsername} onChange={e => setEditForm({ ...editForm, leetcodeUsername: e.target.value })} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>CodeChef Username</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.codechefUsername} onChange={e => setEditForm({ ...editForm, codechefUsername: e.target.value })} />
-                </div>
-              </div>
-
-              <div className="profile-form-row">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>GeeksforGeeks Username</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.gfgUsername} onChange={e => setEditForm({ ...editForm, gfgUsername: e.target.value })} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600 }}>GitHub Username</label>
-                  <input className="ct-input" style={{ width: '100%' }} value={editForm.githubUsername} onChange={e => setEditForm({ ...editForm, githubUsername: e.target.value })} />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem', flexWrap: 'wrap' }}>
-                <button type="button" className="ct-button-secondary" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-                <button type="submit" className="ct-button" disabled={saving}>
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <div className="profile-page animate-fade-in">
         
@@ -563,7 +576,7 @@ export function PublicStudentProfile() {
             )}
             {isOwner && (
               <button 
-                onClick={() => { setModalErrors({}); setIsEditModalOpen(true); }}
+                onClick={() => navigate('/profile/personal')}
                 className="ct-button-secondary"
                 style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
               >
@@ -1098,6 +1111,32 @@ export function PublicStudentProfile() {
                   </div>
                 ) : (
                   <div className="empty-state">No badges earned yet</div>
+                )}
+              </div>
+
+              {/* HackerRank Badges */}
+              <div className="ct-card">
+                <h3 className="card-title">🏆 HackerRank Badges & Skills (Earned: {hr.badgeCount || 0})</h3>
+                {hr.skills && hr.skills.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                    {hr.skills.map((skill, i) => {
+                      const match = skill.match(/(.*?)\s*\((\d+★)\)/);
+                      const name = match ? match[1] : skill;
+                      const stars = match ? match[2] : '';
+                      const starsCount = stars.replace('★', '');
+                      return (
+                        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <HackerRankBadge name={name} starsCount={starsCount} width={60} height={60} />
+                          </div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f3f4f6' }}>{name}</div>
+                          {stars && <div style={{ fontSize: '0.75rem', color: '#fbbf24', marginTop: '0.2rem' }}>{stars}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="empty-state">No HackerRank badges synced yet</div>
                 )}
               </div>
 

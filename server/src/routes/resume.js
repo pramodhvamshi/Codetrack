@@ -78,50 +78,76 @@ router.post('/templates/upload', upload.single('templateFile'), async (req, res)
 /* ================= VERSIONS ================= */
 
 // Helper to pre-populate version content from user profile
-function buildDefaultContentFromProfile(user) {
-  const ps = user.platformStats || {};
+async function buildDefaultContentFromProfile(user) {
+  const StudentProfile = require('../models/StudentProfile');
+  let profile = await StudentProfile.findOne({ userId: user._id });
+  if (!profile) {
+    profile = {
+      personalDetails: {},
+      familyDetails: {},
+      education: [],
+      skills: [],
+      projects: [],
+      experiences: [],
+      certifications: []
+    };
+  }
+
+  const pd = profile.personalDetails || {};
+  const education = (profile.education || []).map(e => ({
+    institution: e.institution || '',
+    degree: e.degree || 'Bachelor of Technology',
+    fieldOfStudy: e.branch || '',
+    startYear: e.startYear || '2022',
+    endYear: e.endYear || '2026',
+    gpa: e.cgpa || ''
+  }));
+  if (education.length === 0) {
+    education.push({
+      institution: user.college || '',
+      degree: 'Bachelor of Technology',
+      fieldOfStudy: user.branch || '',
+      startYear: '2022',
+      endYear: '2026',
+      gpa: user.overallGpa != null ? String(user.overallGpa) : ''
+    });
+  }
+
+  const skills = (profile.skills && profile.skills.length > 0) ? profile.skills : ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'];
+
   return {
     personalDetails: {
-      name: user.name || '',
-      email: user.email || '',
-      phone: user.mssid || '', // mapping mssid as phone/student ID fallback
+      name: pd.fullName || user.name || '',
+      email: pd.email || user.email || '',
+      phone: pd.mobile || user.mssid || '',
       githubUrl: user.githubUrl || (user.githubUsername ? `https://github.com/${user.githubUsername}` : ''),
       linkedinUrl: user.linkedinUrl || '',
       portfolioUrl: '',
       summary: 'Motivated software engineer student eager to apply technical capabilities in building industry-grade platforms.'
     },
-    education: [
-      {
-        institution: user.college || '',
-        degree: 'Bachelor of Technology',
-        fieldOfStudy: user.branch || '',
-        startYear: user.year ? String(2026 - (4 - Number(user.year))) : '2022',
-        endYear: '2026',
-        gpa: user.overallGpa != null ? String(user.overallGpa) : ''
-      }
-    ],
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'],
-    projects: (user.projects || []).map(p => ({
-      name: p.name || '',
-      description: p.highlights?.join(' ') || '',
-      techStack: p.techStack || [],
-      githubUrl: p.githubUrl || '',
-      liveUrl: p.liveUrl || '',
-      highlights: p.highlights || []
+    education,
+    skills,
+    projects: (profile.projects || []).map(p => ({
+      name: p.title || '',
+      description: p.description || '',
+      techStack: p.technologies || [],
+      githubUrl: p.githubLink || '',
+      liveUrl: p.liveLink || '',
+      highlights: p.description ? p.description.split('\n').slice(0, 3) : []
     })),
-    workExperience: (user.workExperience || []).map(w => ({
+    workExperience: (profile.experiences || []).map(w => ({
       company: w.company || '',
       role: w.role || '',
-      location: w.location || '',
+      location: '',
       startDate: w.startDate || null,
       endDate: w.endDate || null,
       isCurrent: !w.endDate,
       description: w.description || ''
     })),
-    certifications: (user.certifications || []).map(c => ({
+    certifications: (profile.certifications || []).map(c => ({
       title: c.title || '',
-      issuer: c.issuer || '',
-      date: c.date || null,
+      issuer: c.provider || '',
+      date: c.issueDate || null,
       credentialLink: c.credentialLink || ''
     })),
     achievements: (user.achievements || []).map(a => ({
@@ -175,7 +201,7 @@ router.post('/versions', async (req, res) => {
       return res.status(400).json({ message: 'Resume version name is required' });
     }
 
-    const defaultContent = buildDefaultContentFromProfile(user);
+    const defaultContent = await buildDefaultContentFromProfile(user);
 
     // Disable all other default versions for this user
     await ResumeVersion.updateMany({ userId: user._id }, { $set: { isDefault: false } });

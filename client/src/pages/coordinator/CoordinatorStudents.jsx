@@ -46,6 +46,7 @@ export function CoordinatorStudents() {
         if (filters.scoreMax) params.set('scoreMax', filters.scoreMax);
         params.set('sortBy', filters.sortBy);
         params.set('sortOrder', filters.sortOrder);
+        params.set('limit', 'all');
         const query = params.toString() ? `?${params.toString()}` : '';
         const res = await api.getJson(`/coordinator/students${query}`, token);
         setAllStudents(res.students || res || []);

@@ -64,6 +64,7 @@ export function AppShell({ active, children }) {
     ? [
         { icon: '⚡', label: 'Dashboard', path: '/student/dashboard' },
         { icon: '👤', label: 'My Profile', path: '/student/profile' },
+        { icon: '⚙️', label: 'Profile Settings', path: '/profile/personal' },
         { icon: '📄', label: 'Resume Builder', path: '/student/resume' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
         { icon: '🐛', label: 'Report a Bug', path: '/report-bug' }

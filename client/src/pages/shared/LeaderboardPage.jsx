@@ -13,7 +13,8 @@ export function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [leaderboardType, setLeaderboardType] = useState('global'); // 'global', 'college', 'branch', 'hostel', 'year'
 
-  // Monthly leaderboard states
+  // Monthly & Weekly leaderboard states
+  const [period, setPeriod] = useState('weekly'); // 'weekly' or 'monthly'
   const [monthlyRows, setMonthlyRows] = useState({
     allYears: [],
     firstYear: [],
@@ -21,7 +22,15 @@ export function LeaderboardPage() {
     thirdYear: [],
     fourthYear: []
   });
+  const [weeklyRows, setWeeklyRows] = useState({
+    allYears: [],
+    firstYear: [],
+    secondYear: [],
+    thirdYear: [],
+    fourthYear: []
+  });
   const [monthlyLoading, setMonthlyLoading] = useState(true);
+  const [weeklyLoading, setWeeklyLoading] = useState(true);
   const [monthlyYearTab, setMonthlyYearTab] = useState('all'); // 'all', '1', '2', '3', '4'
 
   const formatYear = (yr) => {
@@ -29,7 +38,7 @@ export function LeaderboardPage() {
     if (yr === '2' || yr === 2) return '2nd Year';
     if (yr === '3' || yr === 3) return '3rd Year';
     if (yr === '4' || yr === 4) return '4th Year';
-    return yr ? `${yr} Year` : '-';
+    return yr ? (yr.includes('Year') ? yr : `${yr} Year`) : '-';
   };
 
   const monthlyKeyMap = {
@@ -39,8 +48,10 @@ export function LeaderboardPage() {
     '3': 'thirdYear',
     '4': 'fourthYear'
   };
-  const activeMonthlyKey = monthlyKeyMap[monthlyYearTab] || 'allYears';
-  const currentMonthlyStudents = monthlyRows[activeMonthlyKey] || [];
+  
+  const activeKey = monthlyKeyMap[monthlyYearTab] || 'allYears';
+  const currentMonthlyStudents = (period === 'weekly' ? weeklyRows : monthlyRows)[activeKey] || [];
+  const widgetLoading = period === 'weekly' ? weeklyLoading : monthlyLoading;
 
   // Dropdown options loaded from API
   const [filterOptions, setFilterOptions] = useState({
@@ -94,8 +105,29 @@ export function LeaderboardPage() {
     }
   };
 
+  /* ---------- LOAD WEEKLY RANKINGS ---------- */
+  const loadWeeklyLeaderboard = async () => {
+    if (!token) return;
+    setWeeklyLoading(true);
+    try {
+      const data = await api.getJson('/leaderboard/weekly', token);
+      setWeeklyRows(data || {
+        allYears: [],
+        firstYear: [],
+        secondYear: [],
+        thirdYear: [],
+        fourthYear: []
+      });
+    } catch (err) {
+      console.error('Failed to load weekly leaderboard:', err);
+    } finally {
+      setWeeklyLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadMonthlyLeaderboard();
+    loadWeeklyLeaderboard();
   }, [token]);
 
   /* ---------- LOAD LEADERS ---------- */
@@ -174,7 +206,7 @@ export function LeaderboardPage() {
           </button>
         </div>
 
-        {/* MONTHLY LEADERBOARD WIDGET */}
+        {/* WEEKLY/MONTHLY LEADERBOARD WIDGET */}
         <div className="ct-card" style={{
           background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(17, 24, 39, 0.8))',
           borderColor: 'rgba(139, 92, 246, 0.25)',
@@ -205,15 +237,57 @@ export function LeaderboardPage() {
           `}</style>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', color: '#f3f4f6' }}>
-              🏆 Monthly Top Coders By Academic Year
-            </h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Based on LeetCode and GeeksForGeeks activity during the current month
-            </span>
+            <div>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', color: '#f3f4f6' }}>
+                🏆 {period === 'weekly' ? 'Weekly Solved Increase' : 'Monthly Solved Activity'} By Academic Year
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {period === 'weekly' 
+                  ? 'Based on solved counts increase during the current week (Mon-Sun)' 
+                  : 'Based on cumulative LeetCode and GeeksForGeeks activity during the current month'}
+              </span>
+            </div>
+
+            {/* Toggle button */}
+            <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0,0,0,0.25)', padding: '0.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <button
+                type="button"
+                style={{
+                  border: 'none',
+                  background: period === 'weekly' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                  color: period === 'weekly' ? '#60a5fa' : '#9ca3af',
+                  fontSize: '0.75rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.2s'
+                }}
+                onClick={() => setPeriod('weekly')}
+              >
+                Weekly Increase
+              </button>
+              <button
+                type="button"
+                style={{
+                  border: 'none',
+                  background: period === 'monthly' ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
+                  color: period === 'monthly' ? '#c084fc' : '#9ca3af',
+                  fontSize: '0.75rem',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'all 0.2s'
+                }}
+                onClick={() => setPeriod('monthly')}
+              >
+                Monthly Activity
+              </button>
+            </div>
           </div>
 
-          {/* Monthly leaderboard year tabs */}
+          {/* Year tabs */}
           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
             {[
               { key: 'all', label: 'All Years' },
@@ -233,13 +307,14 @@ export function LeaderboardPage() {
             ))}
           </div>
           
-          {monthlyLoading ? (
-            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Loading monthly standings...
+          {widgetLoading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              <RefreshCw size={20} className="animate-spin" style={{ margin: '0 auto 0.5rem auto' }} />
+              Loading standings...
             </div>
           ) : currentMonthlyStudents.length === 0 ? (
-            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              No coding activity recorded this month for this academic year.
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              No coding activity recorded for this period.
             </div>
           ) : (
             <>
@@ -254,7 +329,9 @@ export function LeaderboardPage() {
                       <th>Year</th>
                       <th style={{ color: '#F59E0B' }}>LeetCode Solved</th>
                       <th style={{ color: '#22C55E' }}>GFG Solved</th>
-                      <th style={{ textAlign: 'right', color: 'var(--accent-purple)' }}>Monthly Score</th>
+                      <th style={{ textAlign: 'right', color: period === 'weekly' ? '#60a5fa' : '#c084fc' }}>
+                        {period === 'weekly' ? 'Weekly Increase' : 'Monthly Score'}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -280,8 +357,8 @@ export function LeaderboardPage() {
                         <td>{formatYear(coder.year)}</td>
                         <td>{coder.leetcodeSolved || 0}</td>
                         <td>{coder.gfgSolved || 0}</td>
-                        <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: 'var(--accent-purple)' }}>
-                          {coder.monthlyScore}
+                        <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: period === 'weekly' ? '#60a5fa' : '#c084fc' }}>
+                          {period === 'weekly' ? coder.weeklyScore : coder.monthlyScore}
                         </td>
                       </tr>
                     ))}
@@ -322,8 +399,8 @@ export function LeaderboardPage() {
                           {coder.name}
                         </span>
                       </div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-purple)' }}>
-                        {coder.monthlyScore} pts
+                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: period === 'weekly' ? '#60a5fa' : '#c084fc' }}>
+                        {period === 'weekly' ? coder.weeklyScore : coder.monthlyScore} pts
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -487,7 +564,7 @@ export function LeaderboardPage() {
                       </td>
                       <td>{r.college || '-'}</td>
                       <td>{r.branch || '-'}</td>
-                      <td>Year {r.year || '-'}</td>
+                      <td>{r.year || '-'}</td>
                       <td>{Math.round(r.lcScore || 0)}</td>
                       <td>{Math.round(r.ccScore || 0)}</td>
                       <td>{Math.round(r.gfgScore || 0)}</td>

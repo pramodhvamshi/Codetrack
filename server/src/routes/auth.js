@@ -74,6 +74,7 @@ router.post('/register', async (req, res) => {
       codechefUsername,
       gfgUsername,
       githubUsername,
+      hackerrankUsername,
       rememberMe
     } = req.body;
 
@@ -92,6 +93,7 @@ router.post('/register', async (req, res) => {
     const trimmedCodechef = typeof codechefUsername === 'string' ? codechefUsername.trim() : '';
     const trimmedGfg = typeof gfgUsername === 'string' ? gfgUsername.trim() : '';
     const trimmedGithub = typeof githubUsername === 'string' ? githubUsername.trim() : '';
+    const trimmedHackerrank = typeof hackerrankUsername === 'string' ? hackerrankUsername.trim() : '';
 
     const errors = {};
 
@@ -163,7 +165,7 @@ router.post('/register', async (req, res) => {
 
     const passwordHash = await bcrypt.hash(trimmedPassword, 10);
 
-    const user = await User.create({
+     const user = await User.create({
       name: trimmedName,
       email: trimmedEmail,
       passwordHash,
@@ -178,6 +180,7 @@ router.post('/register', async (req, res) => {
       codechefUsername: trimmedCodechef,
       gfgUsername: trimmedGfg,
       githubUsername: trimmedGithub,
+      hackerrankUsername: trimmedHackerrank,
       isOnboarded: true,
       profileCompletedAt: new Date(),
       lastProfileUpdateAt: new Date()

@@ -220,6 +220,7 @@ const UserSchema = new mongoose.Schema(
     hostel: { type: String },
     branch: { type: String },
     year: { type: String },
+    currentYear: { type: String, enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'], default: '1st Year' },
     overallGpa: { type: Number },
 
     /* Coding Profiles */
@@ -227,6 +228,7 @@ const UserSchema = new mongoose.Schema(
     codechefUsername: { type: String },
     gfgUsername: { type: String },
     githubUsername: { type: String },
+    hackerrankUsername: { type: String, default: "" },
     githubUrl: { type: String },
     linkedinUrl: { type: String },
 

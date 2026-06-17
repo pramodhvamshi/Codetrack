@@ -14,44 +14,379 @@ router.use(authMiddleware, requireRole('student'));
 // Get own profile
 router.get('/me', async (req, res) => {
   const user = req.currentUser;
+  const StudentProfile = require('../models/StudentProfile');
 
-  return res.json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    college: user.college,
-    hostel: user.hostel,
-    branch: user.branch,
-    year: user.year,
-    overallGpa: user.overallGpa,
-    leetcodeUsername: user.leetcodeUsername,
-    codechefUsername: user.codechefUsername,
-    gfgUsername: user.gfgUsername,
-    githubUsername: user.githubUsername,
-    githubUrl: user.githubUrl,
-    linkedinUrl: user.linkedinUrl,
-    hackerrank: user.hackerrank,
-    platformStats: user.platformStats,
-    scores: user.scores,
-    currentStreak: user.currentStreak,
-    longestStreak: user.longestStreak,
-    activeDaysCount: user.activeDaysCount,
-    consistencyPercentage: user.consistencyPercentage,
-    monthlyActivityCount: user.monthlyActivityCount,
-    yearlyActivityCount: user.yearlyActivityCount,
-    activityStatus: user.activityStatus,
-    certifications: user.certifications,
-    achievements: user.achievements,
-    hackathons: user.hackathons,
-    projects: user.projects,
-    workExperience: user.workExperience,
-    resume: user.resume,
-    isOnboarded: user.isOnboarded,
-    mssid: user.mssid,
-    bio: user.bio,
-    graduationYear: user.graduationYear
-  });
+  try {
+    let profile = await StudentProfile.findOne({ userId: user._id });
+    if (!profile) {
+      profile = {
+        personalDetails: {
+          fullName: user.name,
+          email: user.email,
+          college: user.college,
+          branch: user.branch,
+          year: user.currentYear || '1st Year',
+          ssc: { schoolName: "", board: "", percentage: null, passoutYear: null },
+          intermediate: { collegeName: "", board: "", percentage: null, passoutYear: null }
+        },
+        familyDetails: { parentStatus: 'Both Parents', father: {}, mother: {}, siblings: [] },
+        education: [],
+        skills: [],
+        projects: [],
+        experiences: [],
+        certifications: [],
+        profileCompletion: 0,
+        readinessProfile: { dsaScore: 0, projectsScore: 0, resumeScore: 0, profileScore: 0, overallReadiness: 0 }
+      };
+    }
+
+    return res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      college: user.college,
+      hostel: user.hostel,
+      branch: user.branch,
+      year: user.year, // Keep for backward compatibility
+      currentYear: user.currentYear || '1st Year',
+      overallGpa: user.overallGpa,
+      leetcodeUsername: user.leetcodeUsername,
+      codechefUsername: user.codechefUsername,
+      gfgUsername: user.gfgUsername,
+      githubUsername: user.githubUsername,
+      hackerrankUsername: user.hackerrankUsername,
+      githubUrl: user.githubUrl,
+      linkedinUrl: user.linkedinUrl,
+      hackerrank: user.hackerrank, // Keep for backward compatibility
+      platformStats: user.platformStats, // Keep for backward compatibility
+      scores: user.scores,
+      currentStreak: user.currentStreak,
+      longestStreak: user.longestStreak,
+      activeDaysCount: user.activeDaysCount,
+      consistencyPercentage: user.consistencyPercentage,
+      monthlyActivityCount: user.monthlyActivityCount,
+      yearlyActivityCount: user.yearlyActivityCount,
+      activityStatus: user.activityStatus,
+      
+      // Values retrieved from normalized StudentProfile
+      certifications: profile.certifications || [],
+      projects: profile.projects || [],
+      workExperience: profile.experiences || [],
+      education: profile.education || [],
+      skills: profile.skills || [],
+      personalDetails: profile.personalDetails || {},
+      familyDetails: profile.familyDetails || {},
+      profileCompletion: profile.profileCompletion || 0,
+      readinessProfile: profile.readinessProfile || {},
+      
+      resume: user.resume,
+      isOnboarded: user.isOnboarded,
+      mssid: user.mssid,
+      bio: user.bio,
+      graduationYear: user.graduationYear
+    });
+  } catch (err) {
+    console.error('Error fetching /me profile details:', err);
+    return res.status(500).json({ message: 'Failed to fetch own profile details' });
+  }
+});
+
+// GET /me/profile/personal
+router.get('/me/profile/personal', async (req, res) => {
+  try {
+    const StudentProfile = require('../models/StudentProfile');
+    let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
+    if (!profile) {
+      return res.json({
+        personalDetails: {
+          fullName: req.currentUser.name,
+          email: req.currentUser.email,
+          college: req.currentUser.college || "",
+          branch: req.currentUser.branch || "",
+          year: req.currentUser.currentYear || "1st Year",
+          ssc: { schoolName: "", board: "", percentage: null, passoutYear: null },
+          intermediate: { collegeName: "", board: "", percentage: null, passoutYear: null }
+        },
+        familyDetails: { parentStatus: 'Both Parents', father: { name: "", occupation: "", education: "", mobile: "" }, mother: { name: "", occupation: "", education: "", mobile: "" }, siblings: [] }
+      });
+    }
+    return res.json({
+      personalDetails: profile.personalDetails,
+      familyDetails: profile.familyDetails
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch personal profile' });
+  }
+});
+
+// PUT /me/profile/personal
+router.put('/me/profile/personal', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const StudentProfile = require('../models/StudentProfile');
+    const { personalDetails, familyDetails } = req.body;
+
+    if (!personalDetails) {
+      return res.status(400).json({ message: 'personalDetails is required' });
+    }
+
+    // Update User model fields
+    if (personalDetails.fullName) {
+      user.name = personalDetails.fullName;
+    }
+    if (personalDetails.college) {
+      user.college = personalDetails.college;
+    }
+    if (personalDetails.branch) {
+      user.branch = personalDetails.branch;
+    }
+    if (personalDetails.year) {
+      user.currentYear = personalDetails.year;
+      user.year = personalDetails.year === '1st Year' ? '1' : personalDetails.year === '2nd Year' ? '2' : personalDetails.year === '3rd Year' ? '3' : '4';
+    }
+    if (personalDetails.hostelName) {
+      user.hostel = personalDetails.hostelName;
+    }
+    await user.save();
+
+    // Update StudentProfile
+    let profile = await StudentProfile.findOne({ userId: user._id });
+    if (!profile) {
+      profile = new StudentProfile({ userId: user._id });
+    }
+
+    profile.personalDetails = {
+      ...profile.personalDetails,
+      ...personalDetails,
+      fullName: user.name, // force sync
+      email: user.email,       // force sync
+      college: user.college,   // force sync
+      branch: user.branch,     // force sync
+      year: user.currentYear   // force sync
+    };
+
+    if (familyDetails) {
+      profile.familyDetails = {
+        ...profile.familyDetails,
+        ...familyDetails
+      };
+    }
+
+    const { calculateProfileCompletion } = require('../utils/profileMetrics');
+    profile.profileCompletion = calculateProfileCompletion(user, profile);
+
+    await profile.save();
+    
+    // Recalculate readiness
+    await syncPlatformsForUser(user, { force: false });
+
+    return res.json({ message: 'Personal details updated successfully', personalDetails: profile.personalDetails, familyDetails: profile.familyDetails });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to update personal details' });
+  }
+});
+
+// GET /me/profile/professional
+router.get('/me/profile/professional', async (req, res) => {
+  try {
+    const StudentProfile = require('../models/StudentProfile');
+    let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
+    if (!profile) {
+      return res.json({
+        education: [],
+        skills: [],
+        projects: [],
+        experiences: [],
+        certifications: []
+      });
+    }
+    return res.json({
+      education: profile.education || [],
+      skills: profile.skills || [],
+      projects: profile.projects || [],
+      experiences: profile.experiences || [],
+      certifications: profile.certifications || []
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch professional profile' });
+  }
+});
+
+// PUT /me/profile/professional
+router.put('/me/profile/professional', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const StudentProfile = require('../models/StudentProfile');
+    const { education, skills, projects, experiences, certifications } = req.body;
+
+    let profile = await StudentProfile.findOne({ userId: user._id });
+    if (!profile) {
+      profile = new StudentProfile({ userId: user._id });
+    }
+
+    if (education !== undefined) profile.education = education;
+    if (skills !== undefined) profile.skills = skills;
+    if (projects !== undefined) profile.projects = projects;
+    if (experiences !== undefined) profile.experiences = experiences;
+    if (certifications !== undefined) profile.certifications = certifications;
+
+    const { calculateProfileCompletion } = require('../utils/profileMetrics');
+    profile.profileCompletion = calculateProfileCompletion(user, profile);
+
+    await profile.save();
+
+    // Recalculate readiness
+    await syncPlatformsForUser(user, { force: false });
+
+    return res.json({
+      message: 'Professional details updated successfully',
+      education: profile.education,
+      skills: profile.skills,
+      projects: profile.projects,
+      experiences: profile.experiences,
+      certifications: profile.certifications
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to update professional details' });
+  }
+});
+
+// GET /me/profile/coding
+router.get('/me/profile/coding', async (req, res) => {
+  try {
+    const CodingProfile = require('../models/CodingProfile');
+    let cp = await CodingProfile.findOne({ userId: req.currentUser._id });
+    if (!cp) {
+      cp = new CodingProfile({ userId: req.currentUser._id });
+      cp.leetcode.username = req.currentUser.leetcodeUsername || "";
+      cp.codechef.username = req.currentUser.codechefUsername || "";
+      cp.geeksforgeeks.username = req.currentUser.gfgUsername || "";
+      cp.github.username = req.currentUser.githubUsername || "";
+      cp.hackerrank.username = req.currentUser.hackerrankUsername || "";
+      await cp.save();
+    }
+    return res.json(cp);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch coding profile' });
+  }
+});
+
+// PUT /me/profile/coding
+router.put('/me/profile/coding', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const CodingProfile = require('../models/CodingProfile');
+    const {
+      leetcodeUsername,
+      codechefUsername,
+      gfgUsername,
+      githubUsername,
+      hackerrankUsername
+    } = req.body;
+
+    const {
+      validateLeetCode,
+      validateCodeChef,
+      validateGeeksforGeeks,
+      validateGitHub
+    } = require('../services/validationService');
+
+    const cleanStr = val => typeof val === 'string' ? val.trim() : "";
+
+    const lUsername = cleanStr(leetcodeUsername);
+    const ccUsername = cleanStr(codechefUsername);
+    const gfgUser = cleanStr(gfgUsername);
+    const ghUsername = cleanStr(githubUsername);
+    const hrUsername = cleanStr(hackerrankUsername);
+
+    // Validate
+    if (lUsername && lUsername !== user.leetcodeUsername) {
+      const isValid = await validateLeetCode(lUsername);
+      if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username' });
+    }
+    if (ccUsername && ccUsername !== user.codechefUsername) {
+      const isValid = await validateCodeChef(ccUsername);
+      if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username' });
+    }
+    if (gfgUser && gfgUser !== user.gfgUsername) {
+      const isValid = await validateGeeksforGeeks(gfgUser);
+      if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username' });
+    }
+    if (ghUsername && ghUsername !== user.githubUsername) {
+      const isValid = await validateGitHub(ghUsername);
+      if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username' });
+    }
+
+    user.leetcodeUsername = lUsername || undefined;
+    user.codechefUsername = ccUsername || undefined;
+    user.gfgUsername = gfgUser || undefined;
+    user.githubUsername = ghUsername || undefined;
+    user.githubUrl = ghUsername ? `https://github.com/${ghUsername}` : undefined;
+    user.hackerrankUsername = hrUsername || "";
+    if (!hrUsername) {
+      user.hackerrank = null;
+    } else {
+      user.hackerrank = {
+        username: hrUsername,
+        totalProblemsSolved: user.hackerrank?.totalProblemsSolved || 0,
+        badgeCount: user.hackerrank?.badgeCount || 0,
+        skills: user.hackerrank?.skills || [],
+        certifications: user.hackerrank?.certifications || []
+      };
+    }
+    await user.save();
+
+    let cp = await CodingProfile.findOne({ userId: user._id });
+    if (!cp) cp = new CodingProfile({ userId: user._id });
+
+    cp.leetcode.username = lUsername;
+    cp.codechef.username = ccUsername;
+    cp.geeksforgeeks.username = gfgUser;
+    cp.github.username = ghUsername;
+    cp.hackerrank.username = hrUsername;
+    await cp.save();
+
+    // Trigger full sync
+    const updatedUser = await syncPlatformsForUser(user, { force: true });
+
+    return res.json({ message: 'Coding profiles updated and synced successfully', user: updatedUser });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to update coding profiles' });
+  }
+});
+
+// PUT /me/change-password
+router.put('/me/change-password', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const bcrypt = require('bcryptjs');
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    return res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to change password' });
+  }
 });
 
 // Update academic + coding profile + HackerRank manual data
@@ -357,6 +692,19 @@ router.post(
         filePath: storageResult ? storageResult.url : undefined
       };
 
+      const StudentProfile = require('../models/StudentProfile');
+      let profile = await StudentProfile.findOne({ userId: user._id });
+      if (!profile) {
+        profile = new StudentProfile({ userId: user._id });
+      }
+      profile.certifications.push({
+        title,
+        provider: issuer,
+        issueDate: date ? new Date(date) : undefined,
+        credentialLink: credentialLink || ""
+      });
+      await profile.save();
+
       user.certifications.push(cert);
       await markManualActivity(user);
 
@@ -464,6 +812,26 @@ router.post(
         liveUrl,
         screenshotPaths
       };
+
+      const StudentProfile = require('../models/StudentProfile');
+      let profile = await StudentProfile.findOne({ userId: user._id });
+      if (!profile) {
+        profile = new StudentProfile({ userId: user._id });
+      }
+      profile.projects.push({
+        title: name,
+        description: Array.isArray(highlights) ? highlights.join('\n') : highlights || "",
+        technologies: Array.isArray(techStack)
+          ? techStack
+          : typeof techStack === 'string'
+            ? techStack.split(',').map((s) => s.trim())
+            : [],
+        githubLink: githubUrl || "",
+        liveLink: liveUrl || "",
+        startDate: null,
+        endDate: null
+      });
+      await profile.save();
 
       user.projects.push(project);
       await markManualActivity(user);

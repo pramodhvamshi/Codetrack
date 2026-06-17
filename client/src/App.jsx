@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { StudentResume } from './pages/student/StudentResume';
+import { StudentProfileEdit } from './pages/student/StudentProfileEdit';
 
 import { CoordinatorDashboard } from './pages/coordinator/CoordinatorDashboard';
 import { CoordinatorStudents } from './pages/coordinator/CoordinatorStudents';
@@ -104,6 +105,39 @@ function AppRoutes() {
           element={
             <ProtectedRoute role="student">
               <StudentResume />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/personal"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="personal" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/professional"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="professional" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/coding"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="coding" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/password"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="password" />
             </ProtectedRoute>
           }
         />
