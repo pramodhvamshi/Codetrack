@@ -1,6 +1,6 @@
 const PDFDocument = require('pdfkit');
 
-function buildResumePdfBuffer(user, options = {}) {
+async function buildResumePdfBuffer(user, options = {}) {
   // Support both new keys (single_column/double_column) and legacy keys (template_a/b)
   const templateRaw = options.template || 'single_column';
   // Map legacy keys to new ones
@@ -26,6 +26,10 @@ function buildResumePdfBuffer(user, options = {}) {
   // Unify content from custom version edits OR fallback to user profile
   let content = options.content;
   if (!content) {
+    const AcademicProfile = require('../models/AcademicProfile');
+    const academic = await AcademicProfile.findOne({ userId: user._id });
+    const resolvedGpa = academic?.cgpa != null ? String(academic.cgpa) : (user.overallGpa != null ? String(user.overallGpa) : '');
+
     content = {
       personalDetails: {
         name: user.name || '',
@@ -43,7 +47,7 @@ function buildResumePdfBuffer(user, options = {}) {
           fieldOfStudy: user.branch || '',
           startYear: user.year ? String(2026 - (4 - Number(user.year))) : '2022',
           endYear: '2026',
-          gpa: user.overallGpa != null ? String(user.overallGpa) : ''
+          gpa: resolvedGpa
         }
       ],
       skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],

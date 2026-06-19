@@ -48,6 +48,15 @@ const query = `
       globalRanking
       topPercentage
     }
+    userContestRankingHistory(username: $username) {
+      attended
+      rating
+      ranking
+      contest {
+        title
+        startTime
+      }
+    }
   }
 `;
 
@@ -58,6 +67,7 @@ const formatData = (data, username) => {
   const totalSubmissionNum = submitStats.totalSubmissionNum || [];
   const allQuestionsCount = data.allQuestionsCount || [];
   const contest = data.userContestRanking || {};
+  const rawHistory = data.userContestRankingHistory || [];
 
   // Parse submission calendar to object BEFORE storing
   let parsedCalendar = {};
@@ -74,6 +84,15 @@ const formatData = (data, username) => {
     displayName: b.displayName || '',
     icon: b.icon ? (b.icon.startsWith('http') ? b.icon : `https://leetcode.com${b.icon}`) : ''
   })) : [];
+
+  const formattedHistory = rawHistory
+    .filter(h => h.attended)
+    .map(h => ({
+      name: h.contest?.title || 'Contest',
+      date: h.contest?.startTime ? new Date(Number(h.contest.startTime) * 1000).toISOString().split('T')[0] : 'N/A',
+      rating: h.rating
+    }))
+    .slice(-10);
 
   return {
     username,
@@ -98,7 +117,8 @@ const formatData = (data, username) => {
       ? (acSubmissionNum[0]?.submissions / totalSubmissionNum[0]?.submissions) * 100 
       : 0,
     badges: badgesList,
-    badgeCount: badgesList.length
+    badgeCount: badgesList.length,
+    contestHistory: formattedHistory
   };
 };
 

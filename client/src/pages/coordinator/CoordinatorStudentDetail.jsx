@@ -33,6 +33,7 @@ export function CoordinatorStudentDetail() {
   const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [resumeAnalytics, setResumeAnalytics] = useState(null);
   const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false);
+  const [appendResume, setAppendResume] = useState(true);
 
   const backendBase = `${API_BASE_URL}/api`;
 
@@ -185,7 +186,7 @@ export function CoordinatorStudentDetail() {
 
   const handleDownloadReportPdf = async () => {
     try {
-      const downloadUrl = `${backendBase}/coordinator/students/${id}/report/pdf`;
+      const downloadUrl = `${backendBase}/coordinator/students/${id}/report/pdf?appendResume=${appendResume}`;
       const res = await fetch(downloadUrl, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -239,25 +240,38 @@ export function CoordinatorStudentDetail() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={handleDownloadReportPdf}
-              className="ct-button"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                fontSize: '0.85rem',
-                padding: '0.4rem 0.8rem',
-                background: 'linear-gradient(135deg, var(--accent-green), var(--accent-blue))',
-                color: '#0b1120',
-                fontWeight: '600',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <Download size={15} /> Report Card PDF
-            </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <button
+                onClick={handleDownloadReportPdf}
+                className="ct-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.85rem',
+                  padding: '0.4rem 0.8rem',
+                  background: 'linear-gradient(135deg, var(--accent-green), var(--accent-blue))',
+                  color: '#0b1120',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Download size={15} /> Report Card PDF
+              </button>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={appendResume}
+                  onChange={(e) => setAppendResume(e.target.checked)}
+                  style={{ width: 14, height: 14, cursor: 'pointer' }}
+                />
+                Append Resume
+              </label>
+            </div>
+
             <span className="ct-chip" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}>
               Weighted Score: <strong>{Math.round(scores.weightedRankScore || 0)}</strong>
             </span>
@@ -413,6 +427,51 @@ export function CoordinatorStudentDetail() {
                 <span>🏫 College: <strong>{student.personalDetails?.college || student.college || '—'}</strong></span>
                 <span>💻 Branch: <strong>{student.personalDetails?.branch || student.branch || '—'}</strong></span>
                 <span>📅 Academic Year: <strong>{student.personalDetails?.year || student.currentYear || '—'}</strong></span>
+              </div>
+
+              {/* SGPA & CGPA Scorecard */}
+              <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Semester GPAs & Cumulative Scores</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', background: 'rgba(255,255,255,0.02)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 1</div>
+                    <strong>{student.academicProfile?.sgpa1 ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 2</div>
+                    <strong>{student.academicProfile?.sgpa2 ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 3</div>
+                    <strong>{student.academicProfile?.sgpa3 ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 4</div>
+                    <strong>{student.academicProfile?.sgpa4 ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 5</div>
+                    <strong>{student.academicProfile?.sgpa5 ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 6</div>
+                    <strong>{student.academicProfile?.sgpa6 ?? '—'}</strong>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem', marginTop: '0.4rem', background: 'rgba(59,130,246,0.05)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#60a5fa' }}>CGPA</div>
+                    <strong style={{ fontSize: '1.05rem', color: '#60a5fa' }}>{student.academicProfile?.cgpa ?? student.overallGpa ?? '—'}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>Backlogs</div>
+                    <strong style={{ fontSize: '1.05rem', color: '#ef4444' }}>{student.academicProfile?.backlogs ?? 0}</strong>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#10b981' }}>Status</div>
+                    <strong style={{ fontSize: '1.05rem', color: '#10b981' }}>{student.academicProfile?.academicStatus || '—'}</strong>
+                  </div>
+                </div>
               </div>
 
               <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>SSC Details</h4>

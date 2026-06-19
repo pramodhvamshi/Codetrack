@@ -1,10 +1,10 @@
 const express = require('express');
-const { authMiddleware, requireRole } = require('../middleware/auth');
+const { authMiddleware, requireAnyRole } = require('../middleware/auth');
 const User = require('../models/User');
 
 const router = express.Router();
 
-router.use(authMiddleware, requireRole('coordinator'));
+router.use(authMiddleware, requireAnyRole(['coordinator', 'admin']));
 
 // Dashboard summary: total students, active vs inactive, platform-wise stats (individual, not summed)
 router.get('/dashboard', async (req, res) => {
@@ -427,8 +427,12 @@ router.get('/students/:id', async (req, res) => {
 
     const StudentProfile = require('../models/StudentProfile');
     const CodingProfile = require('../models/CodingProfile');
+    const AcademicProfile = require('../models/AcademicProfile');
+    
     const profile = await StudentProfile.findOne({ userId: student._id });
     const codingProfile = await CodingProfile.findOne({ userId: student._id });
+    const academic = await AcademicProfile.findOne({ userId: student._id });
+    const resolvedGpa = academic?.cgpa != null ? academic.cgpa : student.overallGpa;
 
     return res.json({
       student,
@@ -441,7 +445,18 @@ router.get('/students/:id', async (req, res) => {
       branch: student.branch,
       year: student.year,
       currentYear: student.currentYear || '1st Year',
-      overallGpa: student.overallGpa,
+      overallGpa: resolvedGpa,
+      academicProfile: academic || {
+        sgpa1: null,
+        sgpa2: null,
+        sgpa3: null,
+        sgpa4: null,
+        sgpa5: null,
+        sgpa6: null,
+        cgpa: null,
+        backlogs: 0,
+        academicStatus: '-'
+      },
       leetcodeUsername: student.leetcodeUsername,
       codechefUsername: student.codechefUsername,
       gfgUsername: student.gfgUsername,
@@ -488,15 +503,112 @@ router.get('/students/:id/report/pdf', async (req, res) => {
     
     const StudentProfile = require('../models/StudentProfile');
     const CodingProfile = require('../models/CodingProfile');
+    const AcademicProfile = require('../models/AcademicProfile');
+    const ResumeVersion = require('../models/ResumeVersion');
+    const ResumeFile = require('../models/ResumeFile');
+
     const profile = await StudentProfile.findOne({ userId: student._id });
     const codingProfile = await CodingProfile.findOne({ userId: student._id });
+    const academic = await AcademicProfile.findOne({ userId: student._id });
+    
+    if (academic && academic.cgpa !== null) {
+      student.overallGpa = academic.cgpa;
+    }
 
     const { buildStudentReportPdf } = require('../utils/pdfReport');
-    const buffer = await buildStudentReportPdf(student, profile, codingProfile);
+    const WeeklySnapshot = require('../models/WeeklySnapshot');
+    const ContestSnapshot = require('../models/ContestSnapshot');
+    const LeetCodeGrowthSnapshot = require('../models/LeetCodeGrowthSnapshot');
+
+    const weeklySnapshots = await WeeklySnapshot.find({ userId: student._id }).sort({ weekKey: 1 });
+    const contestSnapshots = await ContestSnapshot.find({ userId: student._id }).sort({ monthKey: 1 });
+    const leetcodeGrowthSnapshots = await LeetCodeGrowthSnapshot.find({ userId: student._id }).sort({ weekKey: 1 });
+
+    const defaultResume = await ResumeVersion.findOne({ userId: student._id, isDefault: true })
+      || await ResumeVersion.findOne({ userId: student._id }).sort({ updatedAt: -1 });
+    const defaultFile = await ResumeFile.findOne({ userId: student._id, isDefault: true });
+
+    // Download/Resolve Profile Photo Buffer
+    let photoUrl = student.profilePhoto || profile?.personalDetails?.profilePhoto || student.avatar;
+    if (!photoUrl && student.githubUsername) {
+      photoUrl = `https://github.com/${student.githubUsername}.png?size=150`;
+    }
+    
+    let photoBuffer = null;
+    if (photoUrl && /^https?:\/\//i.test(photoUrl)) {
+      try {
+        const axios = require('axios');
+        const resPhoto = await axios.get(photoUrl, { responseType: 'arraybuffer', timeout: 5000 });
+        photoBuffer = Buffer.from(resPhoto.data);
+      } catch (photoErr) {
+        console.error('Failed to download student profile photo:', photoErr.message);
+      }
+    }
+
+    const reportBuffer = await buildStudentReportPdf(student, profile, codingProfile, {
+      academic,
+      weeklySnapshots,
+      contestSnapshots,
+      leetcodeGrowthSnapshots,
+      defaultResume,
+      photoBuffer
+    });
+
+    let finalBuffer = reportBuffer;
+    const appendResume = req.query.appendResume !== 'false';
+
+    if (appendResume) {
+      try {
+        let resumeBuffer = null;
+        if (defaultResume) {
+          const { buildResumePdfBuffer } = require('../services/resumeService');
+          try {
+            resumeBuffer = await buildResumePdfBuffer(student, {
+              template: defaultResume.templateKey,
+              sections: defaultResume.layout?.sectionsOrder,
+              hiddenSections: defaultResume.layout?.hiddenSections || [],
+              content: defaultResume.content
+            });
+            console.log('Successfully generated resume PDF buffer from Resume Builder content.');
+          } catch (builderErr) {
+            console.error('Failed to build resume from Resume Builder content:', builderErr.message);
+          }
+        }
+
+        // Fallback to Cloudinary PDF download if builder fails or doesn't exist
+        if (!resumeBuffer && defaultFile && defaultFile.resumeUrl && /^https?:\/\//i.test(defaultFile.resumeUrl)) {
+          try {
+            const axios = require('axios');
+            const resDownload = await axios.get(defaultFile.resumeUrl, { responseType: 'arraybuffer', timeout: 8000 });
+            resumeBuffer = Buffer.from(resDownload.data);
+            console.log('Successfully downloaded resume PDF buffer from Cloudinary.');
+          } catch (downloadErr) {
+            console.error('Failed to download resume from Cloudinary:', downloadErr.message);
+          }
+        }
+
+        if (resumeBuffer) {
+          const { PDFDocument } = require('pdf-lib');
+          const doc1 = await PDFDocument.load(reportBuffer);
+          const doc2 = await PDFDocument.load(resumeBuffer);
+          const mergedDoc = await PDFDocument.create();
+          
+          const pages1 = await mergedDoc.copyPages(doc1, doc1.getPageIndices());
+          pages1.forEach(p => mergedDoc.addPage(p));
+          const pages2 = await mergedDoc.copyPages(doc2, doc2.getPageIndices());
+          pages2.forEach(p => mergedDoc.addPage(p));
+          
+          finalBuffer = Buffer.from(await mergedDoc.save());
+          console.log('Successfully merged report card PDF and student resume.');
+        }
+      } catch (mergeErr) {
+        console.error('Dynamic PDF merge skipped or failed:', mergeErr.message);
+      }
+    }
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="report-${student.name}.pdf"`);
-    return res.send(buffer);
+    return res.send(finalBuffer);
   } catch (err) {
     console.error('Coordinator student report card PDF generation error:', err);
     return res.status(500).json({ message: 'Failed to generate report card PDF' });
@@ -833,6 +945,822 @@ router.get('/students/:id/resume-analytics', async (req, res) => {
   } catch (err) {
     console.error('Coordinator student resume analytics error:', err);
     return res.status(500).json({ message: 'Failed to fetch resume analytics' });
+  }
+});
+
+// Helper to get start of week (Monday)
+function getStartOfWeek(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+// Helper to get month key
+function getMonthKey(date = new Date()) {
+  return date.toISOString().slice(0, 7); // "YYYY-MM"
+}
+
+// Build pipeline for report filtering
+const buildBaseQueryPipeline = (filters) => {
+  const { college, branch, currentYear, section, mentorName, gender, search } = filters;
+  const match = { role: 'student', isOnboarded: true };
+  if (college) match.college = college;
+  if (branch) match.branch = branch;
+  if (currentYear) match.currentYear = currentYear;
+
+  const pipeline = [
+    { $match: match },
+    {
+      $lookup: {
+        from: 'studentprofiles',
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'profile'
+      }
+    },
+    { $unwind: { path: '$profile', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'academicprofiles',
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'academic'
+      }
+    },
+    { $unwind: { path: '$academic', preserveNullAndEmptyArrays: true } }
+  ];
+
+  // Apply profile sub-document filters
+  if (section) {
+    pipeline.push({ $match: { 'profile.personalDetails.section': section } });
+  }
+  if (mentorName) {
+    pipeline.push({ $match: { 'profile.personalDetails.mentorName': mentorName } });
+  }
+  if (gender) {
+    pipeline.push({ $match: { 'profile.personalDetails.gender': gender } });
+  }
+
+  // Multi-field search
+  if (search) {
+    const escaped = search.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
+    pipeline.push({
+      $match: {
+        $or: [
+          { name: regex },
+          { mssid: regex },
+          { 'profile.personalDetails.rollNumber': regex }
+        ]
+      }
+    });
+  }
+
+  return pipeline;
+};
+
+// Helper to format values or return a fallback
+const formatVal = (val, dec = 2, fallback = 'N/A') => {
+  if (val === undefined || val === null || val === '' || isNaN(val)) return fallback;
+  return Number(val).toFixed(dec);
+};
+
+// Shared student-to-row mapping function for API and Excel exports
+const mapStudentToRow = (s, reportType, solved30DaysMap, lastSubDateMap, prevSnapMap, growthMap, w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr) => {
+  const pd = s.profile?.personalDetails || {};
+  const ac = s.academic || {};
+  const lc = s.platformStats?.leetcode || {};
+  const cc = s.platformStats?.codechef || {};
+  
+  const studentIdStr = String(s._id);
+  const resolvedCgpa = ac.cgpa != null ? ac.cgpa : s.overallGpa;
+  
+  let riskStatus = 'Low Risk';
+  if (resolvedCgpa != null) {
+    if (resolvedCgpa < 8.0) riskStatus = 'High Risk';
+    else if (resolvedCgpa <= 8.5) riskStatus = 'Medium Risk';
+  }
+
+  const baseInfo = {
+    id: studentIdStr,
+    mssid: s.mssid || '',
+    rollNumber: pd.rollNumber || '',
+    name: s.name,
+    email: s.email,
+    mobile: pd.mobile || '',
+    gender: pd.gender || '',
+    college: s.college || '',
+    branch: s.branch || '',
+    year: s.currentYear || (s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : s.year) || '',
+    section: pd.section || '',
+    mentorName: pd.mentorName || ''
+  };
+
+  if (reportType === 'student-master') {
+    return {
+      ...baseInfo,
+      leetcodeUsername: s.leetcodeUsername || '',
+      codechefUsername: s.codechefUsername || '',
+      gfgUsername: s.gfgUsername || '',
+      githubUsername: s.githubUsername || '',
+      profileCompletion: s.profile?.profileCompletion || 0,
+      placementScore: s.profile?.readinessProfile?.overallReadiness || 0,
+      profileStatus: s.activityStatus || 'inactive',
+      lastLogin: s.lastLogin || null,
+      lastSyncDate: s.lastPlatformSyncAt || null,
+      accountStatus: s.isActive === false ? 'Inactive' : 'Active'
+    };
+  } else if (reportType === 'leetcode-tracking') {
+    return {
+      ...baseInfo,
+      leetcodeUsername: s.leetcodeUsername || '',
+      totalSolved: lc.problemsSolved || 0,
+      easySolved: lc.easySolved || 0,
+      mediumSolved: lc.mediumSolved || 0,
+      hardSolved: lc.hardSolved || 0,
+      contestRating: lc.rating || 0,
+      contestRank: lc.ranking || 0,
+      problemsSolvedLast30Days: solved30DaysMap.get(studentIdStr) || 0,
+      currentStreak: s.currentStreak || 0,
+      longestStreak: s.longestStreak || 0,
+      lastSubmissionDate: lastSubDateMap.get(studentIdStr) || null,
+      lastSyncDate: lc.lastSyncAt || null,
+      acceptanceRate: lc.acceptanceRate || 0,
+      contestCount: lc.contestCount || 0
+    };
+  } else if (reportType === 'contest-tracking') {
+    const lcPrevRating = prevSnapMap.get(studentIdStr)?.leetcode?.rating || 0;
+    const lcCurrentRating = lc.rating || 0;
+    const lcPrevRank = prevSnapMap.get(studentIdStr)?.leetcode?.ranking || 0;
+    const lcCurrentRank = lc.ranking || 0;
+    
+    const ccCurrentRating = cc.currentRating || cc.rating || 0;
+    const ccHighestRating = cc.highestRating || 0;
+    const ccStars = cc.stars || '1★';
+    const ccGlobalRank = cc.globalRank || 0;
+    const ccCountryRank = cc.countryRank || 'Inactive';
+
+    return {
+      ...baseInfo,
+      lcCurrentRating,
+      lcPreviousRating,
+      lcRatingGrowth: lcCurrentRating - lcPrevRating,
+      lcCurrentRank,
+      lcPreviousRank,
+      lcRankChange: lcPrevRank > 0 && lcCurrentRank > 0 ? lcPrevRank - lcCurrentRank : 0,
+      lcContestCount: lc.contestCount || 0,
+      lcLastContestDate: lc.lastSyncAt || null,
+      ccCurrentRating,
+      ccHighestRating,
+      ccStars,
+      ccGlobalRank,
+      ccCountryRank,
+      prevSnapshotDate: prevSnapMap.get(studentIdStr)?.snapshotDate || null,
+      contestStatus: (lc.contestCount > 0 || (cc.contestCount || 0) > 0) ? 'Active' : 'No Contests'
+    };
+  } else if (reportType === 'weekly-rank') {
+    const lcHistory = lc.contestHistory || [];
+    const L = lcHistory.length;
+
+    // Last 4 attended contests, ordered oldest to newest
+    const lcW1 = L >= 4 ? lcHistory[L - 4] : (L >= 1 ? lcHistory[0] : null);
+    const lcW2 = L >= 4 ? lcHistory[L - 3] : (L >= 2 ? lcHistory[1] : null);
+    const lcW3 = L >= 4 ? lcHistory[L - 2] : (L >= 3 ? lcHistory[2] : null);
+    const lcW4 = L >= 4 ? lcHistory[L - 1] : null;
+
+    const lcCurrent = lc.rating || 0;
+    let oldestRating = null;
+    if (L > 0) {
+      oldestRating = lcHistory[Math.max(0, L - 4)].rating;
+    }
+    const lcGrowth = oldestRating !== null ? lcCurrent - oldestRating : 0;
+
+    const ccCurrentRating = cc.currentRating || cc.rating || 0;
+    const ccHighestRating = cc.highestRating || 0;
+    const ccStars = cc.stars || '1★';
+    const ccGlobalRank = cc.globalRank || 0;
+    const ccCountryRank = cc.countryRank || 'Inactive';
+
+    return {
+      ...baseInfo,
+      lcW1, lcW2, lcW3, lcW4, lcCurrent,
+      lcGrowth,
+      lcCurrentRank: lc.ranking || 0,
+      ccCurrentRating,
+      ccHighestRating,
+      ccStars,
+      ccGlobalRank,
+      ccCountryRank
+    };
+  } else if (reportType === 'medium-growth') {
+    const w1Count = growthMap.get(`${studentIdStr}-${w1KeyStr}`) || 0;
+    const w2Count = growthMap.get(`${studentIdStr}-${w2KeyStr}`) || 0;
+    const w3Count = growthMap.get(`${studentIdStr}-${w3KeyStr}`) || 0;
+    const w4Count = growthMap.get(`${studentIdStr}-${w4KeyStr}`) || 0;
+    const currentCount = lc.mediumSolved || 0;
+    const growth = currentCount - w1Count;
+    const growthPercentage = w1Count > 0 ? (growth / w1Count) * 100 : (currentCount > 0 ? 100 : 0);
+
+    return {
+      ...baseInfo,
+      w1Count, w2Count, w3Count, w4Count, currentCount,
+      growth,
+      growthPercentage
+    };
+  } else if (reportType === 'codechef-tracking') {
+    return {
+      ...baseInfo,
+      codechefUsername: s.codechefUsername || '',
+      currentRating: cc.currentRating || cc.rating || 0,
+      highestRating: cc.highestRating || 0,
+      stars: cc.stars || '1★',
+      globalRank: cc.globalRank || 0,
+      countryRank: cc.countryRank || 'Inactive',
+      problemsSolved: cc.problemsSolved || 0,
+      lastSyncDate: cc.lastSyncAt || null
+    };
+  } else if (reportType === 'cgpa-tracking') {
+    return {
+      ...baseInfo,
+      sgpa1: ac.sgpa1 ?? null,
+      sgpa2: ac.sgpa2 ?? null,
+      sgpa3: ac.sgpa3 ?? null,
+      sgpa4: ac.sgpa4 ?? null,
+      sgpa5: ac.sgpa5 ?? null,
+      sgpa6: ac.sgpa6 ?? null,
+      cgpa: resolvedCgpa ?? null,
+      backlogs: ac.backlogs ?? 0,
+      academicStatus: ac.academicStatus || '-'
+    };
+  } else if (reportType === 'below-9-cgpa') {
+    return {
+      ...baseInfo,
+      cgpa: resolvedCgpa ?? 0,
+      leetcodeSolved: lc.problemsSolved || 0,
+      leetcodeContestRating: lc.rating || 0,
+      codechefRating: cc.currentRating || cc.rating || 0,
+      placementScore: s.profile?.readinessProfile?.overallReadiness || 0,
+      riskStatus
+    };
+  }
+};
+
+// GET cohort dashboard cards summary
+router.get('/tracking-reports/dashboard-cards', async (req, res) => {
+  try {
+    const { college, branch, currentYear, section, mentorName, gender } = req.query;
+    const crypto = require('crypto');
+    const filterHash = crypto.createHash('md5').update(JSON.stringify({ college, branch, currentYear, section, mentorName, gender })).digest('hex');
+    const cacheKey = `coord-dashboard-cards-${filterHash}`;
+
+    const ReportCache = require('../models/ReportCache');
+    const cached = await ReportCache.findOne({ cacheKey });
+    if (cached && cached.expiresAt > new Date()) {
+      return res.json(cached.data);
+    }
+
+    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender });
+
+    pipeline.push({
+      $group: {
+        _id: null,
+        totalStudents: { $sum: 1 },
+        activeStudents: { $sum: { $cond: [{ $eq: ['$activityStatus', 'active'] }, 1, 0] } },
+        inactiveStudents: { $sum: { $cond: [{ $eq: ['$activityStatus', 'inactive'] }, 1, 0] } },
+        gpas: { $push: { $ifNull: ['$academic.cgpa', '$overallGpa'] } },
+        leetcodeRatings: { $push: { $cond: [{ $gt: ['$platformStats.leetcode.rating', 0] }, '$platformStats.leetcode.rating', null] } },
+        codechefRatings: { $push: { $cond: [{ $gt: [{ $ifNull: ['$platformStats.codechef.currentRating', '$platformStats.codechef.rating'] }, 0] }, { $ifNull: ['$platformStats.codechef.currentRating', '$platformStats.codechef.rating'] }, null] } },
+        totalProblemsSolvedList: {
+          $push: {
+            $add: [
+              { $ifNull: ['$platformStats.leetcode.problemsSolved', 0] },
+              { $ifNull: ['$platformStats.codechef.problemsSolved', 0] },
+              { $ifNull: ['$platformStats.geeksforgeeks.totalProblemsSolved', { $ifNull: ['$platformStats.geeksforgeeks.problemsSolved', 0] }] },
+              { $ifNull: ['$hackerrank.totalProblemsSolved', 0] }
+            ]
+          }
+        },
+        below9CgpaCount: { $sum: { $cond: [{ $lt: [{ $ifNull: ['$academic.cgpa', '$overallGpa'] }, 9.0] }, 1, 0] } },
+        noProfileCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $or: [{ $eq: ['$leetcodeUsername', ''] }, { $not: ['$leetcodeUsername'] }] },
+                  { $or: [{ $eq: ['$codechefUsername', ''] }, { $not: ['$codechefUsername'] }] },
+                  { $or: [{ $eq: ['$gfgUsername', ''] }, { $not: ['$gfgUsername'] }] },
+                  { $or: [{ $eq: ['$githubUsername', ''] }, { $not: ['$githubUsername'] }] }
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        },
+        highRiskCount: { $sum: { $cond: [{ $lt: [{ $ifNull: ['$academic.cgpa', '$overallGpa'] }, 8.0] }, 1, 0] } },
+        mediumRiskCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $gte: [{ $ifNull: ['$academic.cgpa', '$overallGpa'] }, 8.0] },
+                  { $lte: [{ $ifNull: ['$academic.cgpa', '$overallGpa'] }, 8.5] }
+                ]
+              },
+              1,
+              0
+            ]
+          }
+        }
+      }
+    });
+
+    const result = await User.aggregate(pipeline);
+    const data = result[0] || {
+      totalStudents: 0,
+      activeStudents: 0,
+      inactiveStudents: 0,
+      gpas: [],
+      leetcodeRatings: [],
+      codechefRatings: [],
+      totalProblemsSolvedList: [],
+      below9CgpaCount: 0,
+      noProfileCount: 0,
+      highRiskCount: 0,
+      mediumRiskCount: 0
+    };
+
+    const avg = (arr) => {
+      const filtered = arr.filter(v => v !== null && v !== undefined && !isNaN(v));
+      if (filtered.length === 0) return 0;
+      return filtered.reduce((a, b) => a + b, 0) / filtered.length;
+    };
+
+    const stats = {
+      totalStudents: data.totalStudents,
+      activeStudents: data.activeStudents,
+      inactiveStudents: data.inactiveStudents,
+      averageCgpa: Math.round(avg(data.gpas) * 100) / 100,
+      averageLeetcodeRating: Math.round(avg(data.leetcodeRatings)),
+      averageCodechefRating: Math.round(avg(data.codechefRatings)),
+      averageProblemsSolved: Math.round(avg(data.totalProblemsSolvedList)),
+      below9CgpaCount: data.below9CgpaCount,
+      noProfileCount: data.noProfileCount,
+      highRiskCount: data.highRiskCount,
+      mediumRiskCount: data.mediumRiskCount
+    };
+
+    await ReportCache.findOneAndUpdate(
+      { cacheKey },
+      { data: stats, expiresAt: new Date(Date.now() + 60 * 60 * 1000) }, // 1 hour
+      { upsert: true }
+    );
+
+    return res.json(stats);
+  } catch (err) {
+    console.error('Fetch dashboard summary cards statistics error:', err);
+    return res.status(500).json({ message: 'Failed to fetch summary statistics' });
+  }
+});
+
+// GET report tabular data
+router.get('/tracking-reports/data', async (req, res) => {
+  try {
+    const { reportType, college, branch, currentYear, section, mentorName, gender, search, page = 1, limit = 50, sortBy, sortOrder = 'asc' } = req.query;
+    
+    if (!reportType) {
+      return res.status(400).json({ message: 'reportType query parameter is required' });
+    }
+
+    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search });
+    const students = await User.aggregate(pipeline);
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const Activity = require('../models/Activity');
+    
+    const [solvedCounts, latestSubs] = await Promise.all([
+      Activity.aggregate([
+        { $match: { platform: 'leetcode', type: 'solved', timestamp: { $gte: thirtyDaysAgo } } },
+        { $group: { _id: '$userId', count: { $sum: 1 } } }
+      ]),
+      Activity.aggregate([
+        { $match: { platform: 'leetcode', type: 'solved' } },
+        { $sort: { timestamp: -1 } },
+        { $group: { _id: '$userId', lastDate: { $first: '$timestamp' } } }
+      ])
+    ]);
+    const solved30DaysMap = new Map(solvedCounts.map(item => [String(item._id), item.count]));
+    const lastSubDateMap = new Map(latestSubs.map(item => [String(item._id), item.lastDate]));
+
+    const ContestSnapshot = require('../models/ContestSnapshot');
+    const currentMonthKey = getMonthKey();
+    const prevMonthKey = getMonthKey(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+    const [currentSnaps, prevSnaps] = await Promise.all([
+      ContestSnapshot.find({ monthKey: currentMonthKey }),
+      ContestSnapshot.find({ monthKey: prevMonthKey })
+    ]);
+    const currentSnapMap = new Map(currentSnaps.map(s => [String(s.userId), s]));
+    const prevSnapMap = new Map(prevSnaps.map(s => [String(s.userId), s]));
+
+    const WeeklySnapshot = require('../models/WeeklySnapshot');
+    const w4KeyStr = getStartOfWeek().toISOString().split('T')[0];
+    const w3KeyStr = getStartOfWeek(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+    const w2KeyStr = getStartOfWeek(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+    const w1KeyStr = getStartOfWeek(new Date(Date.now() - 21 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+    const weeklySnaps = await WeeklySnapshot.find({
+      weekKey: { $in: [w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr] }
+    });
+    const weeklyMap = new Map();
+    weeklySnaps.forEach(s => {
+      weeklyMap.set(`${String(s.userId)}-${s.weekKey}`, s);
+    });
+
+    const LeetCodeGrowthSnapshot = require('../models/LeetCodeGrowthSnapshot');
+    const growthSnaps = await LeetCodeGrowthSnapshot.find({
+      weekKey: { $in: [w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr] }
+    });
+    const growthMap = new Map();
+    growthSnaps.forEach(s => {
+      growthMap.set(`${String(s.userId)}-${s.weekKey}`, s.mediumSolved || 0);
+    });
+
+    let rows = students.map(s => mapStudentToRow(s, reportType, solved30DaysMap, lastSubDateMap, prevSnapMap, growthMap, w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr));
+
+    if (reportType === 'below-9-cgpa') {
+      rows = rows.filter(r => r.cgpa < 9.0);
+    }
+
+    if (sortBy) {
+      rows.sort((a, b) => {
+        let valA = a[sortBy];
+        let valB = b[sortBy];
+        if (typeof valA === 'string') {
+          return sortOrder === 'desc' ? valB.localeCompare(valA) : valA.localeCompare(valB);
+        } else {
+          valA = valA || 0;
+          valB = valB || 0;
+          return sortOrder === 'desc' ? valB - valA : valA - valB;
+        }
+      });
+    }
+
+    const total = rows.length;
+    let paginatedRows = [];
+    if (limit === 'all' || limit === 'All') {
+      paginatedRows = rows;
+    } else {
+      const skip = (Number(page) - 1) * Number(limit);
+      paginatedRows = rows.slice(skip, skip + Number(limit));
+    }
+
+    // Dynamic distinct filters for dashboard select boxes
+    const allStudents = await User.find({ role: 'student', isOnboarded: true });
+    const colleges = [...new Set(allStudents.map(s => s.college).filter(Boolean))].sort();
+    const branches = [...new Set(allStudents.map(s => s.branch).filter(Boolean))].sort();
+    const years = [...new Set(allStudents.map(s => s.currentYear || (s.year === '1' ? '1st Year' : s.year === '2' ? '2nd Year' : s.year === '3' ? '3rd Year' : s.year === '4' ? '4th Year' : s.year)).filter(Boolean))].sort();
+
+    const StudentProfile = require('../models/StudentProfile');
+    const allProfiles = await StudentProfile.find({}, 'personalDetails');
+    const sections = [...new Set(allProfiles.map(p => p.personalDetails?.section).filter(Boolean))].sort();
+    const mentors = [...new Set(allProfiles.map(p => p.personalDetails?.mentorName).filter(Boolean))].sort();
+    const genders = [...new Set(allProfiles.map(p => p.personalDetails?.gender).filter(Boolean))].sort();
+
+    return res.json({
+      rows: paginatedRows,
+      total,
+      page: Number(page),
+      limit: limit === 'all' ? 'all' : Number(limit),
+      filters: { colleges, branches, years, sections, mentors, genders }
+    });
+  } catch (err) {
+    console.error('Fetch report data error:', err);
+    return res.status(500).json({ message: err.message || 'Failed to fetch report data' });
+  }
+});
+
+// Helper to populate worksheets for Exceljs
+const addWorksheetToWorkbook = (workbook, sheetName, reportType, rows) => {
+  const sheet = workbook.addWorksheet(sheetName);
+  let columns = [];
+
+  if (reportType === 'student-master') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Roll Number', key: 'rollNumber', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Mobile Number', key: 'mobile', width: 15 },
+      { header: 'Gender', key: 'gender', width: 10 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'Year', key: 'year', width: 12 },
+      { header: 'Section', key: 'section', width: 10 },
+      { header: 'Mentor Name', key: 'mentorName', width: 20 },
+      { header: 'LeetCode Username', key: 'leetcodeUsername', width: 20 },
+      { header: 'CodeChef Username', key: 'codechefUsername', width: 20 },
+      { header: 'GFG Username', key: 'gfgUsername', width: 20 },
+      { header: 'GitHub Username', key: 'githubUsername', width: 20 },
+      { header: 'Profile Completion %', key: 'profileCompletion', width: 20 },
+      { header: 'Placement Score', key: 'placementScore', width: 15 },
+      { header: 'Profile Status', key: 'profileStatus', width: 15 },
+      { header: 'Last Login', key: 'lastLogin', width: 20 },
+      { header: 'Last Sync Date', key: 'lastSyncDate', width: 20 },
+      { header: 'Account Status', key: 'accountStatus', width: 15 }
+    ];
+  } else if (reportType === 'leetcode-tracking') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'LeetCode Username', key: 'leetcodeUsername', width: 20 },
+      { header: 'Total Solved', key: 'totalSolved', width: 12 },
+      { header: 'Easy Solved', key: 'easySolved', width: 12 },
+      { header: 'Medium Solved', key: 'mediumSolved', width: 15 },
+      { header: 'Hard Solved', key: 'hardSolved', width: 12 },
+      { header: 'Contest Rating', key: 'contestRating', width: 15 },
+      { header: 'Contest Rank', key: 'contestRank', width: 15 },
+      { header: 'Acceptance Rate %', key: 'acceptanceRate', width: 18 },
+      { header: 'Contests Attended', key: 'contestCount', width: 18 },
+      { header: 'Solved Last 30 Days', key: 'problemsSolvedLast30Days', width: 20 },
+      { header: 'Current Streak', key: 'currentStreak', width: 15 },
+      { header: 'Longest Streak', key: 'longestStreak', width: 15 },
+      { header: 'Last Submission Date', key: 'lastSubmissionDate', width: 20 },
+      { header: 'Last Sync Date', key: 'lastSyncDate', width: 20 }
+    ];
+  } else if (reportType === 'contest-tracking') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'LC Current Rating', key: 'lcCurrentRating', width: 18 },
+      { header: 'LC Previous Rating', key: 'lcPreviousRating', width: 18 },
+      { header: 'LC Rating Growth', key: 'lcRatingGrowth', width: 18 },
+      { header: 'LC Current Rank', key: 'lcCurrentRank', width: 18 },
+      { header: 'LC Previous Rank', key: 'lcPreviousRank', width: 18 },
+      { header: 'LC Rank Change', key: 'lcRankChange', width: 15 },
+      { header: 'LC Contest Count', key: 'lcContestCount', width: 18 },
+      { header: 'LC Last Contest Date', key: 'lcLastContestDate', width: 20 },
+      { header: 'CC Current Rating', key: 'ccCurrentRating', width: 18 },
+      { header: 'CC Highest Rating', key: 'ccHighestRating', width: 18 },
+      { header: 'CC Stars', key: 'ccStars', width: 12 },
+      { header: 'CC Global Rank', key: 'ccGlobalRank', width: 18 },
+      { header: 'CC Country Rank', key: 'ccCountryRank', width: 18 }
+    ];
+  } else if (reportType === 'weekly-rank') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'LC Contest 1', key: 'lcW1', width: 22 },
+      { header: 'LC Contest 2', key: 'lcW2', width: 22 },
+      { header: 'LC Contest 3', key: 'lcW3', width: 22 },
+      { header: 'LC Contest 4', key: 'lcW4', width: 22 },
+      { header: 'LC Current Rating', key: 'lcCurrent', width: 18 },
+      { header: 'LC Growth', key: 'lcGrowth', width: 15 },
+      { header: 'LC Current Rank', key: 'lcCurrentRank', width: 18 },
+      { header: 'CC Current Rating', key: 'ccCurrentRating', width: 18 },
+      { header: 'CC Highest Rating', key: 'ccHighestRating', width: 18 },
+      { header: 'CC Stars', key: 'ccStars', width: 12 },
+      { header: 'CC Global Rank', key: 'ccGlobalRank', width: 18 },
+      { header: 'CC Country Rank', key: 'ccCountryRank', width: 18 }
+    ];
+  } else if (reportType === 'medium-growth') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'Week 1 Medium Count', key: 'w1Count', width: 20 },
+      { header: 'Week 2 Medium Count', key: 'w2Count', width: 20 },
+      { header: 'Week 3 Medium Count', key: 'w3Count', width: 20 },
+      { header: 'Week 4 Medium Count', key: 'w4Count', width: 20 },
+      { header: 'Current Medium Count', key: 'currentCount', width: 20 },
+      { header: 'Medium Growth', key: 'growth', width: 18 },
+      { header: 'Growth Percentage %', key: 'growthPercentage', width: 20 }
+    ];
+  } else if (reportType === 'codechef-tracking') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'CodeChef Username', key: 'codechefUsername', width: 20 },
+      { header: 'Current Rating', key: 'currentRating', width: 15 },
+      { header: 'Highest Rating', key: 'highestRating', width: 15 },
+      { header: 'Stars', key: 'stars', width: 12 },
+      { header: 'Global Rank', key: 'globalRank', width: 15 },
+      { header: 'Country Rank', key: 'countryRank', width: 15 },
+      { header: 'Problems Solved', key: 'problemsSolved', width: 15 },
+      { header: 'Last Sync Date', key: 'lastSyncDate', width: 20 }
+    ];
+  } else if (reportType === 'cgpa-tracking') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'Semester 1 GPA', key: 'sgpa1', width: 15 },
+      { header: 'Semester 2 GPA', key: 'sgpa2', width: 15 },
+      { header: 'Semester 3 GPA', key: 'sgpa3', width: 15 },
+      { header: 'Semester 4 GPA', key: 'sgpa4', width: 15 },
+      { header: 'Semester 5 GPA', key: 'sgpa5', width: 15 },
+      { header: 'Semester 6 GPA', key: 'sgpa6', width: 15 },
+      { header: 'Current CGPA', key: 'cgpa', width: 15 },
+      { header: 'Backlogs', key: 'backlogs', width: 12 },
+      { header: 'Academic Status', key: 'academicStatus', width: 18 }
+    ];
+  } else if (reportType === 'below-9-cgpa') {
+    columns = [
+      { header: 'MSS ID', key: 'mssid', width: 15 },
+      { header: 'Student Name', key: 'name', width: 25 },
+      { header: 'College', key: 'college', width: 25 },
+      { header: 'Branch', key: 'branch', width: 12 },
+      { header: 'Mentor Name', key: 'mentorName', width: 20 },
+      { header: 'CGPA', key: 'cgpa', width: 12 },
+      { header: 'LeetCode Solved', key: 'leetcodeSolved', width: 18 },
+      { header: 'LeetCode Contest Rating', key: 'leetcodeContestRating', width: 22 },
+      { header: 'CodeChef Rating', key: 'codechefRating', width: 18 },
+      { header: 'Placement Score', key: 'placementScore', width: 18 },
+      { header: 'Risk Status', key: 'riskStatus', width: 15 }
+    ];
+  }
+
+  sheet.columns = columns;
+
+  rows.forEach(r => {
+    const rowObj = { ...r };
+    if (rowObj.lastLogin) rowObj.lastLogin = new Date(rowObj.lastLogin).toLocaleString();
+    if (rowObj.lastSyncDate) rowObj.lastSyncDate = new Date(rowObj.lastSyncDate).toLocaleString();
+    if (rowObj.lcLastContestDate) rowObj.lcLastContestDate = new Date(rowObj.lcLastContestDate).toLocaleString();
+    if (rowObj.ccLastContestDate) rowObj.ccLastContestDate = new Date(rowObj.ccLastContestDate).toLocaleString();
+    if (rowObj.lastSubmissionDate) rowObj.lastSubmissionDate = new Date(rowObj.lastSubmissionDate).toLocaleString();
+    if (rowObj.prevSnapshotDate) rowObj.prevSnapshotDate = new Date(rowObj.prevSnapshotDate).toLocaleString();
+
+    // Format LC weekly ranking cells (Contest 1 to 4)
+    ['lcW1', 'lcW2', 'lcW3', 'lcW4'].forEach(k => {
+      const contest = rowObj[k];
+      if (contest && typeof contest === 'object' && contest.name) {
+        rowObj[k] = `${contest.name}\n${contest.date}\nRating: ${Number(contest.rating).toFixed(2)}`;
+      } else {
+        rowObj[k] = 'N/A';
+      }
+    });
+
+    // Formatting decimal statistics to exactly 2 decimals
+    const numericFields = [
+      'lcCurrent', 'lcGrowth', 'lcCurrentRating', 'lcPreviousRating', 'lcRatingGrowth',
+      'ccCurrentRating', 'ccHighestRating', 'cgpa', 'sgpa1', 'sgpa2', 'sgpa3', 'sgpa4', 'sgpa5', 'sgpa6',
+      'acceptanceRate', 'placementScore', 'growthPercentage', 'leetcodeContestRating', 'codechefRating'
+    ];
+    numericFields.forEach(f => {
+      if (rowObj[f] !== undefined && rowObj[f] !== null && rowObj[f] !== '' && !isNaN(rowObj[f])) {
+        rowObj[f] = Number(rowObj[f]).toFixed(2);
+      }
+    });
+
+    sheet.addRow(rowObj);
+  });
+
+  const headerRow = sheet.getRow(1);
+  headerRow.eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: '1E3A8A' }
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+  headerRow.height = 25;
+};
+
+// GET workbook / sheets exports using active filters
+router.get('/tracking-reports/export', async (req, res) => {
+  try {
+    const { reportType, college, branch, currentYear, section, mentorName, gender, search } = req.query;
+    
+    if (!reportType) {
+      return res.status(400).json({ message: 'reportType query parameter is required' });
+    }
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+
+    const getReportRows = async (type) => {
+      const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search });
+      const students = await User.aggregate(pipeline);
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const Activity = require('../models/Activity');
+      
+      const [solvedCounts, latestSubs] = await Promise.all([
+        Activity.aggregate([
+          { $match: { platform: 'leetcode', type: 'solved', timestamp: { $gte: thirtyDaysAgo } } },
+          { $group: { _id: '$userId', count: { $sum: 1 } } }
+        ]),
+        Activity.aggregate([
+          { $match: { platform: 'leetcode', type: 'solved' } },
+          { $sort: { timestamp: -1 } },
+          { $group: { _id: '$userId', lastDate: { $first: '$timestamp' } } }
+        ])
+      ]);
+      const solved30DaysMap = new Map(solvedCounts.map(item => [String(item._id), item.count]));
+      const lastSubDateMap = new Map(latestSubs.map(item => [String(item._id), item.lastDate]));
+
+      const ContestSnapshot = require('../models/ContestSnapshot');
+      const currentMonthKey = getMonthKey();
+      const prevMonthKey = getMonthKey(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+      const [currentSnaps, prevSnaps] = await Promise.all([
+        ContestSnapshot.find({ monthKey: currentMonthKey }),
+        ContestSnapshot.find({ monthKey: prevMonthKey })
+      ]);
+      const currentSnapMap = new Map(currentSnaps.map(s => [String(s.userId), s]));
+      const prevSnapMap = new Map(prevSnaps.map(s => [String(s.userId), s]));
+
+      const WeeklySnapshot = require('../models/WeeklySnapshot');
+      const w4KeyStr = getStartOfWeek().toISOString().split('T')[0];
+      const w3KeyStr = getStartOfWeek(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+      const w2KeyStr = getStartOfWeek(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+      const w1KeyStr = getStartOfWeek(new Date(Date.now() - 21 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+      const weeklySnaps = await WeeklySnapshot.find({
+        weekKey: { $in: [w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr] }
+      });
+      const weeklyMap = new Map();
+      weeklySnaps.forEach(s => {
+        weeklyMap.set(`${String(s.userId)}-${s.weekKey}`, s);
+      });
+
+      const LeetCodeGrowthSnapshot = require('../models/LeetCodeGrowthSnapshot');
+      const growthSnaps = await LeetCodeGrowthSnapshot.find({
+        weekKey: { $in: [w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr] }
+      });
+      const growthMap = new Map();
+      growthSnaps.forEach(s => {
+        growthMap.set(`${String(s.userId)}-${s.weekKey}`, s.mediumSolved || 0);
+      });
+
+      let resRows = students.map(s => mapStudentToRow(s, type, solved30DaysMap, lastSubDateMap, prevSnapMap, growthMap, w1KeyStr, w2KeyStr, w3KeyStr, w4KeyStr));
+
+      if (type === 'below-9-cgpa') {
+        resRows = resRows.filter(r => r.cgpa < 9.0);
+      }
+
+      return resRows;
+    };
+
+    if (reportType === 'complete-workbook') {
+      const sheetsList = [
+        { name: 'Student Master', type: 'student-master' },
+        { name: 'LeetCode Tracking', type: 'leetcode-tracking' },
+        { name: 'Contest Tracking', type: 'contest-tracking' },
+        { name: 'Weekly Rank Tracking', type: 'weekly-rank' },
+        { name: 'Medium Growth', type: 'medium-growth' },
+        { name: 'CodeChef Tracking', type: 'codechef-tracking' },
+        { name: 'CGPA Tracking', type: 'cgpa-tracking' },
+        { name: 'Below 9 CGPA Report', type: 'below-9-cgpa' }
+      ];
+
+      for (const sh of sheetsList) {
+        const sRows = await getReportRows(sh.type);
+        addWorksheetToWorkbook(workbook, sh.name, sh.type, sRows);
+      }
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="complete_coordinator_tracking_report.xlsx"');
+      await workbook.xlsx.write(res);
+      return res.end();
+    } else {
+      const sheetNameMap = {
+        'student-master': 'Student Master',
+        'leetcode-tracking': 'LeetCode Tracking',
+        'contest-tracking': 'Contest Tracking',
+        'weekly-rank': 'Weekly Rank Tracking',
+        'medium-growth': 'Medium Growth',
+        'codechef-tracking': 'CodeChef Tracking',
+        'cgpa-tracking': 'CGPA Tracking',
+        'below-9-cgpa': 'Below 9 CGPA Report'
+      };
+
+      const name = sheetNameMap[reportType] || 'Report';
+      const sRows = await getReportRows(reportType);
+      addWorksheetToWorkbook(workbook, name, reportType, sRows);
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${reportType.replace(/-/g, '_')}_report.xlsx"`);
+      await workbook.xlsx.write(res);
+      return res.end();
+    }
+  } catch (err) {
+    console.error('Export tracking reports error:', err);
+    return res.status(500).json({ message: 'Failed to export Excel spreadsheet' });
   }
 });
 

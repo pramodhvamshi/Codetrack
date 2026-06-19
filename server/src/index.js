@@ -79,5 +79,12 @@ const port = config.port;
 app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.log(`MEDHA CODE TRACK API listening on port ${port}`);
+  
+  try {
+    const { initScheduler } = require('./services/cronScheduler');
+    initScheduler();
+  } catch (err) {
+    console.error('Failed to start cron scheduler:', err.message);
+  }
 });
 

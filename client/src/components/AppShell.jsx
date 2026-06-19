@@ -73,6 +73,7 @@ export function AppShell({ active, children }) {
     ? [
         { icon: '⚡', label: 'Dashboard', path: '/coordinator/dashboard' },
         { icon: '👥', label: 'Students', path: '/coordinator/students' },
+        { icon: '📊', label: 'Tracking Reports', path: '/coordinator/reports' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
         { icon: '🐛', label: 'Report a Bug', path: '/report-bug' }
       ]
@@ -81,6 +82,7 @@ export function AppShell({ active, children }) {
         { icon: '⚡', label: 'Admin Dashboard', path: '/admin/dashboard' },
         { icon: '👥', label: 'Students', path: '/admin/students' },
         { icon: '🛡️', label: 'Coordinators', path: '/admin/coordinators' },
+        { icon: '📊', label: 'Tracking Reports', path: '/coordinator/reports' },
         { icon: '🐛', label: 'Bug Reports', path: '/admin/bugs' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
         { icon: '➕', label: 'Report a Bug', path: '/report-bug' }
@@ -313,12 +315,14 @@ export function AppShell({ active, children }) {
             {isCoordinator && [
               navItem('Dashboard', '/coordinator/dashboard', 'coord-dashboard'),
               navItem('Students', '/coordinator/students', 'coord-students'),
+              navItem('Reports', '/coordinator/reports', 'coord-reports'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
             ]}
             {isAdmin && [
               navItem('Dashboard', '/admin/dashboard', 'admin-dashboard'),
               navItem('Coordinators', '/admin/coordinators', 'admin-coordinators'),
               navItem('Students', '/admin/students', 'admin-students'),
+              navItem('Reports', '/coordinator/reports', 'coord-reports'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard'),
               navItem('Bugs', '/admin/bugs', 'admin-bugs')
             ]}

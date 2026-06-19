@@ -12,16 +12,21 @@ export function AdminDashboard() {
   const [stats, setStats] = useState({ students: 0, coordinators: 0, bugs: 0, logs: 0 });
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncStats, setSyncStats] = useState({ lastSuccess: null, lastFailed: null, running: false });
 
   const loadData = async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const [students, coordinators, bugs, auditLogs] = await Promise.all([
+      const [students, coordinators, bugs, auditLogs, syncData] = await Promise.all([
         api.getJson('/admin/students', token),
         api.getJson('/admin/coordinators', token),
         api.getJson('/admin/bugs', token),
-        api.getJson('/admin/audit-logs', token)
+        api.getJson('/admin/audit-logs', token),
+        api.getJson('/admin/platform-sync/status/latest', token).catch(e => {
+          console.error('Failed to load sync stats:', e);
+          return null;
+        })
       ]);
 
       setStats({
@@ -31,6 +36,14 @@ export function AdminDashboard() {
         logs: auditLogs.length
       });
       setLogs(auditLogs.slice(0, 10)); // Show latest 10 logs
+
+      if (syncData) {
+        setSyncStats({
+          lastSuccess: syncData.lastSuccessfulSync,
+          lastFailed: syncData.lastFailedSync,
+          running: syncData.latest && (syncData.latest.status === 'Running' || syncData.latest.status === 'Pending')
+        });
+      }
     } catch (err) {
       console.error('Failed to load admin stats:', err);
     } finally {
@@ -81,6 +94,16 @@ export function AdminDashboard() {
               <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.8rem', fontWeight: 800 }}>{stats.coordinators}</h2>
             </div>
             <Shield size={24} color="var(--accent-purple)" />
+          </div>
+
+          <div className="ct-card" onClick={() => navigate('/admin/sync-center')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid #10b981', background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(17,24,39,0.95))' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Platform Sync Engine</span>
+              <h4 style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', fontWeight: 600, color: '#f3f4f6' }}>
+                {syncStats.running ? '🔄 Syncing Batches...' : syncStats.lastSuccess ? `Last success: ${new Date(syncStats.lastSuccess).toLocaleDateString()}` : 'Configure Engine'}
+              </h4>
+            </div>
+            <RefreshCw size={24} color="#10b981" className={syncStats.running ? "animate-spin" : ""} />
           </div>
 
           <div className="ct-card" onClick={() => navigate('/admin/bugs')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '4px solid var(--accent-red)', background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(17,24,39,0.95))' }}>
@@ -145,7 +168,10 @@ export function AdminDashboard() {
           <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h3 style={{ margin: 0 }}>Administrative Actions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <Link to="/admin/coordinators" className="ct-button" style={{ textContainer: 'center', display: 'block', textAlign: 'center', textDecoration: 'none', color: '#0b1120', fontWeight: 'bold' }}>
+              <Link to="/admin/sync-center" className="ct-button" style={{ textContainer: 'center', display: 'block', textAlign: 'center', textDecoration: 'none', color: '#0b1120', fontWeight: 'bold' }}>
+                🔄 Platform Sync Center
+              </Link>
+              <Link to="/admin/coordinators" className="ct-button-secondary" style={{ textContainer: 'center', display: 'block', textAlign: 'center', textDecoration: 'none', padding: '0.55rem' }}>
                 🛡️ Register Coordinator
               </Link>
               <Link to="/admin/students" className="ct-button-secondary" style={{ textContainer: 'center', display: 'block', textAlign: 'center', textDecoration: 'none', padding: '0.55rem' }}>

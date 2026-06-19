@@ -62,6 +62,8 @@ const StudentProfileSchema = new mongoose.Schema({
     year: { type: String, enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'], default: '1st Year' },
     section: { type: String, default: "" },
     college: { type: String, default: "" },
+    rollNumber: { type: String, default: "" },
+    mentorName: { type: String, default: "" },
     
     // Address fields
     permanentAddress: { type: String, default: "" },

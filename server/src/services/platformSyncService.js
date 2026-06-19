@@ -240,7 +240,9 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
         submissionCalendar: lcData.submissionCalendar || {},
         badges: lcData.badges || [],
         badgeCount: lcData.badgeCount || 0,
-        recentSubmissions: lcData.recentSubmissions || []
+        recentSubmissions: lcData.recentSubmissions || [],
+        acceptanceRate: lcData.acceptanceRate || 0,
+        contestHistory: lcData.contestHistory || []
       };
 
       if (lcData.recentSubmissions) {

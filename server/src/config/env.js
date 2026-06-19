@@ -27,6 +27,8 @@ const config = {
   // How many days of inactivity before a student is considered inactive
   activityActiveThresholdDays: parseInt(process.env.ACTIVITY_ACTIVE_DAYS || '7', 10),
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  bulkSyncBatchSize: parseInt(process.env.BULK_SYNC_BATCH_SIZE || '20', 10),
+  bulkSyncDelayMs: parseInt(process.env.BULK_SYNC_DELAY_MS || '3000', 10),
 
   // Configurable ranking weights for Leaderboard Ranking Logic
   rankingWeights: {

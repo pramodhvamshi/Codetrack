@@ -13,10 +13,13 @@ import { CoordinatorStudents } from './pages/coordinator/CoordinatorStudents';
 import { CoordinatorStudentDetail } from './pages/coordinator/CoordinatorStudentDetail';
 import { CoordinatorStudentsList } from './pages/coordinator/CoordinatorStudentsList';
 
+import { CoordinatorReports } from './pages/coordinator/CoordinatorReports';
+
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminCoordinators } from './pages/admin/AdminCoordinators';
 import { AdminStudents } from './pages/admin/AdminStudents';
 import { AdminBugs } from './pages/admin/AdminBugs';
+import { AdminSyncCenter } from './pages/admin/AdminSyncCenter';
 
 import { ReportBugPage } from './pages/shared/ReportBugPage';
 import { LeaderboardPage } from './pages/shared/LeaderboardPage';
@@ -33,8 +36,11 @@ function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && user.role !== role) {
-    return <Navigate to="/login" replace />;
+  if (role) {
+    const roles = Array.isArray(role) ? role : [role];
+    if (!roles.includes(user.role)) {
+      return <Navigate to="/login" replace />;
+    }
   }
 
   return children;
@@ -141,6 +147,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile/academic"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="academic" />
+            </ProtectedRoute>
+          }
+        />
 
         {/* COORDINATOR */}
         <Route
@@ -148,6 +162,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute role="coordinator">
               <CoordinatorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/coordinator/reports"
+          element={
+            <ProtectedRoute role={['coordinator', 'admin']}>
+              <CoordinatorReports />
             </ProtectedRoute>
           }
         />
@@ -257,6 +279,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute role="admin">
               <AdminBugs />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/sync-center"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminSyncCenter />
             </ProtectedRoute>
           }
         />

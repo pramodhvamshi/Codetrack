@@ -103,13 +103,17 @@ async function buildDefaultContentFromProfile(user) {
     gpa: e.cgpa || ''
   }));
   if (education.length === 0) {
+    const AcademicProfile = require('../models/AcademicProfile');
+    const academic = await AcademicProfile.findOne({ userId: user._id });
+    const resolvedGpa = academic?.cgpa != null ? String(academic.cgpa) : (user.overallGpa != null ? String(user.overallGpa) : '');
+
     education.push({
       institution: user.college || '',
       degree: 'Bachelor of Technology',
       fieldOfStudy: user.branch || '',
       startYear: '2022',
       endYear: '2026',
-      gpa: user.overallGpa != null ? String(user.overallGpa) : ''
+      gpa: resolvedGpa
     });
   }
 

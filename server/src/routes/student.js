@@ -15,9 +15,13 @@ router.use(authMiddleware, requireRole('student'));
 router.get('/me', async (req, res) => {
   const user = req.currentUser;
   const StudentProfile = require('../models/StudentProfile');
+  const AcademicProfile = require('../models/AcademicProfile');
 
   try {
     let profile = await StudentProfile.findOne({ userId: user._id });
+    let academic = await AcademicProfile.findOne({ userId: user._id });
+    const resolvedGpa = academic?.cgpa != null ? academic.cgpa : user.overallGpa;
+
     if (!profile) {
       profile = {
         personalDetails: {
@@ -50,7 +54,7 @@ router.get('/me', async (req, res) => {
       branch: user.branch,
       year: user.year, // Keep for backward compatibility
       currentYear: user.currentYear || '1st Year',
-      overallGpa: user.overallGpa,
+      overallGpa: resolvedGpa,
       leetcodeUsername: user.leetcodeUsername,
       codechefUsername: user.codechefUsername,
       gfgUsername: user.gfgUsername,
@@ -964,6 +968,117 @@ router.post(
     }
   }
 );
+
+// GET own academic profile
+router.get('/me/profile/academic', async (req, res) => {
+  try {
+    const AcademicProfile = require('../models/AcademicProfile');
+    let ap = await AcademicProfile.findOne({ userId: req.currentUser._id });
+    if (!ap) {
+      ap = {
+        sgpa1: null,
+        sgpa2: null,
+        sgpa3: null,
+        sgpa4: null,
+        sgpa5: null,
+        sgpa6: null,
+        cgpa: null,
+        backlogs: 0,
+        academicStatus: '-'
+      };
+    }
+    return res.json(ap);
+  } catch (err) {
+    console.error('Fetch own academic profile error:', err);
+    return res.status(500).json({ message: 'Failed to fetch academic profile' });
+  }
+});
+
+// PUT own academic profile
+router.put('/me/profile/academic', async (req, res) => {
+  try {
+    const AcademicProfile = require('../models/AcademicProfile');
+    const AcademicProfileAudit = require('../models/AcademicProfileAudit');
+    const { syncPlatformsForUser } = require('../services/platformSyncService');
+
+    const { sgpa1, sgpa2, sgpa3, sgpa4, sgpa5, sgpa6, cgpa, backlogs } = req.body;
+
+    const valOrNull = (val) => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      if (isNaN(num) || num < 0 || num > 10) throw new Error('GPAs must be numbers between 0 and 10');
+      return num;
+    };
+
+    const parsedSgpas = {
+      sgpa1: valOrNull(sgpa1),
+      sgpa2: valOrNull(sgpa2),
+      sgpa3: valOrNull(sgpa3),
+      sgpa4: valOrNull(sgpa4),
+      sgpa5: valOrNull(sgpa5),
+      sgpa6: valOrNull(sgpa6)
+    };
+
+    const parsedCgpa = valOrNull(cgpa);
+    
+    let parsedBacklogs = 0;
+    if (backlogs !== undefined && backlogs !== null && backlogs !== '') {
+      parsedBacklogs = Number(backlogs);
+      if (isNaN(parsedBacklogs) || parsedBacklogs < 0) {
+        return res.status(400).json({ message: 'Backlogs must be a non-negative number' });
+      }
+    }
+
+    let academicStatus = '-';
+    if (parsedCgpa !== null) {
+      if (parsedCgpa >= 9.0) academicStatus = 'Excellent';
+      else if (parsedCgpa >= 8.0) academicStatus = 'Good';
+      else if (parsedCgpa >= 7.0) academicStatus = 'Average';
+      else academicStatus = 'Needs Improvement';
+    }
+
+    let ap = await AcademicProfile.findOne({ userId: req.currentUser._id });
+    const prevData = ap ? {
+      sgpa1: ap.sgpa1,
+      sgpa2: ap.sgpa2,
+      sgpa3: ap.sgpa3,
+      sgpa4: ap.sgpa4,
+      sgpa5: ap.sgpa5,
+      sgpa6: ap.sgpa6,
+      cgpa: ap.cgpa,
+      backlogs: ap.backlogs,
+      academicStatus: ap.academicStatus
+    } : null;
+
+    const newData = {
+      ...parsedSgpas,
+      cgpa: parsedCgpa,
+      backlogs: parsedBacklogs,
+      academicStatus
+    };
+
+    if (!ap) {
+      ap = new AcademicProfile({ userId: req.currentUser._id });
+    }
+
+    Object.assign(ap, newData);
+    await ap.save();
+
+    await AcademicProfileAudit.create({
+      userId: req.currentUser._id,
+      previousData,
+      newData
+    });
+
+    // Re-evaluate student's placement readiness score
+    await syncPlatformsForUser(req.currentUser, { force: true });
+
+    return res.json({ message: 'Academic profile saved successfully', academicProfile: ap });
+  } catch (err) {
+    console.error('Update own academic profile error:', err);
+    return res.status(400).json({ message: err.message || 'Failed to update academic profile' });
+  }
+});
 
 module.exports = router;
 

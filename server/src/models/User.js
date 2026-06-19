@@ -107,7 +107,18 @@ const PlatformStatsSchema = new mongoose.Schema(
       submissionCalendar: { type: mongoose.Schema.Types.Mixed, default: {} },
       badges: { type: Array, default: [] },
       badgeCount: { type: Number, default: 0 },
-      recentSubmissions: { type: Array, default: [] }
+      recentSubmissions: { type: Array, default: [] },
+      acceptanceRate: { type: Number, default: 0 },
+      contestHistory: {
+        type: Array,
+        default: [],
+        validate: {
+          validator: function(arr) {
+            return arr.length <= 10;
+          },
+          message: 'Contest history cannot exceed 10 records'
+        }
+      }
     },
     codechef: {
       username: { type: String },
@@ -193,6 +204,7 @@ const UserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['student', 'coordinator', 'admin'], required: true },
     isActive: { type: Boolean, default: true },
+    lastLogin: { type: Date },
     mssid: {
       type: String,
       required: false,

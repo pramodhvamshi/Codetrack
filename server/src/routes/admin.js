@@ -1,10 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { authMiddleware, requireRole } = require('../middleware/auth');
 const User = require('../models/User');
 const BugReport = require('../models/BugReport');
 const AuditLog = require('../models/AuditLog');
+const BulkSyncJob = require('../models/BulkSyncJob');
+const { runBulkSync } = require('../services/bulkSyncService');
 const authRouter = require('./auth'); // to get generateTokens and setAuthCookies
 const config = require('../config/env');
 
@@ -401,6 +404,183 @@ router.get('/audit-logs', async (req, res) => {
   } catch (err) {
     console.error('Get audit logs error:', err);
     return res.status(500).json({ message: 'Failed to fetch audit logs' });
+  }
+});
+
+/**
+ * MANUAL SNAPSHOT TRIGGER
+ * POST /api/admin/generate-snapshots
+ */
+router.post('/generate-snapshots', async (req, res) => {
+  try {
+    const { type } = req.body;
+    if (!type || !['weekly', 'monthly', 'all'].includes(type)) {
+      return res.status(400).json({ message: 'Invalid snapshot type. Must be "weekly", "monthly", or "all".' });
+    }
+
+    const { triggerWeeklySnapshots, triggerMonthlySnapshots } = require('../services/cronScheduler');
+    const results = {};
+
+    if (type === 'weekly' || type === 'all') {
+      console.log('Manually triggering weekly snapshots via admin endpoint...');
+      await triggerWeeklySnapshots();
+      results.weekly = 'Weekly snapshots generated successfully.';
+    }
+    if (type === 'monthly' || type === 'all') {
+      console.log('Manually triggering monthly snapshots via admin endpoint...');
+      await triggerMonthlySnapshots();
+      results.monthly = 'Monthly snapshots generated successfully.';
+    }
+
+    return res.json({ message: 'Snapshots generated successfully', results });
+  } catch (err) {
+    console.error('Manual snapshot trigger error:', err);
+    return res.status(500).json({ message: 'Failed to generate snapshots manually', error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/snapshots/weekly/generate
+ */
+router.post('/snapshots/weekly/generate', async (req, res) => {
+  try {
+    const { triggerWeeklySnapshots } = require('../services/cronScheduler');
+    console.log('Admin triggered manual weekly snapshots...');
+    await triggerWeeklySnapshots();
+    return res.json({ message: 'Weekly Snapshot Generated Successfully' });
+  } catch (err) {
+    console.error('Manual weekly snapshot trigger error:', err);
+    return res.status(500).json({ message: 'Failed to generate weekly snapshot', error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/snapshots/monthly/generate
+ */
+router.post('/snapshots/monthly/generate', async (req, res) => {
+  try {
+    const { triggerMonthlySnapshots } = require('../services/cronScheduler');
+    console.log('Admin triggered manual monthly snapshots...');
+    await triggerMonthlySnapshots();
+    return res.json({ message: 'Monthly Snapshot Generated Successfully' });
+  } catch (err) {
+    console.error('Manual monthly snapshot trigger error:', err);
+    return res.status(500).json({ message: 'Failed to generate monthly snapshot', error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/platform-sync/all
+ */
+router.post('/platform-sync/all', async (req, res) => {
+  try {
+    // Prevent duplicate runs: check if any job is currently Pending or Running
+    const runningJob = await BulkSyncJob.findOne({ status: { $in: ['Pending', 'Running'] } });
+    if (runningJob) {
+      return res.status(400).json({ message: 'A bulk platform sync job is already running.' });
+    }
+
+    const jobId = crypto.randomUUID();
+    const job = await BulkSyncJob.create({
+      jobId,
+      startedBy: req.currentUser._id,
+      status: 'Pending',
+      logs: ['Job created and queued. Starting sync engine...']
+    });
+
+    // Run bulk sync asynchronously in background
+    runBulkSync(jobId);
+
+    return res.status(202).json({ message: 'Bulk platform sync job queued successfully.', jobId });
+  } catch (err) {
+    console.error('Failed to trigger bulk platform sync:', err);
+    return res.status(500).json({ message: 'Failed to trigger bulk platform sync', error: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/platform-sync/status/latest
+ */
+router.get('/platform-sync/status/latest', async (req, res) => {
+  try {
+    const latest = await BulkSyncJob.findOne().sort({ createdAt: -1 });
+    
+    // Additional metrics for dashboard
+    const lastSuccessJob = await BulkSyncJob.findOne({ status: 'Completed' }).sort({ completedAt: -1 });
+    const lastFailedJob = await BulkSyncJob.findOne({ status: 'Failed' }).sort({ completedAt: -1 });
+    
+    const completedJobs = await BulkSyncJob.find({ status: 'Completed', startedAt: { $exists: true }, completedAt: { $exists: true } });
+    let avgDuration = 0;
+    if (completedJobs.length > 0) {
+      const totalDuration = completedJobs.reduce((sum, j) => sum + (new Date(j.completedAt) - new Date(j.startedAt)), 0);
+      avgDuration = Math.round((totalDuration / completedJobs.length) / 1000); // in seconds
+    }
+
+    return res.json({
+      latest,
+      lastSuccessfulSync: lastSuccessJob ? lastSuccessJob.completedAt : null,
+      lastFailedSync: lastFailedJob ? lastFailedJob.completedAt : null,
+      averageSyncDuration: avgDuration
+    });
+  } catch (err) {
+    console.error('Failed to get latest job status:', err);
+    return res.status(500).json({ message: 'Failed to fetch latest job status' });
+  }
+});
+
+/**
+ * GET /api/admin/platform-sync/status/:jobId
+ */
+router.get('/platform-sync/status/:jobId', async (req, res) => {
+  try {
+    const job = await BulkSyncJob.findOne({ jobId: req.params.jobId });
+    if (!job) return res.status(404).json({ message: 'Sync job not found' });
+    return res.json(job);
+  } catch (err) {
+    console.error('Failed to fetch job details:', err);
+    return res.status(500).json({ message: 'Failed to fetch sync job status' });
+  }
+});
+
+/**
+ * GET /api/admin/platform-sync/jobs
+ */
+router.get('/platform-sync/jobs', async (req, res) => {
+  try {
+    const list = await BulkSyncJob.find().sort({ createdAt: -1 }).limit(10);
+    return res.json(list);
+  } catch (err) {
+    console.error('Failed to list sync jobs:', err);
+    return res.status(500).json({ message: 'Failed to fetch sync jobs logs' });
+  }
+});
+
+/**
+ * GET /api/admin/platform-sync/job/:jobId/failed-csv
+ */
+router.get('/platform-sync/job/:jobId/failed-csv', async (req, res) => {
+  try {
+    const job = await BulkSyncJob.findOne({ jobId: req.params.jobId });
+    if (!job) {
+      return res.status(404).json({ message: 'Sync job not found' });
+    }
+
+    let csvContent = 'Student,Email,Reason\n';
+    if (job.failedStudentsList && job.failedStudentsList.length > 0) {
+      job.failedStudentsList.forEach(s => {
+        const name = (s.studentName || '').replace(/"/g, '""');
+        const email = (s.email || '').replace(/"/g, '""');
+        const reason = (s.reason || '').replace(/"/g, '""');
+        csvContent += `"${name}","${email}","${reason}"\n`;
+      });
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="failed_students_${req.params.jobId}.csv"`);
+    return res.send(csvContent);
+  } catch (err) {
+    console.error('Failed to export failed sync list CSV:', err);
+    return res.status(500).json({ message: 'Failed to export failed sync list' });
   }
 });
 

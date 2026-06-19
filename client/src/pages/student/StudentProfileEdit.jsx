@@ -24,12 +24,46 @@ export function StudentProfileEdit({ tab }) {
     confirmPassword: ''
   });
 
+  // Academic fields
+  const [academicForm, setAcademicForm] = useState({
+    sgpa1: '',
+    sgpa2: '',
+    sgpa3: '',
+    sgpa4: '',
+    sgpa5: '',
+    sgpa6: '',
+    cgpa: '',
+    backlogs: '0',
+    academicStatus: ''
+  });
+
   // Fetch full details
   const fetchProfile = async () => {
     try {
       setLoading(true);
       const data = await api.getJson('/student/me', token);
       setProfileData(data);
+      
+      if (tab === 'academic') {
+        try {
+          const acadData = await api.getJson('/student/academic-profile', token);
+          if (acadData) {
+            setAcademicForm({
+              sgpa1: acadData.sgpa1 != null ? acadData.sgpa1.toString() : '',
+              sgpa2: acadData.sgpa2 != null ? acadData.sgpa2.toString() : '',
+              sgpa3: acadData.sgpa3 != null ? acadData.sgpa3.toString() : '',
+              sgpa4: acadData.sgpa4 != null ? acadData.sgpa4.toString() : '',
+              sgpa5: acadData.sgpa5 != null ? acadData.sgpa5.toString() : '',
+              sgpa6: acadData.sgpa6 != null ? acadData.sgpa6.toString() : '',
+              cgpa: acadData.cgpa != null ? acadData.cgpa.toString() : '',
+              backlogs: acadData.backlogs != null ? acadData.backlogs.toString() : '0',
+              academicStatus: acadData.academicStatus || '-'
+            });
+          }
+        } catch (err) {
+          console.error('Failed to load academic profile:', err);
+        }
+      }
       setError('');
     } catch (err) {
       console.error(err);
@@ -404,6 +438,50 @@ export function StudentProfileEdit({ tab }) {
     }
   };
 
+  const saveAcademic = async () => {
+    try {
+      setSaving(true);
+      setError('');
+      setSuccess('');
+      
+      const payload = {
+        sgpa1: academicForm.sgpa1 === '' ? null : parseFloat(academicForm.sgpa1),
+        sgpa2: academicForm.sgpa2 === '' ? null : parseFloat(academicForm.sgpa2),
+        sgpa3: academicForm.sgpa3 === '' ? null : parseFloat(academicForm.sgpa3),
+        sgpa4: academicForm.sgpa4 === '' ? null : parseFloat(academicForm.sgpa4),
+        sgpa5: academicForm.sgpa5 === '' ? null : parseFloat(academicForm.sgpa5),
+        sgpa6: academicForm.sgpa6 === '' ? null : parseFloat(academicForm.sgpa6),
+        cgpa: parseFloat(academicForm.cgpa),
+        backlogs: parseInt(academicForm.backlogs, 10)
+      };
+
+      if (isNaN(payload.cgpa) || payload.cgpa < 0 || payload.cgpa > 10) {
+        throw new Error('CGPA must be a valid number between 0 and 10.');
+      }
+      if (isNaN(payload.backlogs) || payload.backlogs < 0) {
+        throw new Error('Backlogs must be a valid non-negative integer.');
+      }
+      for (let i = 1; i <= 6; i++) {
+        const val = payload[`sgpa${i}`];
+        if (val !== null && (isNaN(val) || val < 0 || val > 10)) {
+          throw new Error(`SGPA ${i} must be a valid number between 0 and 10.`);
+        }
+      }
+
+      const res = await api.putJson('/student/academic-profile', payload, token);
+      setSuccess('Academic profile saved successfully!');
+      setAcademicForm(prev => ({
+        ...prev,
+        academicStatus: res.academicStatus || prev.academicStatus
+      }));
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to save academic profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const triggerGlobalSync = async () => {
     try {
       setSaving(true);
@@ -771,6 +849,7 @@ export function StudentProfileEdit({ tab }) {
           <button className={activeTabClass('personal')} onClick={() => navigate('/profile/personal')}>Personal Details</button>
           <button className={activeTabClass('professional')} onClick={() => navigate('/profile/professional')}>Professional Details</button>
           <button className={activeTabClass('coding')} onClick={() => navigate('/profile/coding')}>Coding Profiles</button>
+          <button className={activeTabClass('academic')} onClick={() => navigate('/profile/academic')}>Academic Profile</button>
           <button className={activeTabClass('password')} onClick={() => navigate('/profile/password')}>Change Password</button>
         </div>
 
@@ -1644,6 +1723,160 @@ export function StudentProfileEdit({ tab }) {
                   className="settings-btn settings-btn-primary"
                 >
                   {saving ? 'Saving handles...' : 'Save Handles & Sync'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: ACADEMIC PROFILE */}
+          {tab === 'academic' && (
+            <div>
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>Semester-wise GPAs</span>
+                  {academicForm.academicStatus && (
+                    <span style={{
+                      fontSize: '0.8rem',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: '999px',
+                      background: academicForm.academicStatus === 'Excellent' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      color: academicForm.academicStatus === 'Excellent' ? '#10b981' : '#f59e0b',
+                      border: '1px solid currentColor'
+                    }}>
+                      Status: {academicForm.academicStatus}
+                    </span>
+                  )}
+                </div>
+                
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
+                  Enter your Semester Grade Point Average (SGPA) for completed semesters. Values must be between 0.0 and 10.0. Leave empty if a semester is not yet completed.
+                </p>
+
+                <div className="settings-grid-3">
+                  <div className="settings-form-group">
+                    <label>Semester 1 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa1}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa1: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Semester 2 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa2}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa2: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Semester 3 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa3}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa3: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="settings-grid-3" style={{ marginTop: '1.2rem' }}>
+                  <div className="settings-form-group">
+                    <label>Semester 4 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa4}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa4: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Semester 5 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa5}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa5: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Semester 6 SGPA</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.5"
+                      value={academicForm.sgpa6}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, sgpa6: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-form-section">
+                <div className="settings-section-title">Cumulative Performance</div>
+                <div className="settings-grid-2">
+                  <div className="settings-form-group">
+                    <label>Overall CGPA (Required)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      className="settings-input"
+                      placeholder="e.g. 8.75"
+                      value={academicForm.cgpa}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, cgpa: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Active Backlogs (Required)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 0"
+                      value={academicForm.backlogs}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, backlogs: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-actions-bar">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={saveAcademic}
+                  className="settings-btn settings-btn-primary"
+                >
+                  {saving ? 'Saving academic profile...' : 'Save Academic Details'}
                 </button>
               </div>
             </div>
