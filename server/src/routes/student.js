@@ -84,6 +84,7 @@ router.get('/me', async (req, res) => {
       academicDetails: profile.academicDetails || {},
       profileCompletion: profile.profileCompletion || 0,
       readinessProfile: profile.readinessProfile || {},
+      hackathons: profile.hackathons || [],
       
       resume: user.resume,
       isOnboarded: user.isOnboarded,
@@ -193,7 +194,6 @@ router.put('/me/profile/personal', async (req, res) => {
     return res.status(500).json({ message: 'Failed to update personal details' });
   }
 });
-
 // GET /me/profile/professional
 router.get('/me/profile/professional', async (req, res) => {
   try {
@@ -205,7 +205,8 @@ router.get('/me/profile/professional', async (req, res) => {
         skills: [],
         projects: [],
         experiences: [],
-        certifications: []
+        certifications: [],
+        hackathons: []
       });
     }
     return res.json({
@@ -213,7 +214,8 @@ router.get('/me/profile/professional', async (req, res) => {
       skills: profile.skills || [],
       projects: profile.projects || [],
       experiences: profile.experiences || [],
-      certifications: profile.certifications || []
+      certifications: profile.certifications || [],
+      hackathons: profile.hackathons || []
     });
   } catch (err) {
     console.error(err);
@@ -226,7 +228,7 @@ router.put('/me/profile/professional', async (req, res) => {
   try {
     const user = req.currentUser;
     const StudentProfile = require('../models/StudentProfile');
-    const { education, skills, projects, experiences, certifications } = req.body;
+    const { education, skills, projects, experiences, certifications, hackathons } = req.body;
 
     let profile = await StudentProfile.findOne({ userId: user._id });
     if (!profile) {
@@ -238,6 +240,7 @@ router.put('/me/profile/professional', async (req, res) => {
     if (projects !== undefined) profile.projects = projects;
     if (experiences !== undefined) profile.experiences = experiences;
     if (certifications !== undefined) profile.certifications = certifications;
+    if (hackathons !== undefined) profile.hackathons = hackathons;
 
     const { calculateProfileCompletion } = require('../utils/profileMetrics');
     profile.profileCompletion = calculateProfileCompletion(user, profile);
@@ -253,7 +256,8 @@ router.put('/me/profile/professional', async (req, res) => {
       skills: profile.skills,
       projects: profile.projects,
       experiences: profile.experiences,
-      certifications: profile.certifications
+      certifications: profile.certifications,
+      hackathons: profile.hackathons
     });
   } catch (err) {
     console.error(err);

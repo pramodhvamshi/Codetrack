@@ -479,7 +479,7 @@ export function CoordinatorStudentDetail() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
                 <span>School: <strong>{student.personalDetails?.ssc?.schoolName || '—'}</strong></span>
                 <span>Board: <strong>{student.personalDetails?.ssc?.board || '—'}</strong></span>
-                <span>Percentage: <strong>{student.personalDetails?.ssc?.percentage ? `${student.personalDetails.ssc.percentage}%` : '—'}</strong></span>
+                <span>CGPA: <strong>{student.personalDetails?.ssc?.percentage ?? '—'}</strong></span>
                 <span>Year: <strong>{student.personalDetails?.ssc?.passoutYear || '—'}</strong></span>
               </div>
 
@@ -487,7 +487,7 @@ export function CoordinatorStudentDetail() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
                 <span>College: <strong>{student.personalDetails?.intermediate?.collegeName || '—'}</strong></span>
                 <span>Board: <strong>{student.personalDetails?.intermediate?.board || '—'}</strong></span>
-                <span>Percentage: <strong>{student.personalDetails?.intermediate?.percentage ? `${student.personalDetails.intermediate.percentage}%` : '—'}</strong></span>
+                <span>CGPA: <strong>{student.personalDetails?.intermediate?.percentage ?? '—'}</strong></span>
                 <span>Year: <strong>{student.personalDetails?.intermediate?.passoutYear || '—'}</strong></span>
               </div>
 
@@ -639,6 +639,30 @@ export function CoordinatorStudentDetail() {
                 </div>
               ) : (
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No certifications listed.</span>
+              )}
+
+              {/* Hackathons */}
+              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Hackathons</h4>
+              {student.hackathons && student.hackathons.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  {student.hackathons.map((h, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '4px', border: '1px solid rgba(139, 92, 246, 0.15)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ color: '#a78bfa' }}>{h.name}</strong>
+                        {h.certificateLink && <a href={h.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><ExternalLink size={14} /></a>}
+                      </div>
+                      {h.organizer && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Organizer: {h.organizer}</div>}
+                      {h.result && <div style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>Result: <strong style={{ color: '#10b981' }}>{h.result}</strong>{h.position && ` — ${h.position}`}</div>}
+                      {h.description && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{h.description}</div>}
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem', display: 'flex', gap: '1rem' }}>
+                        {h.date && <span>Date: {new Date(h.date).toLocaleDateString()}</span>}
+                        {h.teamSize && <span>Team Size: {h.teamSize}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hackathons listed.</span>
               )}
             </div>
 

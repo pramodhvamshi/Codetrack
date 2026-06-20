@@ -17,6 +17,10 @@ async function connectDB() {
     // Seed default admin account
     const { seedAdmin } = require('../services/adminSeeder');
     await seedAdmin();
+
+    // Run academic profile backfill migration
+    const migrateAcademicProfile = require('../utils/migrateAcademicProfile');
+    await migrateAcademicProfile();
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('MongoDB connection error:', err.message);

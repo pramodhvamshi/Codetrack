@@ -4,6 +4,29 @@ import { AppShell } from '../../components/AppShell';
 import { api } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 
+// Small inline text input used inside the skills tag box
+function SkillInput({ skills, onAdd }) {
+  const [value, setValue] = useState('');
+  const handleKey = (e) => {
+    if ((e.key === 'Enter' || e.key === ',') && value.trim()) {
+      e.preventDefault();
+      onAdd(value.trim().replace(/,$/, ''));
+      setValue('');
+    }
+  };
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={handleKey}
+      onBlur={() => { if (value.trim()) { onAdd(value.trim()); setValue(''); } }}
+      placeholder="Type a skill and press Enter"
+      style={{ border: 'none', outline: 'none', background: 'transparent', color: 'var(--text-primary)', fontSize: '0.8rem', minWidth: '160px', padding: '0.1rem 0.2rem', flexGrow: 1 }}
+    />
+  );
+}
+
 export function StudentProfileEdit({ tab }) {
   const { token, user, login } = useAuth();
   const navigate = useNavigate();
@@ -64,6 +87,25 @@ export function StudentProfileEdit({ tab }) {
           }
         } catch (err) {
           console.error('Failed to load academic profile:', err);
+        }
+      }
+
+      if (tab === 'professional') {
+        try {
+          const profData = await api.getJson('/student/me/profile/professional', token);
+          if (profData) {
+            setProfileData(prev => ({
+              ...prev,
+              skills: profData.skills || prev?.skills || [],
+              projects: profData.projects || prev?.projects || [],
+              workExperience: profData.experiences || prev?.workExperience || [],
+              certifications: profData.certifications || prev?.certifications || [],
+              hackathons: profData.hackathons || prev?.hackathons || [],
+              education: profData.education || prev?.education || []
+            }));
+          }
+        } catch (err) {
+          console.error('Failed to load professional profile:', err);
         }
       }
       setError('');
@@ -321,13 +363,37 @@ export function StudentProfileEdit({ tab }) {
     });
   };
 
-  // Skills change
-  const handleSkillsChange = (val) => {
-    const arr = val.split(',').map(s => s.trim()).filter(Boolean);
+  // Skills change (tag-based — receives array directly)
+  const handleSkillsChange = (skills) => {
     setProfileData(prev => ({
       ...prev,
-      skills: arr
+      skills: Array.isArray(skills) ? skills : []
     }));
+  };
+
+  // Hackathon operations
+  const addHackathon = () => {
+    const newH = { name: '', organizer: '', date: '', teamSize: 1, position: '', result: '', description: '', certificateLink: '' };
+    setProfileData(prev => ({
+      ...prev,
+      hackathons: [...(prev.hackathons || []), newH]
+    }));
+  };
+
+  const removeHackathon = (idx) => {
+    setProfileData(prev => {
+      const h = [...(prev.hackathons || [])];
+      h.splice(idx, 1);
+      return { ...prev, hackathons: h };
+    });
+  };
+
+  const handleHackathonChange = (idx, field, val) => {
+    setProfileData(prev => {
+      const h = [...(prev.hackathons || [])];
+      h[idx] = { ...h[idx], [field]: val };
+      return { ...prev, hackathons: h };
+    });
   };
 
   // Coding Username handles change
@@ -378,7 +444,8 @@ export function StudentProfileEdit({ tab }) {
         skills: profileData.skills,
         projects: profileData.projects,
         experiences: profileData.workExperience, // Maps to experiences on backend
-        certifications: profileData.certifications
+        certifications: profileData.certifications,
+        hackathons: profileData.hackathons || []
       };
       await api.putJson('/student/me/profile/professional', payload, token);
       setSuccess('Professional details saved successfully!');
@@ -1078,7 +1145,7 @@ export function StudentProfileEdit({ tab }) {
                 </div>
                 <div className="settings-grid-2" style={{ marginBottom: '2rem' }}>
                   <div className="settings-form-group">
-                    <label>SSC Percentage / CGPA</label>
+                    <label>SSC CGPA</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1121,7 +1188,7 @@ export function StudentProfileEdit({ tab }) {
                 </div>
                 <div className="settings-grid-2">
                   <div className="settings-form-group">
-                    <label>Percentage / CGPA</label>
+                    <label>Intermediate / Diploma CGPA</label>
                     <input
                       type="number"
                       step="0.01"
@@ -1321,15 +1388,22 @@ export function StudentProfileEdit({ tab }) {
               <div className="settings-form-section">
                 <div className="settings-section-title">Core Skills</div>
                 <div className="settings-form-group">
-                  <label>Skills (comma separated)</label>
-                  <input
-                    type="text"
-                    className="settings-input"
-                    placeholder="React, Node.js, Python, SQL, C++, Java"
-                    value={(profileData.skills || []).join(', ')}
-                    onChange={(e) => handleSkillsChange(e.target.value)}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Enter your core technical skills separated by commas.</span>
+                  <label>Skills (type and press Enter, or click a suggestion)</label>
+                  {/* Tag display */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', padding: '0.4rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', minHeight: '40px' }}>
+                    {(profileData.skills || []).map((skill, sIdx) => (
+                      <span key={sIdx} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.15rem 0.6rem', background: 'rgba(59,130,246,0.18)', color: '#a3e635', borderRadius: '99px', fontSize: '0.8rem', border: '1px solid rgba(59,130,246,0.35)' }}>
+                        {skill}
+                        <button type="button" onClick={() => handleSkillsChange((profileData.skills || []).filter((_, i) => i !== sIdx))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontWeight: 700, padding: 0, fontSize: '0.85rem', lineHeight: 1 }}>×</button>
+                      </span>
+                    ))}
+                    <SkillInput skills={profileData.skills || []} onAdd={(skill) => { if (skill && !(profileData.skills || []).includes(skill)) handleSkillsChange([...(profileData.skills || []), skill]); }} />
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.5rem' }}>
+                    {['JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js', 'MongoDB', 'SQL', 'TypeScript', 'HTML/CSS', 'Machine Learning', 'Data Structures', 'Git', 'AWS', 'Docker'].filter(s => !(profileData.skills || []).includes(s)).slice(0, 10).map(s => (
+                      <button key={s} type="button" onClick={() => handleSkillsChange([...(profileData.skills || []), s])} style={{ padding: '0.15rem 0.55rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '99px', fontSize: '0.75rem', cursor: 'pointer', color: 'var(--text-muted)' }}>+ {s}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -1578,6 +1652,57 @@ export function StudentProfileEdit({ tab }) {
                           onChange={(e) => handleCertChange(idx, 'credentialLink', e.target.value)}
                         />
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Hackathons */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>Hackathons ({(profileData.hackathons || []).length})</span>
+                  <button type="button" onClick={addHackathon} className="settings-btn-add">＋ Add Hackathon</button>
+                </div>
+                {(profileData.hackathons || []).map((h, idx) => (
+                  <div className="settings-card-item" key={idx} style={{ borderLeft: '3px solid rgba(139, 92, 246, 0.4)' }}>
+                    <button type="button" className="settings-card-remove-btn" onClick={() => removeHackathon(idx)}>✖</button>
+                    <div className="settings-grid-2">
+                      <div className="settings-form-group">
+                        <label>Hackathon Name *</label>
+                        <input type="text" className="settings-input" placeholder="e.g. Smart India Hackathon" value={h.name || ''} onChange={(e) => handleHackathonChange(idx, 'name', e.target.value)} />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Organizer</label>
+                        <input type="text" className="settings-input" placeholder="e.g. AICTE, HackerEarth" value={h.organizer || ''} onChange={(e) => handleHackathonChange(idx, 'organizer', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="settings-grid-2" style={{ marginTop: '1rem' }}>
+                      <div className="settings-form-group">
+                        <label>Date</label>
+                        <input type="date" className="settings-input" value={h.date ? h.date.split('T')[0] : ''} onChange={(e) => handleHackathonChange(idx, 'date', e.target.value)} />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Team Size</label>
+                        <input type="number" min="1" className="settings-input" value={h.teamSize || 1} onChange={(e) => handleHackathonChange(idx, 'teamSize', Number(e.target.value))} />
+                      </div>
+                    </div>
+                    <div className="settings-grid-2" style={{ marginTop: '1rem' }}>
+                      <div className="settings-form-group">
+                        <label>Position / Track</label>
+                        <input type="text" className="settings-input" placeholder="e.g. Winner, Top 10, Finalist" value={h.position || ''} onChange={(e) => handleHackathonChange(idx, 'position', e.target.value)} />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Result</label>
+                        <input type="text" className="settings-input" placeholder="e.g. 1st Place, Runner Up, Participant" value={h.result || ''} onChange={(e) => handleHackathonChange(idx, 'result', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="settings-form-group" style={{ marginTop: '1rem' }}>
+                      <label>Description</label>
+                      <textarea className="settings-input" rows={2} style={{ resize: 'vertical' }} placeholder="Brief description of the project / problem statement..." value={h.description || ''} onChange={(e) => handleHackathonChange(idx, 'description', e.target.value)} />
+                    </div>
+                    <div className="settings-form-group" style={{ marginTop: '0.5rem' }}>
+                      <label>Certificate Link</label>
+                      <input type="text" className="settings-input" placeholder="https://..." value={h.certificateLink || ''} onChange={(e) => handleHackathonChange(idx, 'certificateLink', e.target.value)} />
                     </div>
                   </div>
                 ))}

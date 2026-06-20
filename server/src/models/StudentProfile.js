@@ -34,6 +34,17 @@ const CertificationEntrySchema = new mongoose.Schema({
   credentialLink: { type: String, default: "" }
 }, { _id: false });
 
+const HackathonEntrySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  organizer: { type: String, default: "" },
+  date: { type: Date },
+  teamSize: { type: Number, default: 1 },
+  position: { type: String, default: "" },
+  result: { type: String, default: "" },
+  description: { type: String, default: "" },
+  certificateLink: { type: String, default: "" }
+}, { _id: false });
+
 const SiblingEntrySchema = new mongoose.Schema({
   name: { type: String, default: "" },
   relation: { type: String, default: "" },
@@ -104,6 +115,7 @@ const StudentProfileSchema = new mongoose.Schema({
   projects: [ProjectEntrySchema],
   experiences: [ExperienceEntrySchema],
   certifications: [CertificationEntrySchema],
+  hackathons: [HackathonEntrySchema],
   
   // Profile Completeness metric
   profileCompletion: { type: Number, default: 0 },

@@ -8,7 +8,7 @@ export function CoordinatorReports() {
 
   const formatValue = (val, dec = 2) => {
     if (val === 'Tracking Started' || val === 'N/A') return val;
-    if (val === undefined || val === null || val === '' || isNaN(val)) return '—';
+    if (val === undefined || val === null || val === '' || isNaN(val)) return 'N/A';
     return Number(val).toFixed(dec);
   };
 
@@ -999,9 +999,9 @@ export function CoordinatorReports() {
                         </td>
                         <td>{formatValue(r.ccCurrentRating)}</td>
                         <td>{formatValue(r.ccHighestRating)}</td>
-                        <td>{r.ccStars || '1★'}</td>
-                        <td>#{r.ccGlobalRank || '—'}</td>
-                        <td>{r.ccCountryRank || '—'}</td>
+                        <td>{r.ccStars ?? 'N/A'}</td>
+                        <td>{r.ccGlobalRank != null ? `#${r.ccGlobalRank}` : 'N/A'}</td>
+                        <td>{r.ccCountryRank ?? 'N/A'}</td>
                       </>
                     )}
 
@@ -1018,9 +1018,9 @@ export function CoordinatorReports() {
                         </td>
                         <td>{formatValue(r.ccCurrentRating)}</td>
                         <td>{formatValue(r.ccHighestRating)}</td>
-                        <td>{r.ccStars || '1★'}</td>
-                        <td>#{r.ccGlobalRank || '—'}</td>
-                        <td>{r.ccCountryRank || '—'}</td>
+                        <td>{r.ccStars ?? 'N/A'}</td>
+                        <td>{r.ccGlobalRank != null ? `#${r.ccGlobalRank}` : 'N/A'}</td>
+                        <td>{r.ccCountryRank ?? 'N/A'}</td>
                       </>
                     )}
 
@@ -1051,8 +1051,8 @@ export function CoordinatorReports() {
                             return <td key={h.key}>{formatValue(val, 0)}</td>;
                           }
                           return (
-                            <td key={h.key}>
-                              {val !== undefined && val !== null && val !== '' ? val : '—'}
+                           <td key={h.key}>
+                              {val !== undefined && val !== null && val !== '' ? val : 'N/A'}
                             </td>
                           );
                         })}

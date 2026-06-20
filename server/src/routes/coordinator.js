@@ -439,6 +439,7 @@ router.get('/students/:id', async (req, res) => {
       id: student._id,
       name: student.name,
       email: student.email,
+      mssid: student.mssid || '',
       role: student.role,
       college: student.college,
       hostel: student.hostel,
@@ -482,6 +483,7 @@ router.get('/students/:id', async (req, res) => {
       projects: profile?.projects || [],
       experiences: profile?.experiences || [],
       certifications: profile?.certifications || [],
+      hackathons: profile?.hackathons || [],
       profileCompletion: profile?.profileCompletion || 0,
       readinessProfile: profile?.readinessProfile || {},
       
@@ -1270,11 +1272,12 @@ const mapStudentToRow = (s, reportType, solved30DaysMap, lastSubDateMap, prevSna
       }
     }
     
-    const ccCurrentRating = cc.currentRating || cc.rating || 0;
-    const ccHighestRating = cc.highestRating || 0;
-    const ccStars = cc.stars || '1★';
-    const ccGlobalRank = cc.globalRank || 0;
-    const ccCountryRank = cc.countryRank || 'Inactive';
+    const hasCC = !!s.codechefUsername;
+    const ccCurrentRating = hasCC ? (cc.currentRating || cc.rating || null) : null;
+    const ccHighestRating = hasCC ? (cc.highestRating || null) : null;
+    const ccStars = hasCC ? (cc.stars || null) : null;
+    const ccGlobalRank = hasCC ? (cc.globalRank || null) : null;
+    const ccCountryRank = hasCC ? (cc.countryRank || null) : null;
 
     return {
       ...baseInfo,
@@ -1311,11 +1314,12 @@ const mapStudentToRow = (s, reportType, solved30DaysMap, lastSubDateMap, prevSna
     }
     const lcGrowth = oldestRating !== null ? lcCurrent - oldestRating : 0;
 
-    const ccCurrentRating = cc.currentRating || cc.rating || 0;
-    const ccHighestRating = cc.highestRating || 0;
-    const ccStars = cc.stars || '1★';
-    const ccGlobalRank = cc.globalRank || 0;
-    const ccCountryRank = cc.countryRank || 'Inactive';
+    const hasCC2 = !!s.codechefUsername;
+    const ccCurrentRating = hasCC2 ? (cc.currentRating || cc.rating || null) : null;
+    const ccHighestRating = hasCC2 ? (cc.highestRating || null) : null;
+    const ccStars = hasCC2 ? (cc.stars || null) : null;
+    const ccGlobalRank = hasCC2 ? (cc.globalRank || null) : null;
+    const ccCountryRank = hasCC2 ? (cc.countryRank || null) : null;
 
     return {
       ...baseInfo,
@@ -1844,6 +1848,13 @@ const addWorksheetToWorkbook = (workbook, sheetName, reportType, rows) => {
     numericFields.forEach(f => {
       if (rowObj[f] !== undefined && rowObj[f] !== null && rowObj[f] !== '' && !isNaN(rowObj[f])) {
         rowObj[f] = Number(rowObj[f]).toFixed(2);
+      }
+    });
+
+    // Map null/undefined numeric fields to 'N/A' for unconnected platforms
+    columns.forEach(col => {
+      if (rowObj[col.key] === null || rowObj[col.key] === undefined) {
+        rowObj[col.key] = 'N/A';
       }
     });
 
