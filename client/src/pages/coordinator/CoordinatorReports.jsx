@@ -7,6 +7,7 @@ export function CoordinatorReports() {
   const { token, user } = useAuth();
 
   const formatValue = (val, dec = 2) => {
+    if (val === 'Tracking Started' || val === 'N/A') return val;
     if (val === undefined || val === null || val === '' || isNaN(val)) return '—';
     return Number(val).toFixed(dec);
   };
@@ -34,6 +35,7 @@ export function CoordinatorReports() {
   // Errors / Success Messages
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [dynamicHeaders, setDynamicHeaders] = useState(null);
 
   // Stats Card Data
   const [stats, setStats] = useState({
@@ -130,6 +132,7 @@ export function CoordinatorReports() {
       if (response) {
         setRecords(response.rows || []);
         setTotalCount(response.total || 0);
+        setDynamicHeaders(response.columns || null);
         if (response.filters) {
           setFilterOptions(prev => ({
             ...prev,
@@ -265,6 +268,9 @@ export function CoordinatorReports() {
 
   // Headers dynamic helper based on selected report tab
   const getTableHeader = () => {
+    if (dynamicHeaders) {
+      return dynamicHeaders.map(col => ({ label: col.header, key: col.key }));
+    }
     switch (activeReport) {
       case 'student-master':
         return [
@@ -312,10 +318,6 @@ export function CoordinatorReports() {
       case 'weekly-rank':
         return [
           { label: 'Name', key: 'name' },
-          { label: 'LC Contest 1', key: 'lcW1' },
-          { label: 'LC Contest 2', key: 'lcW2' },
-          { label: 'LC Contest 3', key: 'lcW3' },
-          { label: 'LC Contest 4', key: 'lcW4' },
           { label: 'LC Current', key: 'lcCurrent' },
           { label: 'LC Growth', key: 'lcGrowth' },
           { label: 'CC Current Rating', key: 'ccCurrentRating' },
@@ -323,6 +325,22 @@ export function CoordinatorReports() {
           { label: 'CC Stars', key: 'ccStars' },
           { label: 'CC Global Rank', key: 'ccGlobalRank' },
           { label: 'CC Country Rank', key: 'ccCountryRank' }
+        ];
+      case 'leetcode-all-contest':
+        return [
+          { label: 'Student', key: 'name' },
+          { label: 'Contest Name', key: 'contestName' },
+          { label: 'Date', key: 'contestDate' },
+          { label: 'Rating', key: 'rating' },
+          { label: 'Rank', key: 'rank' }
+        ];
+      case 'codechef-all-contest':
+        return [
+          { label: 'Student', key: 'name' },
+          { label: 'Contest Name', key: 'contestName' },
+          { label: 'Date', key: 'contestDate' },
+          { label: 'Rating', key: 'rating' },
+          { label: 'Rank', key: 'rank' }
         ];
       case 'medium-growth':
         return [
@@ -866,13 +884,15 @@ export function CoordinatorReports() {
           </div>
         </div>
 
-        {/* ─── TAB NAVIGATION FOR THE 8 REPORTS ─── */}
+        {/* ─── TAB NAVIGATION FOR THE REPORTS ─── */}
         <div className="report-tabs">
           {[
             { id: 'student-master', label: '👤 Student Master' },
             { id: 'leetcode-tracking', label: '⚡ LeetCode Tracking' },
             { id: 'contest-tracking', label: '🏆 Contest Growth' },
             { id: 'weekly-rank', label: '⏳ Weekly Ratings' },
+            { id: 'leetcode-all-contest', label: '🏆 LeetCode All Contests' },
+            { id: 'codechef-all-contest', label: '🍳 CodeChef All Contests' },
             { id: 'medium-growth', label: '📈 Medium Solved Growth' },
             { id: 'codechef-tracking', label: '🍳 CodeChef Tracking' },
             { id: 'cgpa-tracking', label: '🎓 Academics & CGPA' },
@@ -880,7 +900,7 @@ export function CoordinatorReports() {
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => { setActiveReport(t.id); setPage(1); }}
+              onClick={() => { setActiveReport(t.id); setPage(1); setDynamicHeaders(null); }}
               className={`report-tab-btn ${activeReport === t.id ? 'active' : ''}`}
             >
               {t.label}
@@ -992,10 +1012,6 @@ export function CoordinatorReports() {
                             {r.name}
                           </a>
                         </td>
-                        <td>{renderContestCell(r.lcW1)}</td>
-                        <td>{renderContestCell(r.lcW2)}</td>
-                        <td>{renderContestCell(r.lcW3)}</td>
-                        <td>{renderContestCell(r.lcW4)}</td>
                         <td>{formatValue(r.lcCurrent)}</td>
                         <td style={{ color: r.lcGrowth > 0 ? '#34d399' : r.lcGrowth < 0 ? '#f87171' : 'inherit' }}>
                           {r.lcGrowth > 0 ? `+${formatValue(r.lcGrowth)}` : formatValue(r.lcGrowth)}
@@ -1005,6 +1021,41 @@ export function CoordinatorReports() {
                         <td>{r.ccStars || '1★'}</td>
                         <td>#{r.ccGlobalRank || '—'}</td>
                         <td>{r.ccCountryRank || '—'}</td>
+                      </>
+                    )}
+
+                    {(activeReport === 'leetcode-all-contest' || activeReport === 'codechef-all-contest') && (
+                      <>
+                        {headers.map(h => {
+                          const val = r[h.key];
+                          if (h.key === 'name') {
+                            return (
+                              <td key={h.key}>
+                                <a href={`/coordinator/students/${r.studentId}`} style={{ color: '#60a5fa', textDecoration: 'underline' }}>
+                                  {r.name}
+                                </a>
+                              </td>
+                            );
+                          }
+                          if (h.key === 'lastSyncDate') {
+                            return (
+                              <td key={h.key}>
+                                {val ? new Date(val).toLocaleDateString() : '—'}
+                              </td>
+                            );
+                          }
+                          if (h.key.startsWith('rating_')) {
+                            return <td key={h.key}>{formatValue(val, 2)}</td>;
+                          }
+                          if (h.key.startsWith('rank_')) {
+                            return <td key={h.key}>{formatValue(val, 0)}</td>;
+                          }
+                          return (
+                            <td key={h.key}>
+                              {val !== undefined && val !== null && val !== '' ? val : '—'}
+                            </td>
+                          );
+                        })}
                       </>
                     )}
 

@@ -109,16 +109,7 @@ const PlatformStatsSchema = new mongoose.Schema(
       badgeCount: { type: Number, default: 0 },
       recentSubmissions: { type: Array, default: [] },
       acceptanceRate: { type: Number, default: 0 },
-      contestHistory: {
-        type: Array,
-        default: [],
-        validate: {
-          validator: function(arr) {
-            return arr.length <= 10;
-          },
-          message: 'Contest history cannot exceed 10 records'
-        }
-      }
+      contestHistory: { type: Array, default: [] }
     },
     codechef: {
       username: { type: String },

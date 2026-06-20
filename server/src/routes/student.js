@@ -81,6 +81,7 @@ router.get('/me', async (req, res) => {
       skills: profile.skills || [],
       personalDetails: profile.personalDetails || {},
       familyDetails: profile.familyDetails || {},
+      academicDetails: profile.academicDetails || {},
       profileCompletion: profile.profileCompletion || 0,
       readinessProfile: profile.readinessProfile || {},
       
@@ -973,21 +974,28 @@ router.post(
 router.get('/me/profile/academic', async (req, res) => {
   try {
     const AcademicProfile = require('../models/AcademicProfile');
+    const StudentProfile = require('../models/StudentProfile');
     let ap = await AcademicProfile.findOne({ userId: req.currentUser._id });
-    if (!ap) {
-      ap = {
-        sgpa1: null,
-        sgpa2: null,
-        sgpa3: null,
-        sgpa4: null,
-        sgpa5: null,
-        sgpa6: null,
-        cgpa: null,
-        backlogs: 0,
-        academicStatus: '-'
-      };
-    }
-    return res.json(ap);
+    let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
+    
+    const eapcetRank = profile?.academicDetails?.eapcetRank ?? null;
+    
+    const apData = ap ? (ap.toObject ? ap.toObject() : ap) : {
+      sgpa1: null,
+      sgpa2: null,
+      sgpa3: null,
+      sgpa4: null,
+      sgpa5: null,
+      sgpa6: null,
+      cgpa: null,
+      backlogs: 0,
+      academicStatus: '-'
+    };
+    
+    return res.json({
+      ...apData,
+      eapcetRank
+    });
   } catch (err) {
     console.error('Fetch own academic profile error:', err);
     return res.status(500).json({ message: 'Failed to fetch academic profile' });
@@ -1001,7 +1009,7 @@ router.put('/me/profile/academic', async (req, res) => {
     const AcademicProfileAudit = require('../models/AcademicProfileAudit');
     const { syncPlatformsForUser } = require('../services/platformSyncService');
 
-    const { sgpa1, sgpa2, sgpa3, sgpa4, sgpa5, sgpa6, cgpa, backlogs } = req.body;
+    const { sgpa1, sgpa2, sgpa3, sgpa4, sgpa5, sgpa6, cgpa, backlogs, eapcetRank } = req.body;
 
     const valOrNull = (val) => {
       if (val === null || val === undefined || val === '') return null;
@@ -1069,6 +1077,20 @@ router.put('/me/profile/academic', async (req, res) => {
       previousData,
       newData
     });
+
+    // Also save eapcetRank to StudentProfile under academicDetails
+    const StudentProfile = require('../models/StudentProfile');
+    let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
+    if (!profile) {
+      profile = new StudentProfile({ userId: req.currentUser._id });
+    }
+    if (!profile.academicDetails) {
+      profile.academicDetails = {};
+    }
+    if (eapcetRank !== undefined) {
+      profile.academicDetails.eapcetRank = eapcetRank === '' || eapcetRank === null ? null : Number(eapcetRank);
+    }
+    await profile.save();
 
     // Re-evaluate student's placement readiness score
     await syncPlatformsForUser(req.currentUser, { force: true });

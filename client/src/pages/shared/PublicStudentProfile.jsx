@@ -627,7 +627,7 @@ export function PublicStudentProfile() {
                   {[profile.college, profile.branch, profile.graduationYear && `Class of ${profile.graduationYear}`, profile.hostel].filter(Boolean).join(' · ')}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Email: {profile.email} {profile.mssid && `| MSSID: ${profile.mssid}`}
+                  Email: {profile.email} {profile.mssid && `| MSSID: ${profile.mssid}`} {profile.eapcetRank && `| EAPCET Rank: ${profile.eapcetRank}`}
                 </div>
                 {profile.bio ? (
                   <div className="hero-tagline" style={{ marginTop: '0.2rem' }}>"{profile.bio}"</div>

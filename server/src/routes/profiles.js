@@ -72,6 +72,9 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Profile not found' });
     }
 
+    const StudentProfile = require('../models/StudentProfile');
+    const profileDoc = await StudentProfile.findOne({ userId: student._id });
+
     // Generate combined 6-month heatmap data
     const heatmap = {};
     const today = new Date();
@@ -166,6 +169,7 @@ router.get('/:id', async (req, res) => {
         role: student.role,
         hostel: student.hostel || '',
         overallGpa: student.overallGpa || 0,
+        eapcetRank: profileDoc?.academicDetails?.eapcetRank || null,
         leetcodeUsername: student.leetcodeUsername || '',
         codechefUsername: student.codechefUsername || '',
         gfgUsername: student.gfgUsername || '',

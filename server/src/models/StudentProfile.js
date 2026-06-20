@@ -51,6 +51,10 @@ const ParentEntrySchema = new mongoose.Schema({
 const StudentProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   
+  academicDetails: {
+    eapcetRank: { type: Number, default: null }
+  },
+  
   personalDetails: {
     fullName: { type: String, default: "" },
     gender: { type: String, default: "" },

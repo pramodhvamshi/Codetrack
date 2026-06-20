@@ -90,9 +90,9 @@ const formatData = (data, username) => {
     .map(h => ({
       name: h.contest?.title || 'Contest',
       date: h.contest?.startTime ? new Date(Number(h.contest.startTime) * 1000).toISOString().split('T')[0] : 'N/A',
-      rating: h.rating
-    }))
-    .slice(-10);
+      rating: h.rating,
+      ranking: h.ranking || 0
+    }));
 
   return {
     username,

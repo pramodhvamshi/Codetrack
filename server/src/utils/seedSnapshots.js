@@ -172,16 +172,49 @@ async function seed() {
       academicStatus
     });
 
-    // 3. LeetCode Contest History
+    // 3. LeetCode Contest History & CodeChef Snapshots
     const lcBaseRating = isJohn ? 1900 : isAlex ? 1400 : 1700;
     const mockHistory = [
-      { name: "Weekly Contest 390", date: "2026-05-10", rating: lcBaseRating - 60 },
-      { name: "Biweekly Contest 130", date: "2026-05-17", rating: lcBaseRating - 40 },
-      { name: "Weekly Contest 391", date: "2026-05-24", rating: lcBaseRating - 20 },
-      { name: "Weekly Contest 392", date: "2026-05-31", rating: lcBaseRating },
+      { name: "Weekly Contest 390", date: "2026-05-10", rating: lcBaseRating - 60, rank: 1200 },
+      { name: "Biweekly Contest 130", date: "2026-05-17", rating: lcBaseRating - 40, rank: 900 },
+      { name: "Weekly Contest 391", date: "2026-05-24", rating: lcBaseRating - 20, rank: 700 },
+      { name: "Weekly Contest 392", date: "2026-05-31", rating: lcBaseRating, rank: 500 },
     ];
     await User.findByIdAndUpdate(student._id, {
-      'platformStats.leetcode.contestHistory': mockHistory
+      'platformStats.leetcode.contestHistory': []
+    });
+
+    const LeetCodeContestSnapshot = require('../models/LeetCodeContestSnapshot');
+    for (const h of mockHistory) {
+      await LeetCodeContestSnapshot.create({
+        userId: student._id,
+        contestName: h.name,
+        contestDate: new Date(h.date),
+        rating: h.rating,
+        rank: h.rank,
+        attended: true
+      });
+    }
+
+    const CodeChefContestSnapshot = require('../models/CodeChefContestSnapshot');
+    const ccBaseRating = isJohn ? 1700 : isAlex ? 1300 : 1550;
+    await CodeChefContestSnapshot.create({
+      userId: student._id,
+      contestName: "CodeChef Starters 100",
+      contestDate: new Date("2026-05-15"),
+      rating: ccBaseRating - 50,
+      globalRank: 2500,
+      countryRank: "1800",
+      snapshotType: 'contest'
+    });
+    await CodeChefContestSnapshot.create({
+      userId: student._id,
+      contestName: "CodeChef Starters 101",
+      contestDate: new Date("2026-05-29"),
+      rating: ccBaseRating,
+      globalRank: 1900,
+      countryRank: "1350",
+      snapshotType: 'contest'
     });
   }
 

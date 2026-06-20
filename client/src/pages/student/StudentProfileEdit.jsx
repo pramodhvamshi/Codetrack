@@ -34,7 +34,8 @@ export function StudentProfileEdit({ tab }) {
     sgpa6: '',
     cgpa: '',
     backlogs: '0',
-    academicStatus: ''
+    academicStatus: '',
+    eapcetRank: ''
   });
 
   // Fetch full details
@@ -46,7 +47,7 @@ export function StudentProfileEdit({ tab }) {
       
       if (tab === 'academic') {
         try {
-          const acadData = await api.getJson('/student/academic-profile', token);
+          const acadData = await api.getJson('/student/me/profile/academic', token);
           if (acadData) {
             setAcademicForm({
               sgpa1: acadData.sgpa1 != null ? acadData.sgpa1.toString() : '',
@@ -57,7 +58,8 @@ export function StudentProfileEdit({ tab }) {
               sgpa6: acadData.sgpa6 != null ? acadData.sgpa6.toString() : '',
               cgpa: acadData.cgpa != null ? acadData.cgpa.toString() : '',
               backlogs: acadData.backlogs != null ? acadData.backlogs.toString() : '0',
-              academicStatus: acadData.academicStatus || '-'
+              academicStatus: acadData.academicStatus || '-',
+              eapcetRank: acadData.eapcetRank != null ? acadData.eapcetRank.toString() : ''
             });
           }
         } catch (err) {
@@ -452,7 +454,8 @@ export function StudentProfileEdit({ tab }) {
         sgpa5: academicForm.sgpa5 === '' ? null : parseFloat(academicForm.sgpa5),
         sgpa6: academicForm.sgpa6 === '' ? null : parseFloat(academicForm.sgpa6),
         cgpa: parseFloat(academicForm.cgpa),
-        backlogs: parseInt(academicForm.backlogs, 10)
+        backlogs: parseInt(academicForm.backlogs, 10),
+        eapcetRank: academicForm.eapcetRank === '' ? null : parseInt(academicForm.eapcetRank, 10)
       };
 
       if (isNaN(payload.cgpa) || payload.cgpa < 0 || payload.cgpa > 10) {
@@ -461,6 +464,9 @@ export function StudentProfileEdit({ tab }) {
       if (isNaN(payload.backlogs) || payload.backlogs < 0) {
         throw new Error('Backlogs must be a valid non-negative integer.');
       }
+      if (payload.eapcetRank !== null && (isNaN(payload.eapcetRank) || payload.eapcetRank < 0)) {
+        throw new Error('EAPCET Rank must be a valid non-negative integer.');
+      }
       for (let i = 1; i <= 6; i++) {
         const val = payload[`sgpa${i}`];
         if (val !== null && (isNaN(val) || val < 0 || val > 10)) {
@@ -468,7 +474,7 @@ export function StudentProfileEdit({ tab }) {
         }
       }
 
-      const res = await api.putJson('/student/academic-profile', payload, token);
+      const res = await api.putJson('/student/me/profile/academic', payload, token);
       setSuccess('Academic profile saved successfully!');
       setAcademicForm(prev => ({
         ...prev,
@@ -1839,7 +1845,7 @@ export function StudentProfileEdit({ tab }) {
 
               <div className="settings-form-section">
                 <div className="settings-section-title">Cumulative Performance</div>
-                <div className="settings-grid-2">
+                <div className="settings-grid-3">
                   <div className="settings-form-group">
                     <label>Overall CGPA (Required)</label>
                     <input
@@ -1864,6 +1870,17 @@ export function StudentProfileEdit({ tab }) {
                       value={academicForm.backlogs}
                       onChange={(e) => setAcademicForm(p => ({ ...p, backlogs: e.target.value }))}
                       required
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>EAPCET Rank (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 15000"
+                      value={academicForm.eapcetRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, eapcetRank: e.target.value }))}
                     />
                   </div>
                 </div>

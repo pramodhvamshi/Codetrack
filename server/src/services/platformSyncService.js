@@ -242,8 +242,26 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
         badgeCount: lcData.badgeCount || 0,
         recentSubmissions: lcData.recentSubmissions || [],
         acceptanceRate: lcData.acceptanceRate || 0,
-        contestHistory: lcData.contestHistory || []
+        contestHistory: []
       };
+
+      if (lcData.contestHistory && Array.isArray(lcData.contestHistory)) {
+        const LeetCodeContestSnapshot = require('../models/LeetCodeContestSnapshot');
+        for (const contest of lcData.contestHistory) {
+          if (contest.name && contest.date && contest.date !== 'N/A') {
+            await LeetCodeContestSnapshot.findOneAndUpdate(
+              { userId: user._id, contestName: contest.name },
+              {
+                contestDate: new Date(contest.date),
+                rating: contest.rating || 0,
+                rank: contest.ranking || 0,
+                attended: true
+              },
+              { upsert: true, new: true }
+            );
+          }
+        }
+      }
 
       if (lcData.recentSubmissions) {
         for (const sub of lcData.recentSubmissions) {
@@ -281,6 +299,24 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
         rating: ccData.currentRating, // Keep for backward compatibility
         lastSyncAt: new Date()
       };
+
+      // CodeChef Contest Snapshot Logic
+      const oldContestCount = platformStats.codechef?.contestCount || 0;
+      const newContestCount = ccData.contestCount || 0;
+      const hasNewContest = newContestCount > oldContestCount;
+
+      if (hasNewContest && ccData.currentRating > 0 && ccData.globalRank > 0) {
+        const CodeChefContestSnapshot = require('../models/CodeChefContestSnapshot');
+        await CodeChefContestSnapshot.create({
+          userId: user._id,
+          contestName: `CodeChef Contest ${newContestCount}`,
+          contestDate: new Date(),
+          rating: ccData.currentRating,
+          globalRank: ccData.globalRank,
+          countryRank: ccData.countryRank || 'Inactive',
+          snapshotType: 'contest'
+        });
+      }
 
       if (newSolved > oldSolved) {
         const Activity = require('../models/Activity');

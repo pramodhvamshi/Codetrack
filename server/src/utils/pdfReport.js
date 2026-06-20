@@ -722,7 +722,12 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.text("Contest Date / Time", margin + 250, contestLogY + 5);
     doc.text("Official Rating Achieved", margin + 380, contestLogY + 5, { width: 120, align: 'center' });
 
-    const lcHistory = lc.contestHistory || [];
+    const rawLcContests = options.leetcodeContests || lc.contestHistory || [];
+    const lcHistory = rawLcContests.map(c => ({
+      name: c.contestName || c.name || 'Contest',
+      date: c.contestDate ? new Date(c.contestDate).toISOString().split('T')[0] : (c.date || 'N/A'),
+      rating: c.rating
+    }));
     let contestRowY = contestLogY + 18;
 
     if (lcHistory.length === 0) {

@@ -427,6 +427,7 @@ export function CoordinatorStudentDetail() {
                 <span>🏫 College: <strong>{student.personalDetails?.college || student.college || '—'}</strong></span>
                 <span>💻 Branch: <strong>{student.personalDetails?.branch || student.branch || '—'}</strong></span>
                 <span>📅 Academic Year: <strong>{student.personalDetails?.year || student.currentYear || '—'}</strong></span>
+                <span>🏅 EAPCET Rank: <strong>{student.academicDetails?.eapcetRank || '—'}</strong></span>
               </div>
 
               {/* SGPA & CGPA Scorecard */}
