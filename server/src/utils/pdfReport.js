@@ -21,9 +21,20 @@ function formatDate(d) {
  */
 function drawPageHeader(doc, title, margin = 40, contentWidth = 515) {
   const COLOR_THEME = '#1e3a8a'; // slate-900 or dark blue
-  doc.fillColor(COLOR_THEME).font('Helvetica-Bold').fontSize(11).text(title.toUpperCase());
+  const startY = doc.y;
+  doc.fillColor(COLOR_THEME).font('Helvetica-Bold').fontSize(11).text(title.toUpperCase(), margin, startY, { lineBreak: false });
+  doc.x = margin;
+  doc.y = startY + doc.currentLineHeight();
   doc.moveTo(margin, doc.y + 3).lineTo(margin + contentWidth, doc.y + 3).strokeColor(COLOR_THEME).lineWidth(1).stroke();
   doc.moveDown(0.6);
+}
+
+function drawSectionHeading(doc, text, size = 9.5, color = '#0f172a', margin = 40) {
+  doc.fillColor(color).font('Helvetica-Bold').fontSize(size);
+  const startY = doc.y;
+  doc.text(text, margin, startY, { lineBreak: false });
+  doc.x = margin;
+  doc.y = startY + doc.currentLineHeight();
 }
 
 /**
@@ -98,9 +109,9 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.rect(0, 0, pageWidth, 125).fillColor(COLOR_THEME).fill();
     
     doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(22)
-       .text("MEDHA CODE TRACK", margin, 38);
-    doc.fillColor('#93c5fd').font('Helvetica').fontSize(13)
-       .text("Placement Readiness Student Report Card", margin, 70);
+       .text("MEDHA SCHOLAR Report Card", margin, 38, { lineBreak: false });
+    doc.fillColor('#93c5fd').font('Helvetica-Bold').fontSize(11)
+       .text("COGNITIVE POTENTIAL & DOPAMINE DISCIPLINE TRACKING", margin, 70, { lineBreak: false });
 
     const topY = 150;
     
@@ -109,7 +120,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.rect(margin, topY, 340, 150).strokeColor(COLOR_LINE).lineWidth(1).stroke();
     
     let infoY = topY + 12;
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("STUDENT PROFILE SUMMARY", margin + 15, infoY);
+    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("STUDENT PROFILE SUMMARY", margin + 15, infoY, { lineBreak: false });
     
     doc.font('Helvetica').fontSize(9).fillColor(COLOR_BODY);
     infoY += 18;
@@ -127,6 +138,8 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
        .font('Helvetica-Bold').text(` ${pd.section || 'N/A'}`);
     doc.font('Helvetica').text(`Email:`, margin + 15, infoY + 84, { continued: true })
        .font('Helvetica-Bold').text(` ${student.email}`);
+    doc.font('Helvetica').text(`Track / Goal:`, margin + 15, infoY + 98, { continued: true })
+       .font('Helvetica-Bold').text(` ${profile?.goal || 'N/A'}`);
 
     // Right Box: Photo Support / Fallback Initials Avatar
     const photoX = margin + 355;
@@ -177,7 +190,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
 
     // Platforms Last Sync Timestamps (New Page 1 Requirement)
     const syncTableY = 415;
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("PLATFORMS INTEGRATION & SYNC TRACKER", margin, syncTableY);
+    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("PLATFORMS INTEGRATION & SYNC TRACKER", margin, syncTableY, { lineBreak: false });
     
     // Draw table
     const sTableY = syncTableY + 15;
@@ -210,7 +223,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
 
     // Status Badge Section
     const statusY = 540;
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("OVERALL PLACEMENT READINESS STATUS", margin, statusY);
+    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("OVERALL PLACEMENT READINESS STATUS", margin, statusY, { lineBreak: false });
     
     // Draw status pill
     doc.rect(margin, statusY + 15, 140, 30).fillColor(badgeColor).fill();
@@ -256,7 +269,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       personalRows.push({ label: "Address", value: addressParts.join(', ') });
     }
 
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("PERSONAL INFORMATION");
+    drawSectionHeading(doc, "PERSONAL INFORMATION", 9, COLOR_HEADING);
     doc.moveDown(0.2);
 
     let infoGridY = doc.y;
@@ -266,7 +279,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       doc.rect(margin, infoGridY, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
       
       doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
-      doc.text(row.label, margin + 10, infoGridY + 5);
+      doc.text(row.label, margin + 10, infoGridY + 5, { lineBreak: false });
       
       doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
       doc.text(String(row.value), margin + 140, infoGridY + 5, { width: contentWidth - 150 });
@@ -310,7 +323,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     }
 
     if (familyRows.length > 0) {
-      doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("FAMILY & SOCIOECONOMIC DETAILS");
+      drawSectionHeading(doc, "FAMILY & SOCIOECONOMIC DETAILS", 9, COLOR_HEADING);
       doc.moveDown(0.2);
       
       let famGridY = doc.y;
@@ -319,10 +332,10 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
         doc.rect(margin, famGridY, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
         
         doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
-        doc.text(row.label, margin + 10, famGridY + 5);
+        doc.text(row.label, margin + 10, famGridY + 5, { lineBreak: false });
         
         doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
-        doc.text(String(row.value), margin + 140, famGridY + 5);
+        doc.text(String(row.value), margin + 140, famGridY + 5, { lineBreak: false });
         
         famGridY += 18;
       });
@@ -330,19 +343,50 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       doc.y = famGridY;
     }
 
+    // Mentor details
+    const mentorRows = [];
+    const formatMentor = (m) => m && m.name ? `${m.name} (${m.mobileNumber || 'N/A'})` : '';
+    
+    if (profile?.collegeMentor?.name) mentorRows.push({ label: "College Mentor", value: formatMentor(profile.collegeMentor) });
+    if (profile?.academicMentor?.name) mentorRows.push({ label: "Academic Mentor", value: formatMentor(profile.academicMentor) });
+    if (profile?.codingMentor?.name) mentorRows.push({ label: "Coding Mentor", value: formatMentor(profile.codingMentor) });
+    if (profile?.communicationMentor?.name) mentorRows.push({ label: "Communication Skills Mentor", value: formatMentor(profile.communicationMentor) });
+    if (profile?.projectMentor?.name) mentorRows.push({ label: "Project Mentor", value: formatMentor(profile.projectMentor) });
+
+    if (mentorRows.length > 0) {
+      doc.moveDown(0.8);
+      checkPageBreak(doc, 40 + mentorRows.length * 18, margin, footerY, "PERSONAL & FAMILY DETAILS (Contd.)");
+      drawSectionHeading(doc, "MENTOR INFORMATION", 9, COLOR_HEADING);
+      doc.moveDown(0.2);
+      
+      let mentorGridY = doc.y;
+      mentorRows.forEach(row => {
+        doc.rect(margin, mentorGridY, contentWidth, 18).fillColor(COLOR_CARD_BG).fill();
+        doc.rect(margin, mentorGridY, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
+        
+        doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
+        doc.text(row.label, margin + 10, mentorGridY + 5, { lineBreak: false });
+        
+        doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
+        doc.text(String(row.value), margin + 200, mentorGridY + 5, { lineBreak: false });
+        mentorGridY += 18;
+      });
+      doc.y = mentorGridY;
+    }
+
     // Siblings
     if (fd.siblings && fd.siblings.length > 0) {
       doc.moveDown(0.8);
-      doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("SIBLING DETAILS");
+      drawSectionHeading(doc, "SIBLING DETAILS", 9, COLOR_HEADING);
       doc.moveDown(0.2);
       
       let sibTableY = doc.y;
       doc.rect(margin, sibTableY, contentWidth, 16).fillColor('#e2e8f0').fill();
       doc.font('Helvetica-Bold').fontSize(7.5).fillColor(COLOR_HEADING);
-      doc.text("Sibling Name", margin + 10, sibTableY + 4);
-      doc.text("Relation", margin + 120, sibTableY + 4);
-      doc.text("Education Status", margin + 220, sibTableY + 4);
-      doc.text("Occupation", margin + 370, sibTableY + 4);
+      doc.text("Sibling Name", margin + 10, sibTableY + 4, { lineBreak: false });
+      doc.text("Relation", margin + 120, sibTableY + 4, { lineBreak: false });
+      doc.text("Education Status", margin + 220, sibTableY + 4, { lineBreak: false });
+      doc.text("Occupation", margin + 370, sibTableY + 4, { lineBreak: false });
       
       let sibRowY = sibTableY + 16;
       fd.siblings.forEach(s => {
@@ -351,10 +395,10 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
         doc.rect(margin, sibRowY, contentWidth, 16).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
         
         doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
-        doc.text(s.name, margin + 10, sibRowY + 4);
-        doc.text(s.relation || 'Sibling', margin + 120, sibRowY + 4);
-        doc.text(s.educationStatus || 'N/A', margin + 220, sibRowY + 4);
-        doc.text(s.occupation || 'N/A', margin + 370, sibRowY + 4);
+        doc.text(s.name, margin + 10, sibRowY + 4, { lineBreak: false });
+        doc.text(s.relation || 'Sibling', margin + 120, sibRowY + 4, { lineBreak: false });
+        doc.text(s.educationStatus || 'N/A', margin + 220, sibRowY + 4, { lineBreak: false });
+        doc.text(s.occupation || 'N/A', margin + 370, sibRowY + 4, { lineBreak: false });
         sibRowY += 16;
       });
       doc.y = sibRowY;
@@ -368,41 +412,41 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     drawPageHeader(doc, "ACADEMIC DETAILS & PROFILE", margin, contentWidth);
 
     // Semesters SGPA table
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("SEMESTER GRADE SUMMARY (SGPA)");
+    drawSectionHeading(doc, "SEMESTER GRADE SUMMARY (SGPA)", 9, COLOR_HEADING);
     doc.moveDown(0.2);
 
     const semY = doc.y;
     doc.rect(margin, semY, contentWidth, 18).fillColor('#e2e8f0').rect(margin, semY, contentWidth, 18).fill();
     doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
-    doc.text("Sem 1", margin + 10, semY + 5, { width: 50, align: 'center' });
-    doc.text("Sem 2", margin + 70, semY + 5, { width: 50, align: 'center' });
-    doc.text("Sem 3", margin + 130, semY + 5, { width: 50, align: 'center' });
-    doc.text("Sem 4", margin + 190, semY + 5, { width: 50, align: 'center' });
-    doc.text("Sem 5", margin + 250, semY + 5, { width: 50, align: 'center' });
-    doc.text("Sem 6", margin + 310, semY + 5, { width: 50, align: 'center' });
-    doc.text("Backlogs", margin + 370, semY + 5, { width: 60, align: 'center' });
-    doc.text("CGPA Score", margin + 440, semY + 5, { width: 65, align: 'center' });
+    doc.text("Sem 1", margin + 10, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Sem 2", margin + 70, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Sem 3", margin + 130, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Sem 4", margin + 190, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Sem 5", margin + 250, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Sem 6", margin + 310, semY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text("Backlogs", margin + 370, semY + 5, { width: 60, align: 'center', lineBreak: false });
+    doc.text("CGPA Score", margin + 440, semY + 5, { width: 65, align: 'center', lineBreak: false });
 
     const semValY = semY + 18;
     doc.rect(margin, semValY, contentWidth, 18).fillColor(COLOR_CARD_BG).fill();
     doc.rect(margin, semValY, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
     doc.font('Helvetica').fontSize(8.5).fillColor(COLOR_BODY);
     
-    doc.text(formatNum(academic.sgpa1), margin + 10, semValY + 5, { width: 50, align: 'center' });
-    doc.text(formatNum(academic.sgpa2), margin + 70, semValY + 5, { width: 50, align: 'center' });
-    doc.text(formatNum(academic.sgpa3), margin + 130, semValY + 5, { width: 50, align: 'center' });
-    doc.text(formatNum(academic.sgpa4), margin + 190, semValY + 5, { width: 50, align: 'center' });
-    doc.text(formatNum(academic.sgpa5), margin + 250, semValY + 5, { width: 50, align: 'center' });
-    doc.text(formatNum(academic.sgpa6), margin + 310, semValY + 5, { width: 50, align: 'center' });
-    doc.text(String(academic.backlogs ?? 0), margin + 370, semValY + 5, { width: 60, align: 'center' });
+    doc.text(formatNum(academic.sgpa1), margin + 10, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(formatNum(academic.sgpa2), margin + 70, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(formatNum(academic.sgpa3), margin + 130, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(formatNum(academic.sgpa4), margin + 190, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(formatNum(academic.sgpa5), margin + 250, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(formatNum(academic.sgpa6), margin + 310, semValY + 5, { width: 50, align: 'center', lineBreak: false });
+    doc.text(String(academic.backlogs ?? 0), margin + 370, semValY + 5, { width: 60, align: 'center', lineBreak: false });
     
     doc.font('Helvetica-Bold').fillColor(COLOR_ACCENT);
-    doc.text(formatNum(academic.cgpa || student.overallGpa), margin + 440, semValY + 5, { width: 65, align: 'center' });
+    doc.text(formatNum(academic.cgpa || student.overallGpa), margin + 440, semValY + 5, { width: 65, align: 'center', lineBreak: false });
 
     doc.y = semValY + 28;
 
     // Schooling grid (SSC and Intermediate)
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("SCHOOLING DETAILS (10TH & 12TH)");
+    drawSectionHeading(doc, "SCHOOLING DETAILS (10TH & 12TH)", 9, COLOR_HEADING);
     doc.moveDown(0.2);
     
     const schoolY = doc.y;
@@ -410,14 +454,14 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       doc.rect(margin, y, contentWidth, 18).fillColor(COLOR_CARD_BG).fill();
       doc.rect(margin, y, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
       doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
-      doc.text(lbl1, margin + 8, y + 5);
+      doc.text(lbl1, margin + 8, y + 5, { lineBreak: false });
       doc.font('Helvetica').fillColor(COLOR_BODY);
-      doc.text(String(val1 || '—'), margin + 120, y + 5);
+      doc.text(String(val1 || '—'), margin + 120, y + 5, { lineBreak: false });
       
       doc.font('Helvetica-Bold').fillColor(COLOR_HEADING);
-      doc.text(lbl2, margin + 268, y + 5);
+      doc.text(lbl2, margin + 268, y + 5, { lineBreak: false });
       doc.font('Helvetica').fillColor(COLOR_BODY);
-      doc.text(String(val2 || '—'), margin + 380, y + 5);
+      doc.text(String(val2 || '—'), margin + 380, y + 5, { lineBreak: false });
     };
 
     drawSchoolRow("SSC School Name", pd.ssc?.schoolName, "Intermediate College", pd.intermediate?.collegeName, schoolY);
@@ -425,13 +469,49 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     drawSchoolRow("SSC Passout Year", pd.ssc?.passoutYear, "Intermediate Passout Year", pd.intermediate?.passoutYear, schoolY + 36);
     drawSchoolRow("SSC Percentage", pd.ssc?.percentage ? `${formatNum(pd.ssc.percentage)}%` : '—', "Intermediate Percentage", pd.intermediate?.percentage ? `${formatNum(pd.intermediate.percentage)}%` : '—', schoolY + 54);
 
-    doc.y = schoolY + 85;
+    let nextAcademicsY = schoolY + 85;
+
+    // Entrance Exam Details
+    const entranceExamRows = [];
+    const ad = profile?.academicDetails || {};
+    const eamcetVal = ad.eamcetRank || ad.eapcetRank;
+    if (eamcetVal) entranceExamRows.push({ label: "EAMCET Rank", value: eamcetVal });
+    if (ad.jeeMainsPercentile) entranceExamRows.push({ label: "JEE Mains Percentile", value: `${formatNum(ad.jeeMainsPercentile)}%` });
+    if (ad.jeeMainsOverallRank) entranceExamRows.push({ label: "JEE Mains Overall Rank", value: ad.jeeMainsOverallRank });
+    if (ad.jeeMainsCategoryRank) entranceExamRows.push({ label: "JEE Mains Category Rank", value: ad.jeeMainsCategoryRank });
+    if (ad.jeeAdvOverallRank) entranceExamRows.push({ label: "JEE Advanced Overall Rank", value: ad.jeeAdvOverallRank });
+    if (ad.jeeAdvCategoryRank) entranceExamRows.push({ label: "JEE Advanced Category Rank", value: ad.jeeAdvCategoryRank });
+
+    if (entranceExamRows.length > 0) {
+      doc.y = nextAcademicsY;
+      checkPageBreak(doc, 40 + entranceExamRows.length * 18, margin, footerY, "ACADEMIC DETAILS & PROFILE (Contd.)");
+      drawSectionHeading(doc, "ENTRANCE EXAM DETAILS", 9, COLOR_HEADING);
+      doc.moveDown(0.2);
+      
+      let examY = doc.y;
+      entranceExamRows.forEach(row => {
+        doc.rect(margin, examY, contentWidth, 18).fillColor(COLOR_CARD_BG).fill();
+        doc.rect(margin, examY, contentWidth, 18).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
+        
+        doc.font('Helvetica-Bold').fontSize(8).fillColor(COLOR_HEADING);
+        doc.text(row.label, margin + 10, examY + 5, { lineBreak: false });
+        
+        doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
+        doc.text(String(row.value), margin + 200, examY + 5, { lineBreak: false });
+        examY += 18;
+      });
+      nextAcademicsY = examY + 15;
+    }
+
+    doc.y = nextAcademicsY;
 
     // Higher Education entries
     if (profile?.education && profile.education.length > 0) {
-      doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9).text("OTHER EDUCATIONAL DEGREES");
+      checkPageBreak(doc, 40, margin, footerY, "ACADEMIC DETAILS & PROFILE (Contd.)");
+      drawSectionHeading(doc, "OTHER EDUCATIONAL DEGREES", 9, COLOR_HEADING);
       doc.moveDown(0.2);
       profile.education.forEach(edu => {
+        checkPageBreak(doc, 20, margin, footerY, "ACADEMIC DETAILS & PROFILE (Contd.)");
         doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR_BODY)
            .text(`${edu.degree} in ${edu.branch || 'N/A'}`, { continued: true })
            .font('Helvetica').fillColor(COLOR_MUTED).text(` at ${edu.institution} (${edu.startYear} - ${edu.endYear}) - CGPA/GPA: ${edu.cgpa || 'N/A'}`);
@@ -513,9 +593,10 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       }));
     }
 
+    // Draw Sections in configuration order
     const layoutOrder = defaultResume?.layout?.sectionsOrder || [
       'skills',
-      'academic',
+      'education',
       'experience',
       'projects',
       'certifications',
@@ -524,14 +605,13 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     ];
     const hiddenSections = defaultResume?.layout?.hiddenSections || [];
 
-    // Draw Sections in configuration order
     layoutOrder.forEach(secKey => {
       if (hiddenSections.includes(secKey)) return;
 
       if (secKey === 'skills') {
         if (skills.length === 0) return;
         checkPageBreak(doc, 35, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("TECHNICAL SKILLS");
+        drawSectionHeading(doc, "TECHNICAL SKILLS", 9.5, COLOR_HEADING);
         doc.moveDown(0.2);
         doc.font('Helvetica').fontSize(8.5).fillColor(COLOR_BODY).text(skills.join('  •  '));
         doc.moveDown(0.8);
@@ -539,7 +619,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'academic' || secKey === 'education') {
         if (education.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("EDUCATION & DEGREES");
+        drawSectionHeading(doc, "EDUCATION & DEGREES", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         education.forEach(edu => {
           checkPageBreak(doc, 32, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
@@ -554,7 +634,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'experience' || secKey === 'workExperience') {
         if (experience.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("PROFESSIONAL EXPERIENCE");
+        drawSectionHeading(doc, "PROFESSIONAL EXPERIENCE", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         experience.forEach(exp => {
           const contentHeightEstimate = exp.description ? 45 : 30;
@@ -578,7 +658,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'projects') {
         if (projects.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("PROJECTS PORTFOLIO");
+        drawSectionHeading(doc, "PROJECTS PORTFOLIO", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         projects.forEach(proj => {
           const contentHeightEstimate = (proj.description ? 25 : 0) + (proj.highlights?.length ? proj.highlights.length * 12 : 0) + 25;
@@ -613,7 +693,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'certifications') {
         if (certifications.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("CERTIFICATIONS");
+        drawSectionHeading(doc, "CERTIFICATIONS", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         certifications.forEach(cert => {
           checkPageBreak(doc, 22, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
@@ -631,7 +711,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'achievements') {
         if (achievements.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("ACHIEVEMENTS & HONOR AWARDS");
+        drawSectionHeading(doc, "ACHIEVEMENTS & HONOR AWARDS", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         achievements.forEach(ach => {
           checkPageBreak(doc, 25, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
@@ -649,7 +729,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       else if (secKey === 'hackathons') {
         if (hackathons.length === 0) return;
         checkPageBreak(doc, 40, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("HACKATHONS");
+        drawSectionHeading(doc, "HACKATHONS", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         hackathons.forEach(h => {
           checkPageBreak(doc, 22, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
@@ -668,7 +748,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       customSections.forEach(cs => {
         if (!cs.title || !cs.content) return;
         checkPageBreak(doc, 45, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-        doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text(cs.title.toUpperCase());
+        drawSectionHeading(doc, cs.title.toUpperCase(), 9.5, COLOR_HEADING);
         doc.moveDown(0.2);
         doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY).text(cs.content, { lineGap: 1.5 });
         doc.moveDown(0.8);
@@ -682,7 +762,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.addPage();
     drawPageHeader(doc, "CODING PLATFORMS & LEETCODE ANALYTICS", margin, contentWidth);
 
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("LEETCODE PERFORMANCE CARD");
+    drawSectionHeading(doc, "LEETCODE PERFORMANCE CARD", 9.5, COLOR_HEADING);
     doc.moveDown(0.3);
 
     let lcYCoords = doc.y;
@@ -690,7 +770,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.rect(margin, lcYCoords, 250, 90).fillColor(COLOR_CARD_BG).fill();
     doc.rect(margin, lcYCoords, 250, 90).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
     
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(8).text("SOLVED PROBLEMS SUMMARY", margin + 12, lcYCoords + 10);
+    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(8).text("SOLVED PROBLEMS SUMMARY", margin + 12, lcYCoords + 10, { lineBreak: false });
     doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
     doc.text(`Total Solved:`, margin + 12, lcYCoords + 25).font('Helvetica-Bold').text(` ${lc.problemsSolved || 0}`, margin + 95, lcYCoords + 25);
     doc.font('Helvetica').text(`Easy Solved:`, margin + 12, lcYCoords + 39).font('Helvetica-Bold').text(` ${lc.easySolved || 0}`, margin + 95, lcYCoords + 39);
@@ -702,7 +782,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.rect(lcX2, lcYCoords, 250, 90).fillColor(COLOR_CARD_BG).fill();
     doc.rect(lcX2, lcYCoords, 250, 90).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
     
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(8).text("CONTEST & RATING METRICS", lcX2 + 12, lcYCoords + 10);
+    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(8).text("CONTEST & RATING METRICS", lcX2 + 12, lcYCoords + 10, { lineBreak: false });
     doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY);
     doc.text(`Contest Rating:`, lcX2 + 12, lcYCoords + 25).font('Helvetica-Bold').text(` ${formatNum(lc.rating)}`, lcX2 + 115, lcYCoords + 25);
     doc.font('Helvetica').text(`Global Ranking:`, lcX2 + 12, lcYCoords + 39).font('Helvetica-Bold').text(` ${lc.ranking || 'N/A'}`, lcX2 + 115, lcYCoords + 39);
@@ -712,7 +792,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.y = lcYCoords + 105;
 
     // LeetCode Contest Logs (Requirement: Show up to 10 attended contests without truncation)
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("LEETCODE CONTEST ATTENDANCE LOG");
+    drawSectionHeading(doc, "LEETCODE CONTEST ATTENDANCE LOG", 9.5, COLOR_HEADING);
     doc.moveDown(0.25);
 
     const contestLogY = doc.y;
@@ -765,7 +845,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     drawPageHeader(doc, "CODECHEF & GITHUB ANALYTICS", margin, contentWidth);
 
     // CodeChef
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("CODECHEF PERFORMANCE CARD");
+    drawSectionHeading(doc, "CODECHEF PERFORMANCE CARD", 9.5, COLOR_HEADING);
     doc.moveDown(0.25);
 
     const ccYCoords = doc.y;
@@ -785,7 +865,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.y = ccYCoords + 70;
 
     // GitHub
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("GITHUB PORTFOLIO & CONTRIBUTION TRACKER");
+    drawSectionHeading(doc, "GITHUB PORTFOLIO & CONTRIBUTION TRACKER", 9.5, COLOR_HEADING);
     doc.moveDown(0.25);
 
     const ghYCoords = doc.y;
@@ -810,7 +890,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.y = ghYCoords + 85;
 
     // HackerRank & GFG Summary
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(9.5).text("ADDITIONAL CODING HANDLES");
+    drawSectionHeading(doc, "ADDITIONAL CODING HANDLES", 9.5, COLOR_HEADING);
     doc.moveDown(0.25);
 
     const otherYCoords = doc.y;
@@ -839,7 +919,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     drawPageHeader(doc, "PLACEMENT READINESS & PROGRESS TRACKER", margin, contentWidth);
 
     // Component-wise placement readiness breakdown (New Page requirement)
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("PLACEMENT READINESS score INDEX BREAKDOWN");
+    drawSectionHeading(doc, "PLACEMENT READINESS SCORE INDEX BREAKDOWN", 10, COLOR_HEADING);
     doc.moveDown(0.3);
 
     const scorecardY = doc.y;
@@ -860,11 +940,11 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       doc.rect(x, y, blockW, 3).fillColor(accentCol).fill();
       
       doc.fillColor(COLOR_MUTED).font('Helvetica-Bold').fontSize(7.5)
-         .text(title.toUpperCase(), x + 5, y + 10, { width: blockW - 10, align: 'center' });
+         .text(title.toUpperCase(), x + 5, y + 10, { width: blockW - 10, align: 'center', lineBreak: false });
       
       // Make sure all numerical scores display with exactly 2 decimal places
       doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(13)
-         .text(`${formatNum(score)}%`, x + 5, y + 25, { width: blockW - 10, align: 'center' });
+         .text(`${formatNum(score)}%`, x + 5, y + 25, { width: blockW - 10, align: 'center', lineBreak: false });
     };
 
     drawScoreCard("DSA Score", dsaScore, margin, scorecardY, '#f59e0b');
@@ -878,7 +958,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.y = scorecardY + blockH * 2 + 35;
 
     // Snapshot Weekly Tracking Log
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("HISTORICAL GROWTH SNAPSHOT LOGS (RECENT WEEKS)");
+    drawSectionHeading(doc, "HISTORICAL GROWTH SNAPSHOT LOGS (RECENT WEEKS)", 10, COLOR_HEADING);
     doc.moveDown(0.25);
 
     const logTableY = doc.y;
@@ -932,7 +1012,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.addPage();
     drawPageHeader(doc, "ADDITIONAL INFORMATION & DOCUMENT VERIFICATION", margin, contentWidth);
     
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("STUDENT RESUME STATUS");
+    drawSectionHeading(doc, "STUDENT RESUME STATUS", 10, COLOR_HEADING);
     doc.moveDown(0.4);
 
     doc.font('Helvetica').fontSize(9).fillColor(COLOR_BODY)
@@ -945,7 +1025,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     doc.text("The uploaded Cloudinary PDF file is encrypted, corrupt, or temporarily unreachable.", { bullet: true });
     
     doc.moveDown(0.8);
-    doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(10).text("OFFICIAL ACCESS LINKS");
+    drawSectionHeading(doc, "OFFICIAL ACCESS LINKS", 10, COLOR_HEADING);
     doc.moveDown(0.4);
 
     const drawLink = (label, url, y) => {
@@ -976,11 +1056,11 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       
       // Page 1 footer has slightly different text
       if (i === 0) {
-        doc.text(`Medha Code Track - Student Evaluation Report`, margin, footerY + 8);
-        doc.text(`Confidential Evaluation - Institutional Use Only`, margin + contentWidth - 250, footerY + 8, { width: 250, align: 'right' });
+        doc.text(`Medha Scholar - Student Evaluation Report`, margin, footerY + 8, { lineBreak: false });
+        doc.text(`Confidential Evaluation - Institutional Use Only`, margin + contentWidth - 250, footerY + 8, { width: 250, align: 'right', lineBreak: false });
       } else {
-        doc.text(`Student: ${student.name} (${pd.rollNumber || 'N/A'})`, margin, footerY + 8);
-        doc.text(`Page ${i + 1} of ${range.count}`, margin + contentWidth - 100, footerY + 8, { width: 100, align: 'right' });
+        doc.text(`Student: ${student.name} (${pd.rollNumber || 'N/A'})`, margin, footerY + 8, { lineBreak: false });
+        doc.text(`Page ${i + 1} of ${range.count}`, margin + contentWidth - 100, footerY + 8, { width: 100, align: 'right', lineBreak: false });
       }
     }
 

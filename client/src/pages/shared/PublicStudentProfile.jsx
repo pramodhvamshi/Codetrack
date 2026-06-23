@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
+import toast, { Toaster } from 'react-hot-toast';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
 import { RefreshCw } from 'lucide-react';
 import {
@@ -389,8 +390,9 @@ export function PublicStudentProfile() {
         await api.postJson(`/coordinator/students/${id}/sync`, {}, token);
       }
       await loadProfileData();
+      toast.success('Sync completed successfully!');
     } catch (err) {
-      setSyncError(err.message || 'Sync failed');
+      toast.error(err.message || 'Sync failed');
     } finally {
       setSyncing(false);
     }
@@ -436,28 +438,24 @@ export function PublicStudentProfile() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
-    setSuccess(false);
     setModalErrors({});
     try {
       await api.putJson('/student/me/profile', editForm, token);
-      setSuccess(true);
+      toast.success('Profile updated successfully.');
       await loadProfileData();
       setIsEditModalOpen(false);
-      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       try {
         const parsed = JSON.parse(err.message);
         if (parsed && parsed.errors) {
           setModalErrors(parsed.errors);
-          setError(parsed.message || 'Failed to save changes');
+          toast.error(parsed.message || 'Failed to save changes');
         } else {
-          setError(parsed.message || 'Failed to save changes');
+          toast.error(parsed.message || 'Failed to save changes');
         }
       } catch (e) {
-        setError(err.message || 'Failed to save changes');
+        toast.error(err.message || 'Failed to save changes');
       }
-      setTimeout(() => setError(null), 5000);
     } finally {
       setSaving(false);
     }
@@ -586,17 +584,7 @@ export function PublicStudentProfile() {
           </div>
         </div>
 
-        {/* 📋 SUCCESS / ERROR NOTIFICATIONS */}
-        {syncError && (
-          <div className="ct-card" style={{ background: 'rgba(239, 68, 68, 0.12)', borderColor: '#EF4444', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.2rem' }}>
-            ⚠ {syncError}
-          </div>
-        )}
-        {success && (
-          <div className="ct-card" style={{ background: 'rgba(34, 197, 94, 0.12)', borderColor: '#22C55E', color: '#22C55E', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.2rem' }}>
-            ✓ Update completed successfully.
-          </div>
-        )}
+        <Toaster position="bottom-right" reverseOrder={false} />
 
         {/* ══════════════════════════════════════
             HERO SECTION
@@ -626,8 +614,13 @@ export function PublicStudentProfile() {
                 <div className="hero-meta">
                   {[profile.college, profile.branch, profile.graduationYear && `Class of ${profile.graduationYear}`, profile.hostel].filter(Boolean).join(' · ')}
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Email: {profile.email} {profile.mssid && `| MSSID: ${profile.mssid}`} {profile.eapcetRank && `| EAPCET Rank: ${profile.eapcetRank}`}
+                {profile.goal && (
+                  <div style={{ fontSize: '0.88rem', color: '#60a5fa', fontWeight: 600, marginTop: '0.2rem' }}>
+                    Track: {profile.goal}
+                  </div>
+                )}
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  Email: {profile.email} {profile.mssid && `| MSSID: ${profile.mssid}`} {(profile.academicDetails?.eamcetRank || profile.academicDetails?.eapcetRank) && `| EAMCET Rank: ${profile.academicDetails.eamcetRank || profile.academicDetails.eapcetRank}`}
                 </div>
                 {profile.bio ? (
                   <div className="hero-tagline" style={{ marginTop: '0.2rem' }}>"{profile.bio}"</div>
@@ -829,6 +822,110 @@ export function PublicStudentProfile() {
                   ) : (
                     <div className="empty-state">Keep coding to earn achievements!</div>
                   )}
+                </div>
+              </div>
+
+              {/* Entrance Exams & Mentors Cards Row */}
+              <div className="overview-grid" style={{ marginTop: '1.5rem' }}>
+                {/* Entrance Exams & Ranks */}
+                <div className="ct-card">
+                  <h3 className="card-title">📝 Entrance Exams & Ranks</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                    {(profile.academicDetails?.eamcetRank || profile.academicDetails?.eapcetRank) ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>EAMCET Rank</span>
+                        <span style={{ fontWeight: 'bold' }}>{profile.academicDetails.eamcetRank || profile.academicDetails.eapcetRank}</span>
+                      </div>
+                    ) : null}
+                    {profile.academicDetails?.jeeMainsPercentile ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>JEE Mains Percentile</span>
+                        <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>{profile.academicDetails.jeeMainsPercentile}%</span>
+                      </div>
+                    ) : null}
+                    {profile.academicDetails?.jeeMainsOverallRank ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>JEE Mains Overall Rank</span>
+                        <span style={{ fontWeight: 'bold' }}>{profile.academicDetails.jeeMainsOverallRank}</span>
+                      </div>
+                    ) : null}
+                    {profile.academicDetails?.jeeMainsCategoryRank ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>JEE Mains Category Rank</span>
+                        <span style={{ fontWeight: 'bold' }}>{profile.academicDetails.jeeMainsCategoryRank}</span>
+                      </div>
+                    ) : null}
+                    {profile.academicDetails?.jeeAdvOverallRank ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>JEE Advanced Overall Rank</span>
+                        <span style={{ fontWeight: 'bold' }}>{profile.academicDetails.jeeAdvOverallRank}</span>
+                      </div>
+                    ) : null}
+                    {profile.academicDetails?.jeeAdvCategoryRank ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>JEE Advanced Category Rank</span>
+                        <span style={{ fontWeight: 'bold' }}>{profile.academicDetails.jeeAdvCategoryRank}</span>
+                      </div>
+                    ) : null}
+                    {(!profile.academicDetails || (!profile.academicDetails.eamcetRank && !profile.academicDetails.eapcetRank && !profile.academicDetails.jeeMainsPercentile && !profile.academicDetails.jeeMainsOverallRank && !profile.academicDetails.jeeMainsCategoryRank && !profile.academicDetails.jeeAdvOverallRank && !profile.academicDetails.jeeAdvCategoryRank)) && (
+                      <div className="empty-state">No entrance exam details verified yet</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mentor Information */}
+                <div className="ct-card">
+                  <h3 className="card-title">👥 Mentor Information</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                    {profile.collegeMentor?.name ? (
+                      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>College Mentor</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{profile.collegeMentor.name}</span>
+                          <span style={{ color: '#60a5fa' }}>{profile.collegeMentor.mobileNumber || '—'}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    {profile.academicMentor?.name ? (
+                      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Academic Mentor</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{profile.academicMentor.name}</span>
+                          <span style={{ color: '#60a5fa' }}>{profile.academicMentor.mobileNumber || '—'}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    {profile.codingMentor?.name ? (
+                      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Coding Mentor</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{profile.codingMentor.name}</span>
+                          <span style={{ color: '#60a5fa' }}>{profile.codingMentor.mobileNumber || '—'}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    {profile.communicationMentor?.name ? (
+                      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Communication Skills Mentor</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{profile.communicationMentor.name}</span>
+                          <span style={{ color: '#60a5fa' }}>{profile.communicationMentor.mobileNumber || '—'}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    {profile.projectMentor?.name ? (
+                      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Project Mentor</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.15rem' }}>
+                          <span style={{ fontWeight: 'bold' }}>{profile.projectMentor.name}</span>
+                          <span style={{ color: '#60a5fa' }}>{profile.projectMentor.mobileNumber || '—'}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    {(!profile.collegeMentor?.name && !profile.academicMentor?.name && !profile.codingMentor?.name && !profile.communicationMentor?.name && !profile.projectMentor?.name) && (
+                      <div className="empty-state">No mentors allocated yet</div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

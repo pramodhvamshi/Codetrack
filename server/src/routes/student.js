@@ -85,6 +85,12 @@ router.get('/me', async (req, res) => {
       profileCompletion: profile.profileCompletion || 0,
       readinessProfile: profile.readinessProfile || {},
       hackathons: profile.hackathons || [],
+      goal: profile.goal || null,
+      collegeMentor: profile.collegeMentor || {},
+      academicMentor: profile.academicMentor || {},
+      codingMentor: profile.codingMentor || {},
+      communicationMentor: profile.communicationMentor || {},
+      projectMentor: profile.projectMentor || {},
       
       resume: user.resume,
       isOnboarded: user.isOnboarded,
@@ -114,12 +120,24 @@ router.get('/me/profile/personal', async (req, res) => {
           ssc: { schoolName: "", board: "", percentage: null, passoutYear: null },
           intermediate: { collegeName: "", board: "", percentage: null, passoutYear: null }
         },
-        familyDetails: { parentStatus: 'Both Parents', father: { name: "", occupation: "", education: "", mobile: "" }, mother: { name: "", occupation: "", education: "", mobile: "" }, siblings: [] }
+        familyDetails: { parentStatus: 'Both Parents', father: { name: "", occupation: "", education: "", mobile: "" }, mother: { name: "", occupation: "", education: "", mobile: "" }, siblings: [] },
+        goal: null,
+        collegeMentor: {},
+        academicMentor: {},
+        codingMentor: {},
+        communicationMentor: {},
+        projectMentor: {}
       });
     }
     return res.json({
       personalDetails: profile.personalDetails,
-      familyDetails: profile.familyDetails
+      familyDetails: profile.familyDetails,
+      goal: profile.goal || null,
+      collegeMentor: profile.collegeMentor || {},
+      academicMentor: profile.academicMentor || {},
+      codingMentor: profile.codingMentor || {},
+      communicationMentor: profile.communicationMentor || {},
+      projectMentor: profile.projectMentor || {}
     });
   } catch (err) {
     console.error(err);
@@ -132,10 +150,38 @@ router.put('/me/profile/personal', async (req, res) => {
   try {
     const user = req.currentUser;
     const StudentProfile = require('../models/StudentProfile');
-    const { personalDetails, familyDetails } = req.body;
+    const {
+      personalDetails,
+      familyDetails,
+      goal,
+      collegeMentor,
+      academicMentor,
+      codingMentor,
+      communicationMentor,
+      projectMentor
+    } = req.body;
 
     if (!personalDetails) {
       return res.status(400).json({ message: 'personalDetails is required' });
+    }
+
+    // Validate mentor phone numbers
+    const phoneRegex = /^[0-9]{10}$/;
+    const validateMentor = (mentor, label) => {
+      const phone = typeof mentor?.mobileNumber === 'string' ? mentor.mobileNumber.trim() : '';
+      if (phone && !phoneRegex.test(phone)) {
+        throw new Error(`${label} must be a valid 10-digit number.`);
+      }
+    };
+
+    try {
+      validateMentor(collegeMentor, 'College Mentor mobile number');
+      validateMentor(academicMentor, 'Academic Mentor mobile number');
+      validateMentor(codingMentor, 'Coding Mentor mobile number');
+      validateMentor(communicationMentor, 'Communication Skills Mentor mobile number');
+      validateMentor(projectMentor, 'Project Mentor mobile number');
+    } catch (valErr) {
+      return res.status(400).json({ message: valErr.message });
     }
 
     // Update User model fields
@@ -180,6 +226,25 @@ router.put('/me/profile/personal', async (req, res) => {
       };
     }
 
+    if (goal !== undefined) {
+      profile.goal = goal;
+    }
+    if (collegeMentor !== undefined) {
+      profile.collegeMentor = collegeMentor;
+    }
+    if (academicMentor !== undefined) {
+      profile.academicMentor = academicMentor;
+    }
+    if (codingMentor !== undefined) {
+      profile.codingMentor = codingMentor;
+    }
+    if (communicationMentor !== undefined) {
+      profile.communicationMentor = communicationMentor;
+    }
+    if (projectMentor !== undefined) {
+      profile.projectMentor = projectMentor;
+    }
+
     const { calculateProfileCompletion } = require('../utils/profileMetrics');
     profile.profileCompletion = calculateProfileCompletion(user, profile);
 
@@ -188,7 +253,17 @@ router.put('/me/profile/personal', async (req, res) => {
     // Recalculate readiness
     await syncPlatformsForUser(user, { force: false });
 
-    return res.json({ message: 'Personal details updated successfully', personalDetails: profile.personalDetails, familyDetails: profile.familyDetails });
+    return res.json({
+      message: 'Personal details updated successfully',
+      personalDetails: profile.personalDetails,
+      familyDetails: profile.familyDetails,
+      goal: profile.goal,
+      collegeMentor: profile.collegeMentor,
+      academicMentor: profile.academicMentor,
+      codingMentor: profile.codingMentor,
+      communicationMentor: profile.communicationMentor,
+      projectMentor: profile.projectMentor
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Failed to update personal details' });
@@ -982,7 +1057,7 @@ router.get('/me/profile/academic', async (req, res) => {
     let ap = await AcademicProfile.findOne({ userId: req.currentUser._id });
     let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
     
-    const eapcetRank = profile?.academicDetails?.eapcetRank ?? null;
+    const ad = profile?.academicDetails || {};
     
     const apData = ap ? (ap.toObject ? ap.toObject() : ap) : {
       sgpa1: null,
@@ -998,7 +1073,14 @@ router.get('/me/profile/academic', async (req, res) => {
     
     return res.json({
       ...apData,
-      eapcetRank
+      eapcetRank: ad.eapcetRank ?? null,
+      eamcetRank: ad.eamcetRank ?? null,
+      jeeMainsRank: ad.jeeMainsRank ?? null,
+      jeeMainsPercentile: ad.jeeMainsPercentile ?? null,
+      jeeMainsOverallRank: ad.jeeMainsOverallRank ?? null,
+      jeeMainsCategoryRank: ad.jeeMainsCategoryRank ?? null,
+      jeeAdvOverallRank: ad.jeeAdvOverallRank ?? null,
+      jeeAdvCategoryRank: ad.jeeAdvCategoryRank ?? null
     });
   } catch (err) {
     console.error('Fetch own academic profile error:', err);
@@ -1013,7 +1095,24 @@ router.put('/me/profile/academic', async (req, res) => {
     const AcademicProfileAudit = require('../models/AcademicProfileAudit');
     const { syncPlatformsForUser } = require('../services/platformSyncService');
 
-    const { sgpa1, sgpa2, sgpa3, sgpa4, sgpa5, sgpa6, cgpa, backlogs, eapcetRank } = req.body;
+    const {
+      sgpa1,
+      sgpa2,
+      sgpa3,
+      sgpa4,
+      sgpa5,
+      sgpa6,
+      cgpa,
+      backlogs,
+      eapcetRank,
+      eamcetRank,
+      jeeMainsRank,
+      jeeMainsPercentile,
+      jeeMainsOverallRank,
+      jeeMainsCategoryRank,
+      jeeAdvOverallRank,
+      jeeAdvCategoryRank
+    } = req.body;
 
     const valOrNull = (val) => {
       if (val === null || val === undefined || val === '') return null;
@@ -1078,11 +1177,10 @@ router.put('/me/profile/academic', async (req, res) => {
 
     await AcademicProfileAudit.create({
       userId: req.currentUser._id,
-      previousData,
+      previousData: prevData,
       newData
     });
 
-    // Also save eapcetRank to StudentProfile under academicDetails
     const StudentProfile = require('../models/StudentProfile');
     let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
     if (!profile) {
@@ -1091,9 +1189,31 @@ router.put('/me/profile/academic', async (req, res) => {
     if (!profile.academicDetails) {
       profile.academicDetails = {};
     }
-    if (eapcetRank !== undefined) {
-      profile.academicDetails.eapcetRank = eapcetRank === '' || eapcetRank === null ? null : Number(eapcetRank);
+    
+    const validateRank = (val, label) => {
+      if (val === '' || val === null || val === undefined) return null;
+      const num = Number(val);
+      if (isNaN(num) || !Number.isInteger(num) || num < 0) {
+        throw new Error(`${label} must be a non-negative integer`);
+      }
+      return num;
+    };
+    
+    if (eapcetRank !== undefined) profile.academicDetails.eapcetRank = validateRank(eapcetRank, 'EAPCET Rank');
+    if (eamcetRank !== undefined) profile.academicDetails.eamcetRank = validateRank(eamcetRank, 'EAMCET Rank');
+    if (jeeMainsRank !== undefined) profile.academicDetails.jeeMainsRank = validateRank(jeeMainsRank, 'JEE Mains Rank');
+    if (jeeMainsPercentile !== undefined) {
+      const rawPct = jeeMainsPercentile === '' || jeeMainsPercentile === null || jeeMainsPercentile === undefined ? null : Number(jeeMainsPercentile);
+      if (rawPct !== null && (isNaN(rawPct) || rawPct < 0 || rawPct > 100)) {
+        throw new Error('JEE Mains Percentile must be a number between 0 and 100');
+      }
+      profile.academicDetails.jeeMainsPercentile = rawPct !== null ? Number(rawPct.toFixed(2)) : null;
     }
+    if (jeeMainsOverallRank !== undefined) profile.academicDetails.jeeMainsOverallRank = validateRank(jeeMainsOverallRank, 'JEE Mains Overall Rank');
+    if (jeeMainsCategoryRank !== undefined) profile.academicDetails.jeeMainsCategoryRank = validateRank(jeeMainsCategoryRank, 'JEE Mains Category Rank');
+    if (jeeAdvOverallRank !== undefined) profile.academicDetails.jeeAdvOverallRank = validateRank(jeeAdvOverallRank, 'JEE Advanced Overall Rank');
+    if (jeeAdvCategoryRank !== undefined) profile.academicDetails.jeeAdvCategoryRank = validateRank(jeeAdvCategoryRank, 'JEE Advanced Category Rank');
+    
     await profile.save();
 
     // Re-evaluate student's placement readiness score

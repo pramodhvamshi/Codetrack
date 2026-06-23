@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
 import { AppShell } from '../../components/AppShell';
@@ -11,6 +11,7 @@ import {
 import styles from '../../styles/Dashboard.module.css';
 
 export function StudentDashboard() {
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [me, setMe] = useState(null);
   const [timeline, setTimeline] = useState([]);
@@ -257,14 +258,24 @@ export function StudentDashboard() {
           <div className={styles.platformCards}>
             
             {/* LeetCode */}
-            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#F59E0B', background: 'var(--grad-lc)' }}>
+            <div 
+              onClick={() => navigate('/student/profile')} 
+              className={styles.platformCard} 
+              style={{ '--accent': '#F59E0B', background: 'var(--grad-lc)', cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <img src="/LeetCode_logo_black.png" alt="LeetCode" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   LeetCode
                 </span>
                 {lc.username ? (
-                  <a href={`https://leetcode.com/u/${lc.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                  <a 
+                    href={`https://leetcode.com/u/${lc.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={(e) => e.stopPropagation()} 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}
+                  >
                     @{lc.username} <ExternalLink size={10} />
                   </a>
                 ) : (
@@ -277,17 +288,27 @@ export function StudentDashboard() {
                 <span>⭐ Rating: <strong>{Math.round(lc.rating || 0)}</strong></span>
                 <span>🏁 Contests: <strong>{lc.contestCount || 0}</strong></span>
               </div>
-            </Link>
+            </div>
 
             {/* CodeChef */}
-            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#ef4444', background: 'var(--grad-cc)' }}>
+            <div 
+              onClick={() => navigate('/student/profile')} 
+              className={styles.platformCard} 
+              style={{ '--accent': '#ef4444', background: 'var(--grad-cc)', cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <img src="/codechef.svg" alt="CodeChef" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   CodeChef
                 </span>
                 {cc.username ? (
-                  <a href={`https://www.codechef.com/users/${cc.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                  <a 
+                    href={`https://www.codechef.com/users/${cc.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={(e) => e.stopPropagation()} 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}
+                  >
                     @{cc.username} <ExternalLink size={10} />
                   </a>
                 ) : (
@@ -301,17 +322,27 @@ export function StudentDashboard() {
                 <span>🏁 Contests Participated: <strong>{cc.contestCount || 0}</strong></span>
                 <span>🧩 Problems Solved: <strong>{cc.problemsSolved || 0}</strong></span>
               </div>
-            </Link>
+            </div>
 
             {/* GeeksforGeeks */}
-            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#22C55E', background: 'var(--grad-gfg)' }}>
+            <div 
+              onClick={() => navigate('/student/profile')} 
+              className={styles.platformCard} 
+              style={{ '--accent': '#22C55E', background: 'var(--grad-gfg)', cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#22C55E', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <img src="/gfg.svg" alt="GeeksforGeeks" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   GeeksforGeeks
                 </span>
                 {gfg.username ? (
-                  <a href={`https://www.geeksforgeeks.org/user/${gfg.username}/`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                  <a 
+                    href={`https://www.geeksforgeeks.org/user/${gfg.username}/`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={(e) => e.stopPropagation()} 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}
+                  >
                     @{gfg.username} <ExternalLink size={10} />
                   </a>
                 ) : (
@@ -324,17 +355,27 @@ export function StudentDashboard() {
                 <span>🏛️ Inst. Rank: <strong>#{gfg.instituteRank || '-'}</strong></span>
                 <span>🔥 Streak: <strong>{gfg.streak || 0} days</strong></span>
               </div>
-            </Link>
+            </div>
 
             {/* GitHub */}
-            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#8B5CF6', background: 'var(--grad-gh)' }}>
+            <div 
+              onClick={() => navigate('/student/profile')} 
+              className={styles.platformCard} 
+              style={{ '--accent': '#8B5CF6', background: 'var(--grad-gh)', cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#8B5CF6', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <img src="/github.svg" alt="GitHub" style={{ width: 18, height: 18, objectFit: 'contain', borderRadius: 3 }} />
                   GitHub
                 </span>
                 {gh.username ? (
-                  <a href={`https://github.com/${gh.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                  <a 
+                    href={`https://github.com/${gh.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={(e) => e.stopPropagation()} 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}
+                  >
                     @{gh.username} <ExternalLink size={10} />
                   </a>
                 ) : (
@@ -347,17 +388,27 @@ export function StudentDashboard() {
                 <span>👥 Followers: <strong>{gh.followersCount || 0}</strong></span>
                 <span>🔗 Profile URL: <strong style={{ color: 'var(--accent-blue)', fontSize: '0.75rem' }}>View Profile</strong></span>
               </div>
-            </Link>
+            </div>
 
             {/* HackerRank */}
-            <Link to="/student/profile" className={styles.platformCard} style={{ '--accent': '#00EA64', background: 'linear-gradient(135deg, rgba(0, 234, 100, 0.1), rgba(17, 24, 39, 0.95))' }}>
+            <div 
+              onClick={() => navigate('/student/profile')} 
+              className={styles.platformCard} 
+              style={{ '--accent': '#00EA64', background: 'linear-gradient(135deg, rgba(0, 234, 100, 0.1), rgba(17, 24, 39, 0.95))', cursor: 'pointer' }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '1rem', color: '#00EA64', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: '1.1rem' }}>🏆</span>
                   HackerRank
                 </span>
                 {(me.hackerrankUsername || me.hackerrank?.username) ? (
-                  <a href={`https://www.hackerrank.com/profile/${me.hackerrankUsername || me.hackerrank?.username}`} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}>
+                  <a 
+                    href={`https://www.hackerrank.com/profile/${me.hackerrankUsername || me.hackerrank?.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    onClick={(e) => e.stopPropagation()} 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem', zIndex: 2, position: 'relative' }}
+                  >
                     @{me.hackerrankUsername || me.hackerrank?.username} <ExternalLink size={10} />
                   </a>
                 ) : (
@@ -376,7 +427,7 @@ export function StudentDashboard() {
                   </div>
                 )}
               </div>
-            </Link>
+            </div>
 
           </div>
         </div>

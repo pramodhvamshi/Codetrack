@@ -397,273 +397,334 @@ export function CoordinatorStudentDetail() {
               </div>
             </div>
 
-            {/* Personal & Contact Details */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Personal & Contact Details</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <span>👤 Full Name: <strong>{student.personalDetails?.fullName || student.name || '—'}</strong></span>
-                <span>🚻 Gender: <strong>{student.personalDetails?.gender || '—'}</strong></span>
-                <span>📅 Date of Birth: <strong>{student.personalDetails?.dob ? new Date(student.personalDetails.dob).toLocaleDateString() : '—'}</strong></span>
-                <span>📱 Mobile: <strong>{student.personalDetails?.mobile || '—'}</strong></span>
-                <span>📧 Email: <strong>{student.personalDetails?.email || student.email || '—'}</strong></span>
-                <span>🏨 Hostel / Room: <strong>{student.personalDetails?.hostelName || student.hostel || '—'}</strong></span>
-                <span>🏛️ Section: <strong>{student.personalDetails?.section || '—'}</strong></span>
-              </div>
-              
-              <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Address Information</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <span>📍 Permanent Address: <strong>{student.personalDetails?.permanentAddress || '—'}</strong></span>
-                <span>🏙️ City: <strong>{student.personalDetails?.city || '—'}</strong></span>
-                <span>🏢 District: <strong>{student.personalDetails?.district || '—'}</strong></span>
-                <span>🗺️ State / Pincode: <strong>{student.personalDetails?.state || '—'} - {student.personalDetails?.pincode || '—'}</strong></span>
-              </div>
-            </div>
-
-            {/* Academic Information */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Academic Profile</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <span>🏫 College: <strong>{student.personalDetails?.college || student.college || '—'}</strong></span>
-                <span>💻 Branch: <strong>{student.personalDetails?.branch || student.branch || '—'}</strong></span>
-                <span>📅 Academic Year: <strong>{student.personalDetails?.year || student.currentYear || '—'}</strong></span>
-                <span>🏅 EAPCET Rank: <strong>{student.academicDetails?.eapcetRank || '—'}</strong></span>
-              </div>
-
-              {/* SGPA & CGPA Scorecard */}
-              <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Semester GPAs & Cumulative Scores</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', background: 'rgba(255,255,255,0.02)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 1</div>
-                    <strong>{student.academicProfile?.sgpa1 ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 2</div>
-                    <strong>{student.academicProfile?.sgpa2 ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 3</div>
-                    <strong>{student.academicProfile?.sgpa3 ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 4</div>
-                    <strong>{student.academicProfile?.sgpa4 ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 5</div>
-                    <strong>{student.academicProfile?.sgpa5 ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 6</div>
-                    <strong>{student.academicProfile?.sgpa6 ?? '—'}</strong>
-                  </div>
+            {/* Left Column Wrapper */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Personal & Contact Details */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Personal & Contact Details</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <span>👤 Full Name: <strong>{student.personalDetails?.fullName || student.name || '—'}</strong></span>
+                  <span>🚻 Gender: <strong>{student.personalDetails?.gender || '—'}</strong></span>
+                  <span>📅 Date of Birth: <strong>{student.personalDetails?.dob ? new Date(student.personalDetails.dob).toLocaleDateString() : '—'}</strong></span>
+                  <span>📱 Mobile: <strong>{student.personalDetails?.mobile || '—'}</strong></span>
+                  <span>📧 Email: <strong>{student.personalDetails?.email || student.email || '—'}</strong></span>
+                  <span>🏨 Hostel / Room: <strong>{student.personalDetails?.hostelName || student.hostel || '—'}</strong></span>
+                  <span>🏛️ Section: <strong>{student.personalDetails?.section || '—'}</strong></span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem', marginTop: '0.4rem', background: 'rgba(59,130,246,0.05)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.1)' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#60a5fa' }}>CGPA</div>
-                    <strong style={{ fontSize: '1.05rem', color: '#60a5fa' }}>{student.academicProfile?.cgpa ?? student.overallGpa ?? '—'}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>Backlogs</div>
-                    <strong style={{ fontSize: '1.05rem', color: '#ef4444' }}>{student.academicProfile?.backlogs ?? 0}</strong>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#10b981' }}>Status</div>
-                    <strong style={{ fontSize: '1.05rem', color: '#10b981' }}>{student.academicProfile?.academicStatus || '—'}</strong>
-                  </div>
+                
+                <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Address Information</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <span>📍 Permanent Address: <strong>{student.personalDetails?.permanentAddress || '—'}</strong></span>
+                  <span>🏙️ City: <strong>{student.personalDetails?.city || '—'}</strong></span>
+                  <span>🏢 District: <strong>{student.personalDetails?.district || '—'}</strong></span>
+                  <span>🗺️ State / Pincode: <strong>{student.personalDetails?.state || '—'} - {student.personalDetails?.pincode || '—'}</strong></span>
                 </div>
               </div>
 
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>SSC Details</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <span>School: <strong>{student.personalDetails?.ssc?.schoolName || '—'}</strong></span>
-                <span>Board: <strong>{student.personalDetails?.ssc?.board || '—'}</strong></span>
-                <span>CGPA: <strong>{student.personalDetails?.ssc?.percentage ?? '—'}</strong></span>
-                <span>Year: <strong>{student.personalDetails?.ssc?.passoutYear || '—'}</strong></span>
-              </div>
+              {/* Family & Sibling Details */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Family Information</h3>
+                <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                  <span>Status: <strong>{student.familyDetails?.parentStatus || '—'}</strong></span>
+                </div>
 
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Intermediate / Diploma Details</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
-                <span>College: <strong>{student.personalDetails?.intermediate?.collegeName || '—'}</strong></span>
-                <span>Board: <strong>{student.personalDetails?.intermediate?.board || '—'}</strong></span>
-                <span>CGPA: <strong>{student.personalDetails?.intermediate?.percentage ?? '—'}</strong></span>
-                <span>Year: <strong>{student.personalDetails?.intermediate?.passoutYear || '—'}</strong></span>
-              </div>
+                {/* Father info */}
+                {(student.familyDetails?.parentStatus === 'Both Parents' || student.familyDetails?.parentStatus === 'Father Only' || student.familyDetails?.father?.name) && (
+                  <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.04)', marginBottom: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--accent-blue)', textTransform: 'uppercase' }}>Father's Details</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', fontSize: '0.85rem' }}>
+                      <span>Name: <strong>{student.familyDetails?.father?.name || '—'}</strong></span>
+                      <span>Occupation: <strong>{student.familyDetails?.father?.occupation || '—'}</strong></span>
+                      <span>Education: <strong>{student.familyDetails?.father?.education || '—'}</strong></span>
+                      <span>Mobile: <strong>{student.familyDetails?.father?.mobile || '—'}</strong></span>
+                    </div>
+                  </div>
+                )}
 
-              {student.education && student.education.length > 0 && (
-                <>
-                  <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Other Higher Education</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    {student.education.map((edu, idx) => (
-                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                        <div><strong>{edu.degree} {edu.branch && `in ${edu.branch}`}</strong></div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{edu.institution} | CGPA: {edu.cgpa || '—'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{edu.startYear} - {edu.endYear}</div>
+                {/* Mother info */}
+                {(student.familyDetails?.parentStatus === 'Both Parents' || student.familyDetails?.parentStatus === 'Mother Only' || student.familyDetails?.mother?.name) && (
+                  <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.04)', marginBottom: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--accent-purple)', textTransform: 'uppercase' }}>Mother's Details</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', fontSize: '0.85rem' }}>
+                      <span>Name: <strong>{student.familyDetails?.mother?.name || '—'}</strong></span>
+                      <span>Occupation: <strong>{student.familyDetails?.mother?.occupation || '—'}</strong></span>
+                      <span>Education: <strong>{student.familyDetails?.mother?.education || '—'}</strong></span>
+                      <span>Mobile: <strong>{student.familyDetails?.mother?.mobile || '—'}</strong></span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Siblings */}
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Siblings</h4>
+                {student.familyDetails?.siblings && student.familyDetails.siblings.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {student.familyDetails.siblings.map((sib, idx) => (
+                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                        <span>Name: <strong>{sib.name || '—'}</strong></span>
+                        <span>Relation: <strong>{sib.relation || '—'}</strong></span>
+                        <span>Education: <strong>{sib.educationStatus || '—'}</strong></span>
+                        <span>Occupation: <strong>{sib.occupation || '—'}</strong></span>
                       </div>
                     ))}
                   </div>
-                </>
-              )}
-            </div>
-
-            {/* Family & Sibling Details */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Family Information</h3>
-              <div style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                <span>Status: <strong>{student.familyDetails?.parentStatus || '—'}</strong></span>
-              </div>
-
-              {/* Father info */}
-              {(student.familyDetails?.parentStatus === 'Both Parents' || student.familyDetails?.parentStatus === 'Father Only' || student.familyDetails?.father?.name) && (
-                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.04)', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--accent-blue)', textTransform: 'uppercase' }}>Father's Details</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', fontSize: '0.85rem' }}>
-                    <span>Name: <strong>{student.familyDetails?.father?.name || '—'}</strong></span>
-                    <span>Occupation: <strong>{student.familyDetails?.father?.occupation || '—'}</strong></span>
-                    <span>Education: <strong>{student.familyDetails?.father?.education || '—'}</strong></span>
-                    <span>Mobile: <strong>{student.familyDetails?.father?.mobile || '—'}</strong></span>
-                  </div>
-                </div>
-              )}
-
-              {/* Mother info */}
-              {(student.familyDetails?.parentStatus === 'Both Parents' || student.familyDetails?.parentStatus === 'Mother Only' || student.familyDetails?.mother?.name) && (
-                <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.04)', marginBottom: '0.5rem' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: 'var(--accent-purple)', textTransform: 'uppercase' }}>Mother's Details</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', fontSize: '0.85rem' }}>
-                    <span>Name: <strong>{student.familyDetails?.mother?.name || '—'}</strong></span>
-                    <span>Occupation: <strong>{student.familyDetails?.mother?.occupation || '—'}</strong></span>
-                    <span>Education: <strong>{student.familyDetails?.mother?.education || '—'}</strong></span>
-                    <span>Mobile: <strong>{student.familyDetails?.mother?.mobile || '—'}</strong></span>
-                  </div>
-                </div>
-              )}
-
-              {/* Siblings */}
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Siblings</h4>
-              {student.familyDetails?.siblings && student.familyDetails.siblings.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {student.familyDetails.siblings.map((sib, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
-                      <span>Name: <strong>{sib.name || '—'}</strong></span>
-                      <span>Relation: <strong>{sib.relation || '—'}</strong></span>
-                      <span>Education: <strong>{sib.educationStatus || '—'}</strong></span>
-                      <span>Occupation: <strong>{sib.occupation || '—'}</strong></span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No siblings listed.</span>
-              )}
-            </div>
-
-            {/* Professional Background */}
-            <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Professional Details</h3>
-              
-              {/* Skills */}
-              <h4 style={{ margin: 0 }}>Skills</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {student.skills && student.skills.length > 0 ? (
-                  student.skills.map((skill, idx) => (
-                    <span key={idx} className="ct-chip" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#a3e635', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                      {skill}
-                    </span>
-                  ))
                 ) : (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No skills listed.</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No siblings listed.</span>
                 )}
               </div>
 
-              {/* Projects */}
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Projects</h4>
-              {student.projects && student.projects.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {student.projects.map((proj, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong>{proj.title}</strong>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {proj.githubLink && <a href={proj.githubLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><Code size={14} /></a>}
-                          {proj.liveLink && <a href={proj.liveLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-green)' }}><ExternalLink size={14} /></a>}
+              {/* Professional Details */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Professional Details</h3>
+                
+                {/* Skills */}
+                <h4 style={{ margin: 0 }}>Skills</h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {student.skills && student.skills.length > 0 ? (
+                    student.skills.map((skill, idx) => (
+                      <span key={idx} className="ct-chip" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#a3e635', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No skills listed.</span>
+                  )}
+                </div>
+
+                {/* Projects */}
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Projects</h4>
+                {student.projects && student.projects.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {student.projects.map((proj, idx) => (
+                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <strong>{proj.title}</strong>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {proj.githubLink && <a href={proj.githubLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><Code size={14} /></a>}
+                            {proj.liveLink && <a href={proj.liveLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-green)' }}><ExternalLink size={14} /></a>}
+                          </div>
+                        </div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{proj.description}</div>
+                        {proj.technologies && proj.technologies.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.4rem' }}>
+                            {proj.technologies.map((t, tid) => (
+                              <span key={tid} style={{ fontSize: '0.7rem', padding: '0.1rem 0.3rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px' }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No projects listed.</span>
+                )}
+
+                {/* Work Experience */}
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Experience</h4>
+                {student.experiences && student.experiences.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {student.experiences.map((exp, idx) => (
+                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                        <div><strong>{exp.role}</strong> at <strong>{exp.company}</strong></div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{exp.description}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
+                          {exp.startDate ? new Date(exp.startDate).toLocaleDateString() : ''} - {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
                         </div>
                       </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{proj.description}</div>
-                      {proj.technologies && proj.technologies.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.4rem' }}>
-                          {proj.technologies.map((t, tid) => (
-                            <span key={tid} style={{ fontSize: '0.7rem', padding: '0.1rem 0.3rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '3px' }}>{t}</span>
-                          ))}
+                    ))}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No work experiences listed.</span>
+                )}
+
+                {/* Certifications */}
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Certifications</h4>
+                {student.certifications && student.certifications.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {student.certifications.map((cert, idx) => (
+                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <strong>{cert.title}</strong>
+                          {cert.credentialLink && <a href={cert.credentialLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><ExternalLink size={14} /></a>}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No projects listed.</span>
-              )}
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Provider: {cert.provider}</div>
+                        {cert.issueDate && <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Issued: {new Date(cert.issueDate).toLocaleDateString()}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No certifications listed.</span>
+                )}
 
-              {/* Work Experience */}
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Experience</h4>
-              {student.experiences && student.experiences.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {student.experiences.map((exp, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                      <div><strong>{exp.role}</strong> at <strong>{exp.company}</strong></div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{exp.description}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem' }}>
-                        {exp.startDate ? new Date(exp.startDate).toLocaleDateString() : ''} - {exp.endDate ? new Date(exp.endDate).toLocaleDateString() : 'Present'}
+                {/* Hackathons */}
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Hackathons</h4>
+                {student.hackathons && student.hackathons.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    {student.hackathons.map((h, idx) => (
+                      <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '4px', border: '1px solid rgba(139, 92, 246, 0.15)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <strong style={{ color: '#a78bfa' }}>{h.name}</strong>
+                          {h.certificateLink && <a href={h.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><ExternalLink size={14} /></a>}
+                        </div>
+                        {h.organizer && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Organizer: {h.organizer}</div>}
+                        {h.result && <div style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>Result: <strong style={{ color: '#10b981' }}>{h.result}</strong>{h.position && ` — ${h.position}`}</div>}
+                        {h.description && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{h.description}</div>}
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem', display: 'flex', gap: '1rem' }}>
+                          {h.date && <span>Date: {new Date(h.date).toLocaleDateString()}</span>}
+                          {h.teamSize && <span>Team Size: {h.teamSize}</span>}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No work experiences listed.</span>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hackathons listed.</span>
+                )}
+              </div>
+            </div>
 
-              {/* Certifications */}
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Certifications</h4>
-              {student.certifications && student.certifications.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {student.certifications.map((cert, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong>{cert.title}</strong>
-                        {cert.credentialLink && <a href={cert.credentialLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><ExternalLink size={14} /></a>}
-                      </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Provider: {cert.provider}</div>
-                      {cert.issueDate && <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Issued: {new Date(cert.issueDate).toLocaleDateString()}</div>}
-                    </div>
-                  ))}
+            {/* Right Column Wrapper */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* Academic Profile */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Academic Profile</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  {student.goal && (
+                    <span style={{ color: '#60a5fa' }}>🎯 Selected Goal / Track: <strong>{student.goal}</strong></span>
+                  )}
+                  <span>🏫 College: <strong>{student.personalDetails?.college || student.college || '—'}</strong></span>
+                  <span>💻 Branch: <strong>{student.personalDetails?.branch || student.branch || '—'}</strong></span>
+                  <span>📅 Academic Year: <strong>{student.personalDetails?.year || student.currentYear || '—'}</strong></span>
                 </div>
-              ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No certifications listed.</span>
-              )}
 
-              {/* Hackathons */}
-              <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Hackathons</h4>
-              {student.hackathons && student.hackathons.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  {student.hackathons.map((h, idx) => (
-                    <div key={idx} style={{ fontSize: '0.85rem', padding: '0.6rem', background: 'rgba(139, 92, 246, 0.05)', borderRadius: '4px', border: '1px solid rgba(139, 92, 246, 0.15)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ color: '#a78bfa' }}>{h.name}</strong>
-                        {h.certificateLink && <a href={h.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}><ExternalLink size={14} /></a>}
-                      </div>
-                      {h.organizer && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Organizer: {h.organizer}</div>}
-                      {h.result && <div style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>Result: <strong style={{ color: '#10b981' }}>{h.result}</strong>{h.position && ` — ${h.position}`}</div>}
-                      {h.description && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.2rem' }}>{h.description}</div>}
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.2rem', display: 'flex', gap: '1rem' }}>
-                        {h.date && <span>Date: {new Date(h.date).toLocaleDateString()}</span>}
-                        {h.teamSize && <span>Team Size: {h.teamSize}</span>}
-                      </div>
-                    </div>
-                  ))}
+                {/* Entrance Exam Ranks */}
+                <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Entrance Exam Ranks</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <span>EAMCET Rank: <strong>{student.academicDetails?.eamcetRank || student.academicDetails?.eapcetRank || '—'}</strong></span>
+                  <span>JEE Mains Percentile: <strong>{student.academicDetails?.jeeMainsPercentile != null ? `${student.academicDetails.jeeMainsPercentile}%` : '—'}</strong></span>
+                  <span>JEE Mains Overall Rank: <strong>{student.academicDetails?.jeeMainsOverallRank || '—'}</strong></span>
+                  <span>JEE Mains Category Rank: <strong>{student.academicDetails?.jeeMainsCategoryRank || '—'}</strong></span>
+                  <span>JEE Advanced Overall Rank: <strong>{student.academicDetails?.jeeAdvOverallRank || '—'}</strong></span>
+                  <span>JEE Advanced Category Rank: <strong>{student.academicDetails?.jeeAdvCategoryRank || '—'}</strong></span>
                 </div>
-              ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hackathons listed.</span>
-              )}
+
+                {/* SGPA & CGPA Scorecard */}
+                <h4 style={{ margin: '1rem 0 0.5rem 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Semester GPAs & Cumulative Scores</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', background: 'rgba(255,255,255,0.02)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 1</div>
+                      <strong>{student.academicProfile?.sgpa1 ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 2</div>
+                      <strong>{student.academicProfile?.sgpa2 ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 3</div>
+                      <strong>{student.academicProfile?.sgpa3 ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 4</div>
+                      <strong>{student.academicProfile?.sgpa4 ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 5</div>
+                      <strong>{student.academicProfile?.sgpa5 ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center', marginTop: '0.4rem' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sem 6</div>
+                      <strong>{student.academicProfile?.sgpa6 ?? '—'}</strong>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem', marginTop: '0.4rem', background: 'rgba(59,130,246,0.05)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#60a5fa' }}>CGPA</div>
+                      <strong style={{ fontSize: '1.05rem', color: '#60a5fa' }}>{student.academicProfile?.cgpa ?? student.overallGpa ?? '—'}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>Backlogs</div>
+                      <strong style={{ fontSize: '1.05rem', color: '#ef4444' }}>{student.academicProfile?.backlogs ?? 0}</strong>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#10b981' }}>Status</div>
+                      <strong style={{ fontSize: '1.05rem', color: '#10b981' }}>{student.academicProfile?.academicStatus || '—'}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>SSC Details</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <span>School: <strong>{student.personalDetails?.ssc?.schoolName || '—'}</strong></span>
+                  <span>Board: <strong>{student.personalDetails?.ssc?.board || '—'}</strong></span>
+                  <span>CGPA: <strong>{student.personalDetails?.ssc?.percentage ?? '—'}</strong></span>
+                  <span>Year: <strong>{student.personalDetails?.ssc?.passoutYear || '—'}</strong></span>
+                </div>
+
+                <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Intermediate / Diploma Details</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <span>College: <strong>{student.personalDetails?.intermediate?.collegeName || '—'}</strong></span>
+                  <span>Board: <strong>{student.personalDetails?.intermediate?.board || '—'}</strong></span>
+                  <span>CGPA: <strong>{student.personalDetails?.intermediate?.percentage ?? '—'}</strong></span>
+                  <span>Year: <strong>{student.personalDetails?.intermediate?.passoutYear || '—'}</strong></span>
+                </div>
+
+                {student.education && student.education.length > 0 && (
+                  <>
+                    <h4 style={{ margin: '0.5rem 0 0 0', borderBottom: '1px solid rgba(255, 255, 255, 0.03)', paddingBottom: '0.25rem' }}>Other Higher Education</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                      {student.education.map((edu, idx) => (
+                        <div key={idx} style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                          <div><strong>{edu.degree} {edu.branch && `in ${edu.branch}`}</strong></div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{edu.institution} | CGPA: {edu.cgpa || '—'}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{edu.startYear} - {edu.endYear}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Mentor Details */}
+              <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <h3 style={{ marginTop: 0, borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: '0.5rem' }}>Mentor Information</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
+                  <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>College Mentor</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.2rem' }}>
+                      <strong>{student.collegeMentor?.name || '—'}</strong>
+                      <span style={{ color: '#60a5fa' }}>{student.collegeMentor?.mobileNumber || '—'}</span>
+                    </div>
+                  </div>
+                  <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Academic Mentor</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.2rem' }}>
+                      <strong>{student.academicMentor?.name || '—'}</strong>
+                      <span style={{ color: '#60a5fa' }}>{student.academicMentor?.mobileNumber || '—'}</span>
+                    </div>
+                  </div>
+                  <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Coding Mentor</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.2rem' }}>
+                      <strong>{student.codingMentor?.name || '—'}</strong>
+                      <span style={{ color: '#60a5fa' }}>{student.codingMentor?.mobileNumber || '—'}</span>
+                    </div>
+                  </div>
+                  <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Communication Skills Mentor</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.2rem' }}>
+                      <strong>{student.communicationMentor?.name || '—'}</strong>
+                      <span style={{ color: '#60a5fa' }}>{student.communicationMentor?.mobileNumber || '—'}</span>
+                    </div>
+                  </div>
+                  <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Project Mentor</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.2rem' }}>
+                      <strong>{student.projectMentor?.name || '—'}</strong>
+                      <span style={{ color: '#60a5fa' }}>{student.projectMentor?.mobileNumber || '—'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>

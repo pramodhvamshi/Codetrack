@@ -141,7 +141,8 @@ router.get('/students', async (req, res) => {
       page = 1,
       limit = 10,
       sortBy = 'scores.totalScore',
-      sortOrder = 'desc'
+      sortOrder = 'desc',
+      goal
     } = req.query;
 
     const filter = { role: 'student', isOnboarded: true };
@@ -181,6 +182,19 @@ router.get('/students', async (req, res) => {
         }
       }
     ];
+
+    if (goal) {
+      pipeline.push({
+        $lookup: {
+          from: 'studentprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'profile'
+        }
+      });
+      pipeline.push({ $unwind: { path: '$profile', preserveNullAndEmptyArrays: true } });
+      pipeline.push({ $match: { 'profile.goal': goal } });
+    }
 
     if (readiness === 'ready') {
       pipeline.push({
@@ -252,6 +266,19 @@ router.get('/students', async (req, res) => {
         }
       }
     ];
+
+    if (goal) {
+      summaryStatsPipeline.push({
+        $lookup: {
+          from: 'studentprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'profile'
+        }
+      });
+      summaryStatsPipeline.push({ $unwind: { path: '$profile', preserveNullAndEmptyArrays: true } });
+      summaryStatsPipeline.push({ $match: { 'profile.goal': goal } });
+    }
 
     if (readiness === 'ready') {
       summaryStatsPipeline.push({
@@ -375,6 +402,10 @@ router.get('/export-data', async (req, res) => {
   try {
     const students = await User.find({ role: 'student', isOnboarded: true }).sort({ name: 1 });
 
+    const StudentProfile = require('../models/StudentProfile');
+    const profiles = await StudentProfile.find({}, 'userId goal');
+    const profileMap = new Map(profiles.map(p => [String(p.userId), p.goal]));
+
     const exportData = students.map(s => {
       const lc = s.platformStats?.leetcode || {};
       const cc = s.platformStats?.codechef || {};
@@ -406,7 +437,8 @@ router.get('/export-data', async (req, res) => {
         GFGSolved: gfg.totalProblemsSolved || gfg.problemsSolved || 0,
         GitHubUsername: s.githubUsername || '',
         GitHubRepos: gh.reposCount || 0,
-        GitHubContributions: gh.contributions?.length || 0
+        GitHubContributions: gh.contributions?.length || 0,
+        Goal: profileMap.get(String(s._id)) || ''
       };
     });
 
@@ -486,6 +518,12 @@ router.get('/students/:id', async (req, res) => {
       hackathons: profile?.hackathons || [],
       profileCompletion: profile?.profileCompletion || 0,
       readinessProfile: profile?.readinessProfile || {},
+      goal: profile?.goal || null,
+      collegeMentor: profile?.collegeMentor || {},
+      academicMentor: profile?.academicMentor || {},
+      codingMentor: profile?.codingMentor || {},
+      communicationMentor: profile?.communicationMentor || {},
+      projectMentor: profile?.projectMentor || {},
       
       // From CodingProfile
       codingProfile: codingProfile || {}

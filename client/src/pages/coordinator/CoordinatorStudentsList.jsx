@@ -49,6 +49,7 @@ export function CoordinatorStudentsList() {
   const [college, setCollege] = useState('');
   const [branch, setBranch] = useState('');
   const [currentYear, setCurrentYear] = useState('');
+  const [goal, setGoal] = useState('');
   const [sortBy, setSortBy] = useState('name'); // 'name', 'scores.totalScore', 'totalSolved'
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
   const [limit, setLimit] = useState(50); // 50 students per page default
@@ -73,6 +74,7 @@ export function CoordinatorStudentsList() {
       if (college) params.set('college', college);
       if (branch) params.set('branch', branch);
       if (currentYear) params.set('currentYear', currentYear);
+      if (goal) params.set('goal', goal);
 
       params.set('sortBy', sortBy);
       params.set('sortOrder', sortOrder);
@@ -102,11 +104,11 @@ export function CoordinatorStudentsList() {
 
   useEffect(() => {
     setPage(1);
-  }, [config, search, college, branch, currentYear, sortBy, sortOrder, limit]);
+  }, [config, search, college, branch, currentYear, goal, sortBy, sortOrder, limit]);
 
   useEffect(() => {
     loadStudents();
-  }, [token, config, page, search, college, branch, currentYear, sortBy, sortOrder, limit]);
+  }, [token, config, page, search, college, branch, currentYear, goal, sortBy, sortOrder, limit]);
 
   // Export helper
   const getExportData = async () => {
@@ -156,16 +158,21 @@ export function CoordinatorStudentsList() {
         });
       }
 
+      // Filter goal
+      if (goal) {
+        filtered = filtered.filter(s => s.Goal === goal);
+      }
+
       // Filter search
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         filtered = filtered.filter(s => 
           s.Name.toLowerCase().includes(q) || 
-          s.MSSID.toLowerCase().includes(q)
+          (s.MSSID && s.MSSID.toLowerCase().includes(q))
         );
       }
 
-      // Format fields to match requested columns: Name, MSSID, Branch, Current Year, LeetCode Solved, GFG Solved, CodeChef Solved, GitHub Repositories, Coding Score
+      // Format fields to match requested columns: Name, MSSID, Branch, Current Year, LeetCode Solved, GFG Solved, CodeChef Solved, GitHub Repositories, Coding Score, Goal
       return filtered.map(s => {
         const sYearStr = s.Year ? String(s.Year) : '';
         const sCurrentYear = sYearStr === '1' ? '1st Year' : sYearStr === '2' ? '2nd Year' : sYearStr === '3' ? '3rd Year' : sYearStr === '4' ? '4th Year' : `${sYearStr} Year`;
@@ -178,7 +185,8 @@ export function CoordinatorStudentsList() {
           'GFG Solved': s.GFGSolved || 0,
           'CodeChef Solved': s.CodeChefSolved || 0,
           'GitHub Repositories': s.GitHubRepos || 0,
-          'Coding Score': Math.round(s.ReadinessScore || 0)
+          'Coding Score': Math.round(s.ReadinessScore || 0),
+          Goal: s.Goal || '—'
         };
       });
     } catch (err) {
@@ -199,6 +207,7 @@ export function CoordinatorStudentsList() {
       [`College Filter: ${college || 'All'}`],
       [`Branch Filter: ${branch || 'All'}`],
       [`Current Year Filter: ${currentYear || 'All'}`],
+      [`Goal Filter: ${goal || 'All'}`],
       [],
       [`Student Count: ${count}`],
       []
@@ -241,7 +250,7 @@ export function CoordinatorStudentsList() {
     if (data.length === 0) return alert('No data to export');
 
     const metadata = getMetadataHeaders(data.length);
-    const headers = ['Name', 'MSSID', 'Branch', 'Current Year', 'LeetCode Solved', 'GFG Solved', 'CodeChef Solved', 'GitHub Repositories', 'Coding Score'];
+    const headers = ['Name', 'MSSID', 'Branch', 'Current Year', 'LeetCode Solved', 'GFG Solved', 'CodeChef Solved', 'GitHub Repositories', 'Coding Score', 'Goal'];
     const excelData = [...metadata, headers];
     
     data.forEach(row => {
@@ -254,7 +263,8 @@ export function CoordinatorStudentsList() {
         row['GFG Solved'],
         row['CodeChef Solved'],
         row['GitHub Repositories'],
-        row['Coding Score']
+        row['Coding Score'],
+        row.Goal
       ]);
     });
 
@@ -367,6 +377,19 @@ export function CoordinatorStudentsList() {
             {availableYears.map(y => (
               <option key={y} value={y}>{y}</option>
             ))}
+          </select>
+
+          <select
+            className="ct-input"
+            value={goal}
+            onChange={e => setGoal(e.target.value)}
+            style={{ width: '180px', color: '#f3f4f6', background: '#111827' }}
+          >
+            <option value="">All Goals</option>
+            <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
+            <option value="GATE & Higher Studies Track">GATE & Higher Studies Track</option>
+            <option value="PSU & Government Track">PSU & Government Track</option>
+            <option value="Both Placement and GATE">Both Placement and GATE</option>
           </select>
 
           <select

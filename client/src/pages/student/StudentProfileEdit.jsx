@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { api } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
+import toast, { Toaster } from 'react-hot-toast';
 
 // Small inline text input used inside the skills tag box
 function SkillInput({ skills, onAdd }) {
@@ -58,7 +59,14 @@ export function StudentProfileEdit({ tab }) {
     cgpa: '',
     backlogs: '0',
     academicStatus: '',
-    eapcetRank: ''
+    eapcetRank: '',
+    eamcetRank: '',
+    jeeMainsRank: '',
+    jeeMainsPercentile: '',
+    jeeMainsOverallRank: '',
+    jeeMainsCategoryRank: '',
+    jeeAdvOverallRank: '',
+    jeeAdvCategoryRank: ''
   });
 
   // Fetch full details
@@ -82,7 +90,14 @@ export function StudentProfileEdit({ tab }) {
               cgpa: acadData.cgpa != null ? acadData.cgpa.toString() : '',
               backlogs: acadData.backlogs != null ? acadData.backlogs.toString() : '0',
               academicStatus: acadData.academicStatus || '-',
-              eapcetRank: acadData.eapcetRank != null ? acadData.eapcetRank.toString() : ''
+              eapcetRank: '',
+              eamcetRank: acadData.eamcetRank != null ? acadData.eamcetRank.toString() : (acadData.eapcetRank != null ? acadData.eapcetRank.toString() : ''),
+              jeeMainsRank: '',
+              jeeMainsPercentile: acadData.jeeMainsPercentile != null ? acadData.jeeMainsPercentile.toString() : '',
+              jeeMainsOverallRank: acadData.jeeMainsOverallRank != null ? acadData.jeeMainsOverallRank.toString() : '',
+              jeeMainsCategoryRank: acadData.jeeMainsCategoryRank != null ? acadData.jeeMainsCategoryRank.toString() : '',
+              jeeAdvOverallRank: acadData.jeeAdvOverallRank != null ? acadData.jeeAdvOverallRank.toString() : '',
+              jeeAdvCategoryRank: acadData.jeeAdvCategoryRank != null ? acadData.jeeAdvCategoryRank.toString() : ''
             });
           }
         } catch (err) {
@@ -410,12 +425,33 @@ export function StudentProfileEdit({ tab }) {
       setSaving(true);
       setError('');
       setSuccess('');
+      // Validate mentor phone numbers (frontend check)
+      const phoneRegex = /^[0-9]{10}$/;
+      const validatePhone = (m, label) => {
+        const phone = typeof m?.mobileNumber === 'string' ? m.mobileNumber.trim() : '';
+        if (phone && !phoneRegex.test(phone)) {
+          throw new Error(`${label} must be a valid 10-digit mobile number.`);
+        }
+      };
+
+      validatePhone(profileData.collegeMentor, 'College Mentor');
+      validatePhone(profileData.academicMentor, 'Academic Mentor');
+      validatePhone(profileData.codingMentor, 'Coding Mentor');
+      validatePhone(profileData.communicationMentor, 'Communication Skills Mentor');
+      validatePhone(profileData.projectMentor, 'Project Mentor');
+
       const payload = {
         personalDetails: profileData.personalDetails,
-        familyDetails: profileData.familyDetails
+        familyDetails: profileData.familyDetails,
+        goal: profileData.goal,
+        collegeMentor: profileData.collegeMentor,
+        academicMentor: profileData.academicMentor,
+        codingMentor: profileData.codingMentor,
+        communicationMentor: profileData.communicationMentor,
+        projectMentor: profileData.projectMentor
       };
       await api.putJson('/student/me/profile/personal', payload, token);
-      setSuccess('Personal details saved successfully!');
+      toast.success('Personal details saved successfully!');
       
       // Update context user if fields changed
       const updatedUser = {
@@ -428,7 +464,7 @@ export function StudentProfileEdit({ tab }) {
       login(token, updatedUser);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to save personal details.');
+      toast.error(err.message || 'Failed to save personal details.');
     } finally {
       setSaving(false);
     }
@@ -448,10 +484,10 @@ export function StudentProfileEdit({ tab }) {
         hackathons: profileData.hackathons || []
       };
       await api.putJson('/student/me/profile/professional', payload, token);
-      setSuccess('Professional details saved successfully!');
+      toast.success('Professional details saved successfully!');
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to save professional details.');
+      toast.error(err.message || 'Failed to save professional details.');
     } finally {
       setSaving(false);
     }
@@ -470,14 +506,14 @@ export function StudentProfileEdit({ tab }) {
         hackerrankUsername: profileData.hackerrankUsername
       };
       const response = await api.putJson('/student/me/profile/coding', payload, token);
-      setSuccess('Coding handles updated & sync triggered successfully!');
+      toast.success('Coding handles updated & sync triggered successfully!');
       // Update global context
       if (response.user) {
         login(token, response.user);
       }
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to save coding handles.');
+      toast.error(err.message || 'Failed to save coding handles.');
     } finally {
       setSaving(false);
     }
@@ -486,22 +522,20 @@ export function StudentProfileEdit({ tab }) {
   const savePassword = async () => {
     try {
       if (pwdForm.newPassword !== pwdForm.confirmPassword) {
-        setError('New passwords do not match!');
+        toast.error('New passwords do not match!');
         return;
       }
       setSaving(true);
-      setError('');
-      setSuccess('');
       const payload = {
         currentPassword: pwdForm.currentPassword,
         newPassword: pwdForm.newPassword
       };
       await api.putJson('/student/me/change-password', payload, token);
-      setSuccess('Password changed successfully!');
+      toast.success('Password changed successfully!');
       setPwdForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to change password.');
+      toast.error(err.message || 'Failed to change password.');
     } finally {
       setSaving(false);
     }
@@ -522,7 +556,14 @@ export function StudentProfileEdit({ tab }) {
         sgpa6: academicForm.sgpa6 === '' ? null : parseFloat(academicForm.sgpa6),
         cgpa: parseFloat(academicForm.cgpa),
         backlogs: parseInt(academicForm.backlogs, 10),
-        eapcetRank: academicForm.eapcetRank === '' ? null : parseInt(academicForm.eapcetRank, 10)
+        eapcetRank: null,
+        eamcetRank: academicForm.eamcetRank === '' ? null : parseInt(academicForm.eamcetRank, 10),
+        jeeMainsRank: null,
+        jeeMainsPercentile: academicForm.jeeMainsPercentile === '' ? null : parseFloat(academicForm.jeeMainsPercentile),
+        jeeMainsOverallRank: academicForm.jeeMainsOverallRank === '' ? null : parseInt(academicForm.jeeMainsOverallRank, 10),
+        jeeMainsCategoryRank: academicForm.jeeMainsCategoryRank === '' ? null : parseInt(academicForm.jeeMainsCategoryRank, 10),
+        jeeAdvOverallRank: academicForm.jeeAdvOverallRank === '' ? null : parseInt(academicForm.jeeAdvOverallRank, 10),
+        jeeAdvCategoryRank: academicForm.jeeAdvCategoryRank === '' ? null : parseInt(academicForm.jeeAdvCategoryRank, 10)
       };
 
       if (isNaN(payload.cgpa) || payload.cgpa < 0 || payload.cgpa > 10) {
@@ -531,8 +572,23 @@ export function StudentProfileEdit({ tab }) {
       if (isNaN(payload.backlogs) || payload.backlogs < 0) {
         throw new Error('Backlogs must be a valid non-negative integer.');
       }
-      if (payload.eapcetRank !== null && (isNaN(payload.eapcetRank) || payload.eapcetRank < 0)) {
-        throw new Error('EAPCET Rank must be a valid non-negative integer.');
+      if (payload.eamcetRank !== null && (isNaN(payload.eamcetRank) || payload.eamcetRank < 0)) {
+        throw new Error('EAMCET Rank must be a valid non-negative integer.');
+      }
+      if (payload.jeeMainsPercentile !== null && (isNaN(payload.jeeMainsPercentile) || payload.jeeMainsPercentile < 0 || payload.jeeMainsPercentile > 100)) {
+        throw new Error('JEE Mains Percentile must be a valid number between 0 and 100.');
+      }
+      if (payload.jeeMainsOverallRank !== null && (isNaN(payload.jeeMainsOverallRank) || payload.jeeMainsOverallRank < 0)) {
+        throw new Error('JEE Mains Overall Rank must be a valid non-negative integer.');
+      }
+      if (payload.jeeMainsCategoryRank !== null && (isNaN(payload.jeeMainsCategoryRank) || payload.jeeMainsCategoryRank < 0)) {
+        throw new Error('JEE Mains Category Rank must be a valid non-negative integer.');
+      }
+      if (payload.jeeAdvOverallRank !== null && (isNaN(payload.jeeAdvOverallRank) || payload.jeeAdvOverallRank < 0)) {
+        throw new Error('JEE Advanced Overall Rank must be a valid non-negative integer.');
+      }
+      if (payload.jeeAdvCategoryRank !== null && (isNaN(payload.jeeAdvCategoryRank) || payload.jeeAdvCategoryRank < 0)) {
+        throw new Error('JEE Advanced Category Rank must be a valid non-negative integer.');
       }
       for (let i = 1; i <= 6; i++) {
         const val = payload[`sgpa${i}`];
@@ -542,14 +598,14 @@ export function StudentProfileEdit({ tab }) {
       }
 
       const res = await api.putJson('/student/me/profile/academic', payload, token);
-      setSuccess('Academic profile saved successfully!');
+      toast.success('Academic Details Updated Successfully');
       setAcademicForm(prev => ({
         ...prev,
         academicStatus: res.academicStatus || prev.academicStatus
       }));
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to save academic profile.');
+      toast.error(err.message || 'Failed to Update Academic Details');
     } finally {
       setSaving(false);
     }
@@ -561,11 +617,11 @@ export function StudentProfileEdit({ tab }) {
       setError('');
       setSuccess('');
       await api.postJson('/student/me/sync-platforms', { force: true }, token);
-      setSuccess('Sync completed successfully!');
+      toast.success('Sync completed successfully!');
       fetchProfile();
     } catch (err) {
       console.error(err);
-      setError('Sync failed. Please verify platform usernames.');
+      toast.error('Sync failed. Please verify platform usernames.');
     } finally {
       setSaving(false);
     }
@@ -926,9 +982,7 @@ export function StudentProfileEdit({ tab }) {
           <button className={activeTabClass('password')} onClick={() => navigate('/profile/password')}>Change Password</button>
         </div>
 
-        {/* Alerts */}
-        {success && <div className="settings-alert settings-alert-success">✓ {success}</div>}
-        {error && <div className="settings-alert settings-alert-error">⚠ {error}</div>}
+        <Toaster position="bottom-right" reverseOrder={false} />
 
         {/* ─── TAB CONTENT ─── */}
         <div className="settings-content-card">
@@ -1062,6 +1116,189 @@ export function StudentProfileEdit({ tab }) {
                       value={profileData.personalDetails?.section || ''}
                       onChange={(e) => handlePersonalChange('section', e.target.value)}
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* GOAL SECTION */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">Career Track / Goal Selection</div>
+                <div className="settings-form-group">
+                  <label>Select Your Career Track (Goal)</label>
+                  <select
+                    className="settings-select"
+                    value={profileData.goal || ''}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, goal: e.target.value || null }))}
+                  >
+                    <option value="">No Track Selected</option>
+                    <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
+                    <option value="GATE & Higher Studies Track">GATE & Higher Studies Track</option>
+                    <option value="PSU & Government Track">PSU & Government Track</option>
+                    <option value="Both Placement and GATE">Both Placement and GATE</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* MENTOR DETAILS SECTION */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">Mentor Details</div>
+                <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '1.2rem' }}>
+                  Please provide the name and a valid 10-digit mobile number for each of your mentors.
+                </p>
+                <div className="settings-grid-2">
+                  {/* College Mentor */}
+                  <div className="settings-card-item" style={{ background: '#1f2937', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 0.8rem 0', color: '#60a5fa', fontSize: '0.9rem' }}>College Mentor</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="settings-form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.collegeMentor?.name || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            collegeMentor: { ...(prev.collegeMentor || {}), name: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Mobile Number</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.collegeMentor?.mobileNumber || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            collegeMentor: { ...(prev.collegeMentor || {}), mobileNumber: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Academic Mentor */}
+                  <div className="settings-card-item" style={{ background: '#1f2937', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 0.8rem 0', color: '#60a5fa', fontSize: '0.9rem' }}>Academic Mentor</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="settings-form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.academicMentor?.name || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            academicMentor: { ...(prev.academicMentor || {}), name: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Mobile Number</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.academicMentor?.mobileNumber || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            academicMentor: { ...(prev.academicMentor || {}), mobileNumber: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coding Mentor */}
+                  <div className="settings-card-item" style={{ background: '#1f2937', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 0.8rem 0', color: '#60a5fa', fontSize: '0.9rem' }}>Coding Mentor</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="settings-form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.codingMentor?.name || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            codingMentor: { ...(prev.codingMentor || {}), name: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Mobile Number</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.codingMentor?.mobileNumber || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            codingMentor: { ...(prev.codingMentor || {}), mobileNumber: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Communication Skills Mentor */}
+                  <div className="settings-card-item" style={{ background: '#1f2937', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 0.8rem 0', color: '#60a5fa', fontSize: '0.9rem' }}>Communication Skills Mentor</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="settings-form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.communicationMentor?.name || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            communicationMentor: { ...(prev.communicationMentor || {}), name: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Mobile Number</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.communicationMentor?.mobileNumber || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            communicationMentor: { ...(prev.communicationMentor || {}), mobileNumber: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Project Mentor */}
+                  <div className="settings-card-item" style={{ background: '#1f2937', padding: '1rem', borderRadius: '8px' }}>
+                    <h4 style={{ margin: '0 0 0.8rem 0', color: '#60a5fa', fontSize: '0.9rem' }}>Project Mentor</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <div className="settings-form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.projectMentor?.name || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            projectMentor: { ...(prev.projectMentor || {}), name: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Mobile Number</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={profileData.projectMentor?.mobileNumber || ''}
+                          onChange={(e) => setProfileData(prev => ({
+                            ...prev,
+                            projectMentor: { ...(prev.projectMentor || {}), mobileNumber: e.target.value }
+                          }))}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1967,10 +2204,9 @@ export function StudentProfileEdit({ tab }) {
                   </div>
                 </div>
               </div>
-
               <div className="settings-form-section">
                 <div className="settings-section-title">Cumulative Performance</div>
-                <div className="settings-grid-3">
+                <div className="settings-grid-2">
                   <div className="settings-form-group">
                     <label>Overall CGPA (Required)</label>
                     <input
@@ -1997,15 +2233,83 @@ export function StudentProfileEdit({ tab }) {
                       required
                     />
                   </div>
+                </div>
+              </div>
+
+              <div className="settings-form-section">
+                <div className="settings-section-title">Entrance Exam Details</div>
+                <div className="settings-grid-2">
                   <div className="settings-form-group">
-                    <label>EAPCET Rank (Optional)</label>
+                    <label>EAMCET Rank (Optional)</label>
                     <input
                       type="number"
                       min="0"
                       className="settings-input"
                       placeholder="e.g. 15000"
-                      value={academicForm.eapcetRank}
-                      onChange={(e) => setAcademicForm(p => ({ ...p, eapcetRank: e.target.value }))}
+                      value={academicForm.eamcetRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, eamcetRank: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>JEE Mains Percentile (Optional)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      className="settings-input"
+                      placeholder="e.g. 98.45"
+                      value={academicForm.jeeMainsPercentile}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, jeeMainsPercentile: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="settings-grid-2" style={{ marginTop: '1.2rem' }}>
+                  <div className="settings-form-group">
+                    <label>JEE Mains Overall Rank (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 28000"
+                      value={academicForm.jeeMainsOverallRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, jeeMainsOverallRank: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>JEE Mains Category Rank (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 4500"
+                      value={academicForm.jeeMainsCategoryRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, jeeMainsCategoryRank: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="settings-grid-2" style={{ marginTop: '1.2rem' }}>
+                  <div className="settings-form-group">
+                    <label>JEE Advanced Overall Rank (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 12000"
+                      value={academicForm.jeeAdvOverallRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, jeeAdvOverallRank: e.target.value }))}
+                    />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>JEE Advanced Category Rank (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="settings-input"
+                      placeholder="e.g. 1800"
+                      value={academicForm.jeeAdvCategoryRank}
+                      onChange={(e) => setAcademicForm(p => ({ ...p, jeeAdvCategoryRank: e.target.value }))}
                     />
                   </div>
                 </div>

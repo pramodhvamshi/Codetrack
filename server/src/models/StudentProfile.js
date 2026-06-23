@@ -59,11 +59,40 @@ const ParentEntrySchema = new mongoose.Schema({
   mobile: { type: String, default: "" }
 }, { _id: false });
 
+const MentorSchema = new mongoose.Schema({
+  name: { type: String, default: "" },
+  mobileNumber: { type: String, default: "" }
+}, { _id: false });
+
 const StudentProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   
+  goal: {
+    type: String,
+    enum: [
+      'Placement & Paid Internship Track',
+      'GATE & Higher Studies Track',
+      'PSU & Government Track',
+      'Both Placement and GATE'
+    ],
+    default: null
+  },
+
+  collegeMentor: { type: MentorSchema, default: () => ({}) },
+  academicMentor: { type: MentorSchema, default: () => ({}) },
+  codingMentor: { type: MentorSchema, default: () => ({}) },
+  communicationMentor: { type: MentorSchema, default: () => ({}) },
+  projectMentor: { type: MentorSchema, default: () => ({}) },
+
   academicDetails: {
-    eapcetRank: { type: Number, default: null }
+    eapcetRank: { type: Number, default: null },
+    eamcetRank: { type: Number, default: null },
+    jeeMainsRank: { type: Number, default: null },
+    jeeMainsPercentile: { type: Number, default: null },
+    jeeMainsOverallRank: { type: Number, default: null },
+    jeeMainsCategoryRank: { type: Number, default: null },
+    jeeAdvOverallRank: { type: Number, default: null },
+    jeeAdvCategoryRank: { type: Number, default: null }
   },
   
   personalDetails: {
