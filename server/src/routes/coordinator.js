@@ -1445,9 +1445,9 @@ const mapStudentToRow = (s, reportType, solved30DaysMap, lastSubDateMap, prevSna
 // GET cohort dashboard cards summary
 router.get('/tracking-reports/dashboard-cards', async (req, res) => {
   try {
-    const { college, branch, currentYear, section, mentorName, gender } = req.query;
+    const { college, branch, currentYear, section, mentorName, gender, goal } = req.query;
     const crypto = require('crypto');
-    const filterHash = crypto.createHash('md5').update(JSON.stringify({ college, branch, currentYear, section, mentorName, gender })).digest('hex');
+    const filterHash = crypto.createHash('md5').update(JSON.stringify({ college, branch, currentYear, section, mentorName, gender, goal })).digest('hex');
     const cacheKey = `coord-dashboard-cards-${filterHash}`;
 
     const ReportCache = require('../models/ReportCache');
@@ -1456,7 +1456,7 @@ router.get('/tracking-reports/dashboard-cards', async (req, res) => {
       return res.json(cached.data);
     }
 
-    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender });
+    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, goal });
 
     pipeline.push({
       $group: {
@@ -1563,13 +1563,13 @@ router.get('/tracking-reports/dashboard-cards', async (req, res) => {
 // GET report tabular data
 router.get('/tracking-reports/data', async (req, res) => {
   try {
-    const { reportType, college, branch, currentYear, section, mentorName, gender, search, page = 1, limit = 50, sortBy, sortOrder = 'asc' } = req.query;
+    const { reportType, college, branch, currentYear, section, mentorName, gender, search, page = 1, limit = 50, sortBy, sortOrder = 'asc', goal } = req.query;
     
     if (!reportType) {
       return res.status(400).json({ message: 'reportType query parameter is required' });
     }
 
-    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search });
+    const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search, goal });
     const students = await User.aggregate(pipeline);
     
     const thirtyDaysAgo = new Date();
@@ -1915,7 +1915,7 @@ const addWorksheetToWorkbook = (workbook, sheetName, reportType, rows) => {
 // GET workbook / sheets exports using active filters
 router.get('/tracking-reports/export', async (req, res) => {
   try {
-    const { reportType, college, branch, currentYear, section, mentorName, gender, search } = req.query;
+    const { reportType, college, branch, currentYear, section, mentorName, gender, search, goal } = req.query;
     
     if (!reportType) {
       return res.status(400).json({ message: 'reportType query parameter is required' });
@@ -1925,7 +1925,7 @@ router.get('/tracking-reports/export', async (req, res) => {
     const workbook = new ExcelJS.Workbook();
 
     const getReportRows = async (type) => {
-      const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search });
+      const pipeline = buildBaseQueryPipeline({ college, branch, currentYear, section, mentorName, gender, search, goal });
       const students = await User.aggregate(pipeline);
       
       const thirtyDaysAgo = new Date();

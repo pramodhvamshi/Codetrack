@@ -28,6 +28,7 @@ export function CoordinatorDashboard() {
   const [modalPage, setModalPage] = useState(1);
   const [modalSearch, setModalSearch] = useState('');
   const [modalBranch, setModalBranch] = useState('');
+  const [modalGoal, setModalGoal] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
   const [availableBranches, setAvailableBranches] = useState([]);
 
@@ -111,6 +112,7 @@ export function CoordinatorDashboard() {
       params.set('limit', 10);
       if (modalSearch) params.set('name', modalSearch);
       if (modalBranch) params.set('branch', modalBranch);
+      if (modalGoal) params.set('goal', modalGoal);
 
       if (modalType === 'active') params.set('status', 'active');
       else if (modalType === 'inactive') params.set('status', 'inactive');
@@ -130,7 +132,7 @@ export function CoordinatorDashboard() {
 
   useEffect(() => {
     loadModalStudents();
-  }, [token, modalOpen, modalType, modalPage, modalBranch]);
+  }, [token, modalOpen, modalType, modalPage, modalBranch, modalGoal]);
 
   const handleOpenModal = (type, title) => {
     setModalType(type);
@@ -138,6 +140,7 @@ export function CoordinatorDashboard() {
     setModalPage(1);
     setModalSearch('');
     setModalBranch('');
+    setModalGoal('');
     setModalOpen(true);
   };
 
@@ -430,6 +433,19 @@ export function CoordinatorDashboard() {
                 >
                   <option value="">All Branches</option>
                   {availableBranches.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+
+                <select
+                  className="ct-input"
+                  value={modalGoal}
+                  onChange={e => { setModalGoal(e.target.value); setModalPage(1); }}
+                  style={{ width: '180px', color: '#f3f4f6', background: '#111827' }}
+                >
+                  <option value="">All Goals</option>
+                  <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
+                  <option value="GATE & Higher Studies Track">GATE & Higher Studies Track</option>
+                  <option value="PSU & Government Track">PSU & Government Track</option>
+                  <option value="Both Placement and GATE">Both Placement and GATE</option>
                 </select>
 
                 <button type="submit" className="ct-button" style={{ padding: '0.5rem 1rem' }}>

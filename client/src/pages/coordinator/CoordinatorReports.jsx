@@ -78,7 +78,8 @@ export function CoordinatorReports() {
     currentYear: '',
     section: '',
     mentorName: '',
-    gender: ''
+    gender: '',
+    goal: ''
   });
 
   // Fetch Dashboard Metrics Cards
@@ -92,6 +93,7 @@ export function CoordinatorReports() {
       if (filters.section) params.set('section', filters.section);
       if (filters.mentorName) params.set('mentorName', filters.mentorName);
       if (filters.gender) params.set('gender', filters.gender);
+      if (filters.goal) params.set('goal', filters.goal);
 
       const query = params.toString() ? `?${params.toString()}` : '';
       const data = await api.getJson(`/coordinator/tracking-reports/dashboard-cards${query}`, token);
@@ -125,6 +127,7 @@ export function CoordinatorReports() {
       if (filters.section) params.set('section', filters.section);
       if (filters.mentorName) params.set('mentorName', filters.mentorName);
       if (filters.gender) params.set('gender', filters.gender);
+      if (filters.goal) params.set('goal', filters.goal);
 
       const query = params.toString() ? `?${params.toString()}` : '';
       const response = await api.getJson(`/coordinator/tracking-reports/data${query}`, token);
@@ -156,7 +159,7 @@ export function CoordinatorReports() {
   // Trigger fetch when inputs, page, or tab changes
   useEffect(() => {
     fetchStatsCards();
-  }, [filters.college, filters.branch, filters.currentYear, filters.section, filters.mentorName, filters.gender, token]);
+  }, [filters.college, filters.branch, filters.currentYear, filters.section, filters.mentorName, filters.gender, filters.goal, token]);
 
   useEffect(() => {
     fetchReportData();
@@ -201,6 +204,7 @@ export function CoordinatorReports() {
       if (filters.section) params.set('section', filters.section);
       if (filters.mentorName) params.set('mentorName', filters.mentorName);
       if (filters.gender) params.set('gender', filters.gender);
+      if (filters.goal) params.set('goal', filters.goal);
 
       const downloadUrl = `${API_BASE_URL}/api/coordinator/tracking-reports/export?${params.toString()}`;
       
@@ -248,7 +252,8 @@ export function CoordinatorReports() {
       currentYear: '',
       section: '',
       mentorName: '',
-      gender: ''
+      gender: '',
+      goal: ''
     });
     setSortBy('');
     setSortOrder('asc');
@@ -868,6 +873,21 @@ export function CoordinatorReports() {
               >
                 <option value="">All Genders</option>
                 {filterOptions.genders.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Goal Track</label>
+              <select
+                value={filters.goal}
+                onChange={(e) => handleFilterChange('goal', e.target.value)}
+                className="filter-select"
+              >
+                <option value="">All Goals</option>
+                <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
+                <option value="GATE & Higher Studies Track">GATE & Higher Studies Track</option>
+                <option value="PSU & Government Track">PSU & Government Track</option>
+                <option value="Both Placement and GATE">Both Placement and GATE</option>
               </select>
             </div>
 

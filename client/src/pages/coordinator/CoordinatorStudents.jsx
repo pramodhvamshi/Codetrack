@@ -24,6 +24,7 @@ export function CoordinatorStudents() {
     college: '',
     branch: '',
     year: '',
+    goal: '',
     scoreMin: '',
     scoreMax: '',
     sortBy: 'scores.weightedRankScore',
@@ -41,6 +42,7 @@ export function CoordinatorStudents() {
         if (filters.college) params.set('college', filters.college);
         if (filters.branch) params.set('branch', filters.branch);
         if (filters.year) params.set('year', filters.year);
+        if (filters.goal) params.set('goal', filters.goal);
         if (filters.search) params.set('name', filters.search);
         if (filters.scoreMin) params.set('scoreMin', filters.scoreMin);
         if (filters.scoreMax) params.set('scoreMax', filters.scoreMax);
@@ -114,6 +116,7 @@ export function CoordinatorStudents() {
       college: '',
       branch: '',
       year: '',
+      goal: '',
       scoreMin: '',
       scoreMax: '',
       sortBy: 'scores.weightedRankScore',
@@ -175,6 +178,17 @@ export function CoordinatorStudents() {
                   Year {y}
                 </option>
               ))}
+            </select>
+            <select
+              value={filters.goal}
+              onChange={(e) => handleFilterChange('goal', e.target.value)}
+              className={styles.select}
+            >
+              <option value="">All Goals</option>
+              <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
+              <option value="GATE & Higher Studies Track">GATE & Higher Studies Track</option>
+              <option value="PSU & Government Track">PSU & Government Track</option>
+              <option value="Both Placement and GATE">Both Placement and GATE</option>
             </select>
             <div className={styles.scoreRange}>
               <input
