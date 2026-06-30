@@ -155,6 +155,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile/mandatory"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfileEdit tab="mandatory" />
+            </ProtectedRoute>
+          }
+        />
 
         {/* COORDINATOR */}
         <Route

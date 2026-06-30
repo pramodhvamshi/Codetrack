@@ -91,6 +91,7 @@ router.get('/me', async (req, res) => {
       codingMentor: profile.codingMentor || {},
       communicationMentor: profile.communicationMentor || {},
       projectMentor: profile.projectMentor || {},
+      mandatoryAccomplishments: profile.mandatoryAccomplishments || {},
       
       resume: user.resume,
       isOnboarded: user.isOnboarded,
@@ -337,6 +338,66 @@ router.put('/me/profile/professional', async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Failed to update professional details' });
+  }
+});
+
+// GET /me/profile/mandatory-accomplishments
+router.get('/me/profile/mandatory-accomplishments', async (req, res) => {
+  try {
+    const StudentProfile = require('../models/StudentProfile');
+    let profile = await StudentProfile.findOne({ userId: req.currentUser._id });
+    if (!profile) {
+      return res.json({});
+    }
+    return res.json(profile.mandatoryAccomplishments || {});
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to fetch mandatory accomplishments' });
+  }
+});
+
+// PUT /me/profile/mandatory-accomplishments
+router.put('/me/profile/mandatory-accomplishments', async (req, res) => {
+  try {
+    const user = req.currentUser;
+    const StudentProfile = require('../models/StudentProfile');
+    const {
+      technicalCourses,
+      projects,
+      hackathons,
+      personalityActivities
+    } = req.body;
+
+    let profile = await StudentProfile.findOne({ userId: user._id });
+    if (!profile) {
+      profile = new StudentProfile({ userId: user._id });
+    }
+
+    if (!profile.mandatoryAccomplishments) {
+      profile.mandatoryAccomplishments = {};
+    }
+
+    if (technicalCourses !== undefined) profile.mandatoryAccomplishments.technicalCourses = technicalCourses;
+    if (projects !== undefined) profile.mandatoryAccomplishments.projects = projects;
+    if (hackathons !== undefined) profile.mandatoryAccomplishments.hackathons = hackathons;
+    if (personalityActivities !== undefined) profile.mandatoryAccomplishments.personalityActivities = personalityActivities;
+
+    const { calculateMandatoryScores } = require('../utils/mandatoryAccomplishmentsUtils');
+    const AcademicProfile = require('../models/AcademicProfile');
+    const academic = await AcademicProfile.findOne({ userId: user._id });
+    const resolvedGpa = academic?.cgpa != null ? academic.cgpa : (user.overallGpa || 0);
+    
+    profile.mandatoryAccomplishments.calculatedScores = calculateMandatoryScores(profile, resolvedGpa);
+
+    await profile.save();
+
+    return res.json({
+      message: 'Mandatory accomplishments updated successfully',
+      mandatoryAccomplishments: profile.mandatoryAccomplishments
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Failed to update mandatory accomplishments' });
   }
 });
 

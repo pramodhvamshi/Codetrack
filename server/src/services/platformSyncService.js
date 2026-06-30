@@ -166,6 +166,48 @@ async function syncNormalizedProfiles(user, { lcData, ccData, gfgData, ghData, h
   const readiness = calculatePlacementReadiness(user, studentProfile, codingProfile, defaultResume);
   studentProfile.readinessProfile = readiness;
 
+  // Phase 2: Mandatory Accomplishments syncing
+  if (!studentProfile.mandatoryAccomplishments) {
+    studentProfile.mandatoryAccomplishments = {};
+  }
+  
+  if (lcData) {
+    if (!studentProfile.mandatoryAccomplishments.codingConsistency) {
+      studentProfile.mandatoryAccomplishments.codingConsistency = {};
+    }
+    studentProfile.mandatoryAccomplishments.codingConsistency.arraysSolved = lcData.arraysSolved || 0;
+    studentProfile.mandatoryAccomplishments.codingConsistency.stringsSolved = lcData.stringsSolved || 0;
+    studentProfile.mandatoryAccomplishments.codingConsistency.lastSyncedAt = new Date();
+  }
+
+  if (!studentProfile.mandatoryAccomplishments.contestPerformance) {
+    studentProfile.mandatoryAccomplishments.contestPerformance = {};
+  }
+  
+  if (lcData) {
+    studentProfile.mandatoryAccomplishments.contestPerformance.leetcodeRating = lcData.contestRating || 0;
+  } else if (codingProfile.leetcode && codingProfile.leetcode.stats) {
+    studentProfile.mandatoryAccomplishments.contestPerformance.leetcodeRating = codingProfile.leetcode.stats.contestRating || 0;
+  }
+  
+  if (ccData) {
+    studentProfile.mandatoryAccomplishments.contestPerformance.codechefRating = ccData.currentRating || 0;
+  } else if (codingProfile.codechef && codingProfile.codechef.stats) {
+    studentProfile.mandatoryAccomplishments.contestPerformance.codechefRating = codingProfile.codechef.stats.currentRating || 0;
+  }
+  
+  // Calculate Scores
+  const { calculateMandatoryScores } = require('../utils/mandatoryAccomplishmentsUtils');
+  // Overall GPA logic: we check AcademicProfile if it exists, otherwise User overallGpa
+  const AcademicProfile = require('../models/AcademicProfile');
+  const academic = await AcademicProfile.findOne({ userId: user._id });
+  const resolvedGpa = academic?.cgpa != null ? academic.cgpa : (user.overallGpa || 0);
+
+  const calculated = calculateMandatoryScores(studentProfile, resolvedGpa);
+  
+  // Convert JS object to Map if needed, or directly assign if it's a Map in schema
+  studentProfile.mandatoryAccomplishments.calculatedScores = calculated;
+
   await studentProfile.save();
 }
 

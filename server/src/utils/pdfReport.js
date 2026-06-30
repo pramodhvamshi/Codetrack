@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const { calculateMandatoryScores } = require('./mandatoryAccomplishmentsUtils');
 
 /**
  * Format numeric value to exactly 2 decimal places. Returns fallback if invalid.
@@ -521,6 +522,146 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
 
 
     // ==========================================
+    // PAGE: MANDATORY ACCOMPLISHMENTS SCORECARD
+    // ==========================================
+    doc.addPage();
+    drawPageHeader(doc, "MANDATORY ACCOMPLISHMENTS SCORECARD", margin, contentWidth);
+    
+    const ma = profile?.mandatoryAccomplishments || student.mandatoryAccomplishments || {};
+    const ms = calculateMandatoryScores({ mandatoryAccomplishments: ma }, profile?.overallGpa || student.overallGpa || 0);
+
+    drawSectionHeading(doc, `TOTAL SCHOLARSHIP SCORE: ${ms.total || 0} / 70`, 11, COLOR_HEADING);
+    doc.moveDown(0.6);
+
+    const maBlockW = (contentWidth - 10) / 2;
+    const maBlockH = 55;
+    
+    const drawMABlock = (title, score, lines, x, y, accentCol) => {
+      doc.rect(x, y, maBlockW, maBlockH).fillColor(COLOR_CARD_BG).fill();
+      doc.rect(x, y, maBlockW, maBlockH).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
+      doc.rect(x, y, maBlockW, 3).fillColor(accentCol).fill();
+      
+      doc.fillColor(COLOR_HEADING).font('Helvetica-Bold').fontSize(8.5)
+         .text(`${title} (${score || 0}/10)`, x + 8, y + 10);
+      
+      let curY = y + 25;
+      lines.forEach(l => {
+        doc.fillColor(COLOR_BODY).font('Helvetica').fontSize(7.5)
+           .text(l, x + 8, curY);
+        curY += 10;
+      });
+    };
+    
+    let curMaY = doc.y;
+    // 1. Technical Courses
+    const courses = ma.technicalCourses || [];
+    drawMABlock("1. Technical Courses", ms.technicalCourses, [
+      `Courses Listed: ${courses.length}`,
+      `Completed: ${courses.filter(c => c.status === 'Completed').length}`
+    ], margin, curMaY, '#3b82f6');
+
+    // 2. Coding Consistency
+    drawMABlock("2. Coding Consistency (Auto-synced)", ms.codingConsistency, [
+      `Arrays Solved (LeetCode): ${ma.codingConsistency?.arraysSolved || 0}`,
+      `Strings Solved (LeetCode): ${ma.codingConsistency?.stringsSolved || 0}`
+    ], margin + maBlockW + 10, curMaY, '#f59e0b');
+    
+    curMaY += maBlockH + 10;
+
+    // 3. Technical Projects
+    const projs = ma.projects || [];
+    drawMABlock("3. Technical Projects", ms.projects, [
+      `Projects Added: ${projs.length}`,
+      `With GitHub Link: ${projs.filter(p => p.githubLink).length}`,
+      `With Live Link: ${projs.filter(p => p.liveLink).length}`
+    ], margin, curMaY, '#8b5cf6');
+
+    // 4. Contest Performance
+    drawMABlock("4. Contest Performance (Auto-synced)", ms.contestPerformance, [
+      `LeetCode Max Rating: ${formatNum(ma.contestPerformance?.leetcodeRating, '0')}`,
+      `CodeChef Max Rating: ${formatNum(ma.contestPerformance?.codechefRating, '0')}`
+    ], margin + maBlockW + 10, curMaY, '#ec4899');
+    
+    curMaY += maBlockH + 10;
+    
+    // 5. Hackathons
+    const hacks = ma.hackathons || [];
+    drawMABlock("5. Technical Hackathons", ms.hackathons, [
+      `Hackathons Added: ${hacks.length}`
+    ], margin, curMaY, '#14b8a6');
+    
+    // 6. Personality Dev
+    const pers = ma.personalityActivities || [];
+    drawMABlock("6. Personality Development Activities", ms.personalityDevelopment, [
+      `Activities Added: ${pers.length}`
+    ], margin + maBlockW + 10, curMaY, '#eab308');
+    
+    doc.y = curMaY + maBlockH + 25;
+
+    // Detailed Log
+    drawSectionHeading(doc, "MANDATORY ACCOMPLISHMENTS DETAILED LOG", 10, COLOR_HEADING);
+    doc.moveDown(0.4);
+    
+    const drawLogTable = (title, items, rowFn) => {
+      if (items.length === 0) return;
+      checkPageBreak(doc, 20 + items.length * 15, margin, footerY, "MANDATORY ACCOMPLISHMENTS (Contd.)");
+      doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR_THEME).text(title, margin, doc.y);
+      doc.moveDown(0.1);
+      items.forEach(i => {
+        doc.rect(margin, doc.y, contentWidth, 14).fillColor(COLOR_CARD_BG).fill();
+        doc.rect(margin, doc.y, contentWidth, 14).strokeColor(COLOR_LINE).lineWidth(0.5).stroke();
+        doc.font('Helvetica').fontSize(7.5).fillColor(COLOR_BODY);
+        rowFn(i, doc.y);
+        doc.y += 14;
+      });
+      doc.moveDown(0.5);
+    };
+
+    drawLogTable("Technical Courses", courses, (c, y) => {
+      doc.text(c.courseName || 'N/A', margin + 5, y + 3, { width: 190, lineBreak: false });
+      doc.text(c.platform || 'N/A', margin + 200, y + 3, { width: 140, lineBreak: false });
+      doc.text(c.status || 'N/A', margin + 350, y + 3);
+      if (c.certificateLink) {
+        doc.fillColor(COLOR_ACCENT).text('Certificate / Drive Link ↗', margin + 410, y + 3, { link: c.certificateLink, underline: true });
+        doc.fillColor(COLOR_BODY);
+      }
+    });
+
+    drawLogTable("Technical Projects", projs, (p, y) => {
+      doc.text(p.projectName || 'N/A', margin + 5, y + 3, { width: 190, lineBreak: false });
+      if (p.githubLink) {
+        doc.fillColor(COLOR_ACCENT).text('GitHub Link ↗', margin + 200, y + 3, { link: p.githubLink, underline: true });
+        doc.fillColor(COLOR_BODY); // reset
+      } else {
+        doc.text('No GitHub Link', margin + 200, y + 3);
+      }
+      if (p.liveLink) {
+        doc.fillColor(COLOR_ACCENT).text('Live Link ↗', margin + 310, y + 3, { link: p.liveLink, underline: true });
+        doc.fillColor(COLOR_BODY); // reset
+      } else {
+        doc.text('No Live Link', margin + 310, y + 3);
+      }
+    });
+
+    drawLogTable("Technical Hackathons", hacks, (h, y) => {
+      doc.text(h.hackathonName || 'N/A', margin + 5, y + 3, { width: 190, lineBreak: false });
+      doc.text(`Position: ${h.position || 'Participant'}`, margin + 200, y + 3);
+      if (h.certificateLink) {
+        doc.fillColor(COLOR_ACCENT).text('Live Link ↗', margin + 350, y + 3, { link: h.certificateLink, underline: true });
+        doc.fillColor(COLOR_BODY);
+      }
+    });
+
+    drawLogTable("Personality Development Activities", pers, (a, y) => {
+      doc.text(a.activityName || 'N/A', margin + 5, y + 3);
+      if (a.certificateLink) {
+        doc.fillColor(COLOR_ACCENT).text('Proof Link ↗', margin + 200, y + 3, { link: a.certificateLink, underline: true });
+        doc.fillColor(COLOR_BODY);
+      }
+    });
+
+
+    // ==========================================
     // PAGE 4+: PROFESSIONAL DETAILS (Layout configurations)
     // ==========================================
     doc.addPage();
@@ -585,16 +726,31 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       }));
       hackathons = (profile?.hackathons || []).map(h => ({
         name: h.name,
-        mode: h.mode,
-        teamType: h.teamType,
-        role: h.role,
-        outcome: h.outcome,
-        date: h.date || null
+        organizer: h.organizer || '',
+        role: h.role || 'Participant',
+        outcome: h.result || h.position || h.outcome || 'Participant',
+        description: h.description || '',
+        date: h.date || null,
+        teamSize: h.teamSize || 1
       }));
     }
 
+    // Merge hackathons from mandatory accomplishments if available
+    const maHackathons = profile?.mandatoryAccomplishments?.hackathons || student.mandatoryAccomplishments?.hackathons || [];
+    maHackathons.forEach(mh => {
+      hackathons.push({
+        name: mh.hackathonName,
+        organizer: mh.organizer || '',
+        role: 'Participant',
+        outcome: mh.position || 'Participant',
+        description: mh.description || '',
+        date: mh.date || null,
+        teamSize: mh.teamSize || 1
+      });
+    });
+
     // Draw Sections in configuration order
-    const layoutOrder = defaultResume?.layout?.sectionsOrder || [
+    let layoutOrder = defaultResume?.layout?.sectionsOrder ? [...defaultResume.layout.sectionsOrder] : [
       'skills',
       'education',
       'experience',
@@ -603,6 +759,11 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       'achievements',
       'hackathons'
     ];
+    
+    // Ensure hackathons is present in the layout if it was missed in older default resumes
+    if (!layoutOrder.includes('hackathons')) {
+      layoutOrder.push('hackathons');
+    }
     const hiddenSections = defaultResume?.layout?.hiddenSections || [];
 
     layoutOrder.forEach(secKey => {
@@ -732,12 +893,24 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
         drawSectionHeading(doc, "HACKATHONS", 9.5, COLOR_HEADING);
         doc.moveDown(0.25);
         hackathons.forEach(h => {
-          checkPageBreak(doc, 22, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
-          doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR_BODY)
-             .text(`💻 ${h.name}`, { continued: true })
-             .font('Helvetica').fontSize(8).fillColor(COLOR_MUTED)
-             .text(` - Role: ${h.role || 'Participant'} (${h.outcome || 'N/A'}) - ${formatDate(h.date)}`);
-          doc.moveDown(0.25);
+          checkPageBreak(doc, 35, margin, footerY, "PROFESSIONAL DETAILS (Contd.)");
+          doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#6366f1').text(h.name);
+          
+          if (h.organizer) {
+            doc.font('Helvetica').fontSize(7.5).fillColor(COLOR_MUTED).text(`Organizer: ${h.organizer}`);
+          }
+          
+          doc.font('Helvetica-Bold').fontSize(7.5).fillColor(COLOR_BODY).text('Result: ', { continued: true })
+             .font('Helvetica-Bold').fillColor('#10b981').text(h.outcome, { continued: true })
+             .font('Helvetica').fillColor(COLOR_BODY).text(` — ${h.role}`);
+          
+          if (h.description) {
+            doc.font('Helvetica').fontSize(8).fillColor(COLOR_BODY).text(h.description, { lineGap: 1 });
+          }
+          
+          const dateStr = h.date ? formatDate(h.date) : 'N/A';
+          doc.font('Helvetica').fontSize(7.5).fillColor(COLOR_MUTED).text(`Date: ${dateStr}    Team Size: ${h.teamSize}`);
+          doc.moveDown(0.4);
         });
         doc.moveDown(0.5);
       }
@@ -1007,42 +1180,6 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
 
 
     // ==========================================
-    // OPTIONAL: MERGE SEPARATOR/FALLBACK PAGE
-    // ==========================================
-    doc.addPage();
-    drawPageHeader(doc, "ADDITIONAL INFORMATION & DOCUMENT VERIFICATION", margin, contentWidth);
-    
-    drawSectionHeading(doc, "STUDENT RESUME STATUS", 10, COLOR_HEADING);
-    doc.moveDown(0.4);
-
-    doc.font('Helvetica').fontSize(9).fillColor(COLOR_BODY)
-       .text("If the student has selected the option to append their resume, it has been integrated directly into the subsequent pages of this document.");
-    doc.moveDown(0.5);
-    
-    doc.text("If no resume is appended, it could be due to one of the following reasons:", { bullet: true });
-    doc.text("The student has not created or set a default resume in the ATS Resume Builder.", { bullet: true });
-    doc.text("The Coordinator has disabled the 'Append Resume' checkbox prior to report generation.", { bullet: true });
-    doc.text("The uploaded Cloudinary PDF file is encrypted, corrupt, or temporarily unreachable.", { bullet: true });
-    
-    doc.moveDown(0.8);
-    drawSectionHeading(doc, "OFFICIAL ACCESS LINKS", 10, COLOR_HEADING);
-    doc.moveDown(0.4);
-
-    const drawLink = (label, url, y) => {
-      doc.font('Helvetica-Bold').fontSize(8.5).fillColor(COLOR_HEADING).text(label, margin, y);
-      if (url) {
-        doc.font('Helvetica').fontSize(8.5).fillColor(COLOR_ACCENT).text(url, margin + 120, y, { underline: true });
-      } else {
-        doc.font('Helvetica-Oblique').fontSize(8.5).fillColor(COLOR_MUTED).text("N/A", margin + 120, y);
-      }
-    };
-
-    let linkY = doc.y;
-    drawLink("MSS Dashboard:", `https://codetrack.medha.org/student/${student._id}`, linkY);
-    drawLink("GitHub Profile:", student.githubUsername ? `https://github.com/${student.githubUsername}` : null, linkY + 18);
-    drawLink("LinkedIn Profile:", pd.linkedinUrl ? pd.linkedinUrl : null, linkY + 36);
-
-    // ==========================================
     // POST-PROCESSING: PAGE NUMBERS IN FOOTER
     // ==========================================
     // Loop through all buffered pages and add the footer page numbers
@@ -1059,7 +1196,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
         doc.text(`Medha Scholar - Student Evaluation Report`, margin, footerY + 8, { lineBreak: false });
         doc.text(`Confidential Evaluation - Institutional Use Only`, margin + contentWidth - 250, footerY + 8, { width: 250, align: 'right', lineBreak: false });
       } else {
-        doc.text(`Student: ${student.name} (${pd.rollNumber || 'N/A'})`, margin, footerY + 8, { lineBreak: false });
+        doc.text(`Student: ${student.name} (${student.mssid || 'N/A'})`, margin, footerY + 8, { lineBreak: false });
         doc.text(`Page ${i + 1} of ${range.count}`, margin + contentWidth - 100, footerY + 8, { width: 100, align: 'right', lineBreak: false });
       }
     }

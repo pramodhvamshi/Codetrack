@@ -123,6 +123,20 @@ export function StudentProfileEdit({ tab }) {
           console.error('Failed to load professional profile:', err);
         }
       }
+
+      if (tab === 'mandatory') {
+        try {
+          const mData = await api.getJson('/student/me/profile/mandatory-accomplishments', token);
+          if (mData) {
+            setProfileData(prev => ({
+              ...prev,
+              mandatoryAccomplishments: mData
+            }));
+          }
+        } catch (err) {
+          console.error('Failed to load mandatory accomplishments:', err);
+        }
+      }
       setError('');
     } catch (err) {
       console.error(err);
@@ -536,6 +550,36 @@ export function StudentProfileEdit({ tab }) {
     } catch (err) {
       console.error(err);
       toast.error(err.message || 'Failed to change password.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveMandatoryAccomplishments = async () => {
+    try {
+      setSaving(true);
+      setError('');
+      setSuccess('');
+      const ma = profileData.mandatoryAccomplishments || {};
+      const payload = {
+        technicalCourses: ma.technicalCourses || [],
+        projects: ma.projects || [],
+        hackathons: ma.hackathons || [],
+        personalityActivities: ma.personalityActivities || []
+      };
+      const res = await api.putJson('/student/me/profile/mandatory-accomplishments', payload, token);
+      toast.success('Mandatory accomplishments saved successfully!');
+      
+      // Update with calculated scores returned from backend
+      if (res.mandatoryAccomplishments) {
+        setProfileData(prev => ({
+          ...prev,
+          mandatoryAccomplishments: res.mandatoryAccomplishments
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Failed to save mandatory accomplishments.');
     } finally {
       setSaving(false);
     }
@@ -977,6 +1021,7 @@ export function StudentProfileEdit({ tab }) {
         <div className="settings-tab-navigation">
           <button className={activeTabClass('personal')} onClick={() => navigate('/profile/personal')}>Personal Details</button>
           <button className={activeTabClass('professional')} onClick={() => navigate('/profile/professional')}>Professional Details</button>
+          <button className={activeTabClass('mandatory')} onClick={() => navigate('/profile/mandatory')}>Mandatory Accomplishments</button>
           <button className={activeTabClass('coding')} onClick={() => navigate('/profile/coding')}>Coding Profiles</button>
           <button className={activeTabClass('academic')} onClick={() => navigate('/profile/academic')}>Academic Profile</button>
           <button className={activeTabClass('password')} onClick={() => navigate('/profile/password')}>Change Password</button>
@@ -2096,7 +2141,427 @@ export function StudentProfileEdit({ tab }) {
             </div>
           )}
 
-          {/* TAB: ACADEMIC PROFILE */}
+          {/* TAB 3.5: MANDATORY ACCOMPLISHMENTS */}
+          {tab === 'mandatory' && (
+            <div>
+              <div className="settings-header-banner" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 78, 59, 0.2) 100%)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <div className="settings-header-left">
+                  <h2 style={{ fontSize: '1.4rem', color: '#34d399', marginBottom: '0.3rem' }}>Mandatory Accomplishments</h2>
+                  <p>Scholarship evaluation metrics.</p>
+                </div>
+                <div className="settings-metrics-group">
+                  <div className="settings-metric-box">
+                    <div className="settings-metric-val" style={{ color: '#10b981' }}>
+                      {profileData.mandatoryAccomplishments?.calculatedScores?.total || 0} / 70
+                    </div>
+                    <div className="settings-metric-label">Total Score</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Courses */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>1. Technical Courses</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newC = { courseName: '', platform: '', status: 'Completed', certificateLink: '' };
+                      setProfileData(prev => ({
+                        ...prev,
+                        mandatoryAccomplishments: {
+                          ...(prev.mandatoryAccomplishments || {}),
+                          technicalCourses: [...(prev.mandatoryAccomplishments?.technicalCourses || []), newC]
+                        }
+                      }));
+                    }}
+                    className="settings-btn-add"
+                  >＋ Add Course</button>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.technicalCourses || 0} / 10</p>
+                {(profileData.mandatoryAccomplishments?.technicalCourses || []).map((course, idx) => (
+                  <div className="settings-card-item" key={idx}>
+                    <button
+                      type="button"
+                      className="settings-card-remove-btn"
+                      onClick={() => {
+                        setProfileData(prev => {
+                          const courses = [...(prev.mandatoryAccomplishments?.technicalCourses || [])];
+                          courses.splice(idx, 1);
+                          return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, technicalCourses: courses } };
+                        });
+                      }}
+                    >✖</button>
+                    <div className="settings-grid-2">
+                      <div className="settings-form-group">
+                        <label>Course Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={course.courseName || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const courses = [...(prev.mandatoryAccomplishments?.technicalCourses || [])];
+                              courses[idx] = { ...courses[idx], courseName: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, technicalCourses: courses } };
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Platform (e.g. Coursera, Udemy)</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={course.platform || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const courses = [...(prev.mandatoryAccomplishments?.technicalCourses || [])];
+                              courses[idx] = { ...courses[idx], platform: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, technicalCourses: courses } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="settings-grid-2" style={{ marginTop: '1rem' }}>
+                      <div className="settings-form-group">
+                        <label>Status</label>
+                        <select
+                          className="settings-select"
+                          value={course.status || 'Completed'}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const courses = [...(prev.mandatoryAccomplishments?.technicalCourses || [])];
+                              courses[idx] = { ...courses[idx], status: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, technicalCourses: courses } };
+                            });
+                          }}
+                        >
+                          <option value="Completed">Completed</option>
+                          <option value="In Progress">In Progress</option>
+                        </select>
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Certificate / Drive Link</label>
+                        <input
+                          type="url"
+                          className="settings-input"
+                          value={course.certificateLink || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const courses = [...(prev.mandatoryAccomplishments?.technicalCourses || [])];
+                              courses[idx] = { ...courses[idx], certificateLink: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, technicalCourses: courses } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Coding Consistency (Read-only) */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">2. Coding Consistency (Auto-synced from LeetCode)</div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.codingConsistency || 0} / 10</p>
+                <div className="settings-grid-2">
+                  <div className="settings-form-group">
+                    <label>Arrays Solved</label>
+                    <input type="text" className="settings-input" disabled value={profileData.mandatoryAccomplishments?.codingConsistency?.arraysSolved || 0} />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>Strings Solved</label>
+                    <input type="text" className="settings-input" disabled value={profileData.mandatoryAccomplishments?.codingConsistency?.stringsSolved || 0} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Projects */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>3. Technical Projects</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newP = { projectName: '', description: '', githubLink: '', liveLink: '', driveLink: '' };
+                      setProfileData(prev => ({
+                        ...prev,
+                        mandatoryAccomplishments: {
+                          ...(prev.mandatoryAccomplishments || {}),
+                          projects: [...(prev.mandatoryAccomplishments?.projects || []), newP]
+                        }
+                      }));
+                    }}
+                    className="settings-btn-add"
+                  >＋ Add Project</button>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.projects || 0} / 10</p>
+                {(profileData.mandatoryAccomplishments?.projects || []).map((proj, idx) => (
+                  <div className="settings-card-item" key={idx}>
+                    <button
+                      type="button"
+                      className="settings-card-remove-btn"
+                      onClick={() => {
+                        setProfileData(prev => {
+                          const projects = [...(prev.mandatoryAccomplishments?.projects || [])];
+                          projects.splice(idx, 1);
+                          return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, projects } };
+                        });
+                      }}
+                    >✖</button>
+                    <div className="settings-grid-2">
+                      <div className="settings-form-group">
+                        <label>Project Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={proj.projectName || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const projects = [...(prev.mandatoryAccomplishments?.projects || [])];
+                              projects[idx] = { ...projects[idx], projectName: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, projects } };
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>GitHub Link</label>
+                        <input
+                          type="url"
+                          className="settings-input"
+                          value={proj.githubLink || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const projects = [...(prev.mandatoryAccomplishments?.projects || [])];
+                              projects[idx] = { ...projects[idx], githubLink: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, projects } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="settings-grid-2" style={{ marginTop: '1rem' }}>
+                      <div className="settings-form-group">
+                        <label>Live Link</label>
+                        <input
+                          type="url"
+                          className="settings-input"
+                          value={proj.liveLink || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const projects = [...(prev.mandatoryAccomplishments?.projects || [])];
+                              projects[idx] = { ...projects[idx], liveLink: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, projects } };
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Drive Link (Demo/Doc)</label>
+                        <input
+                          type="url"
+                          className="settings-input"
+                          value={proj.driveLink || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const projects = [...(prev.mandatoryAccomplishments?.projects || [])];
+                              projects[idx] = { ...projects[idx], driveLink: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, projects } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Contest Performance (Read-only) */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">4. Contest Performance (Auto-synced)</div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.contestPerformance || 0} / 10</p>
+                <div className="settings-grid-2">
+                  <div className="settings-form-group">
+                    <label>LeetCode Rating</label>
+                    <input type="text" className="settings-input" disabled value={profileData.mandatoryAccomplishments?.contestPerformance?.leetcodeRating || 0} />
+                  </div>
+                  <div className="settings-form-group">
+                    <label>CodeChef Rating</label>
+                    <input type="text" className="settings-input" disabled value={profileData.mandatoryAccomplishments?.contestPerformance?.codechefRating || 0} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Hackathons */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>5. Technical Hackathons</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newH = { hackathonName: '', position: '', certificateLink: '' };
+                      setProfileData(prev => ({
+                        ...prev,
+                        mandatoryAccomplishments: {
+                          ...(prev.mandatoryAccomplishments || {}),
+                          hackathons: [...(prev.mandatoryAccomplishments?.hackathons || []), newH]
+                        }
+                      }));
+                    }}
+                    className="settings-btn-add"
+                  >＋ Add Hackathon</button>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.hackathons || 0} / 10</p>
+                {(profileData.mandatoryAccomplishments?.hackathons || []).map((hack, idx) => (
+                  <div className="settings-card-item" key={idx}>
+                    <button
+                      type="button"
+                      className="settings-card-remove-btn"
+                      onClick={() => {
+                        setProfileData(prev => {
+                          const hackathons = [...(prev.mandatoryAccomplishments?.hackathons || [])];
+                          hackathons.splice(idx, 1);
+                          return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, hackathons } };
+                        });
+                      }}
+                    >✖</button>
+                    <div className="settings-grid-2">
+                      <div className="settings-form-group">
+                        <label>Hackathon Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={hack.hackathonName || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const hackathons = [...(prev.mandatoryAccomplishments?.hackathons || [])];
+                              hackathons[idx] = { ...hackathons[idx], hackathonName: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, hackathons } };
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Position (e.g. Winner, 2nd, Top 10, Participant)</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={hack.position || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const hackathons = [...(prev.mandatoryAccomplishments?.hackathons || [])];
+                              hackathons[idx] = { ...hackathons[idx], position: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, hackathons } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="settings-form-group" style={{ marginTop: '1rem' }}>
+                      <label>Certificate / Proof Link</label>
+                      <input
+                        type="url"
+                        className="settings-input"
+                        value={hack.certificateLink || ''}
+                        onChange={(e) => {
+                          setProfileData(prev => {
+                            const hackathons = [...(prev.mandatoryAccomplishments?.hackathons || [])];
+                            hackathons[idx] = { ...hackathons[idx], certificateLink: e.target.value };
+                            return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, hackathons } };
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Personality Development */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>6. Personality Development Activities</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newA = { activityName: '', certificateLink: '' };
+                      setProfileData(prev => ({
+                        ...prev,
+                        mandatoryAccomplishments: {
+                          ...(prev.mandatoryAccomplishments || {}),
+                          personalityActivities: [...(prev.mandatoryAccomplishments?.personalityActivities || []), newA]
+                        }
+                      }));
+                    }}
+                    className="settings-btn-add"
+                  >＋ Add Activity</button>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.personalityDevelopment || 0} / 10</p>
+                {(profileData.mandatoryAccomplishments?.personalityActivities || []).map((act, idx) => (
+                  <div className="settings-card-item" key={idx}>
+                    <button
+                      type="button"
+                      className="settings-card-remove-btn"
+                      onClick={() => {
+                        setProfileData(prev => {
+                          const acts = [...(prev.mandatoryAccomplishments?.personalityActivities || [])];
+                          acts.splice(idx, 1);
+                          return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, personalityActivities: acts } };
+                        });
+                      }}
+                    >✖</button>
+                    <div className="settings-grid-2">
+                      <div className="settings-form-group">
+                        <label>Activity / Event Name</label>
+                        <input
+                          type="text"
+                          className="settings-input"
+                          value={act.activityName || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const acts = [...(prev.mandatoryAccomplishments?.personalityActivities || [])];
+                              acts[idx] = { ...acts[idx], activityName: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, personalityActivities: acts } };
+                            });
+                          }}
+                        />
+                      </div>
+                      <div className="settings-form-group">
+                        <label>Proof Link</label>
+                        <input
+                          type="url"
+                          className="settings-input"
+                          value={act.certificateLink || ''}
+                          onChange={(e) => {
+                            setProfileData(prev => {
+                              const acts = [...(prev.mandatoryAccomplishments?.personalityActivities || [])];
+                              acts[idx] = { ...acts[idx], certificateLink: e.target.value };
+                              return { ...prev, mandatoryAccomplishments: { ...prev.mandatoryAccomplishments, personalityActivities: acts } };
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="settings-actions-bar">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={saveMandatoryAccomplishments}
+                  className="settings-btn settings-btn-primary"
+                >
+                  {saving ? 'Saving...' : 'Save Mandatory Accomplishments'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4 (originally 4, now 5): ACADEMIC PROFILE */}
           {tab === 'academic' && (
             <div>
               <div className="settings-form-section">

@@ -516,6 +516,7 @@ router.get('/students/:id', async (req, res) => {
       experiences: profile?.experiences || [],
       certifications: profile?.certifications || [],
       hackathons: profile?.hackathons || [],
+      mandatoryAccomplishments: profile?.mandatoryAccomplishments || {},
       profileCompletion: profile?.profileCompletion || 0,
       readinessProfile: profile?.readinessProfile || {},
       goal: profile?.goal || null,

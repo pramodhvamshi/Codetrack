@@ -146,6 +146,65 @@ const StudentProfileSchema = new mongoose.Schema({
   certifications: [CertificationEntrySchema],
   hackathons: [HackathonEntrySchema],
   
+  // Phase 2: Extensible Mandatory Accomplishment Module
+  mandatoryAccomplishments: {
+    technicalCourses: [{
+      courseName: { type: String, required: true },
+      platform: { type: String, required: true },
+      completionDate: { type: Date },
+      status: { type: String, enum: ['Completed', 'In Progress'], default: 'Completed' },
+      certificateLink: { type: String, default: "" }
+    }],
+    codingConsistency: {
+      arraysSolved: { type: Number, default: 0 },
+      stringsSolved: { type: Number, default: 0 },
+      lastSyncedAt: { type: Date, default: null }
+    },
+    projects: [{
+      projectName: { type: String, required: true },
+      description: { type: String, default: "" },
+      technologies: [{ type: String }],
+      githubLink: { type: String, default: "" },
+      liveLink: { type: String, default: "" },
+      driveLink: { type: String, default: "" }
+    }],
+    contestPerformance: {
+      leetcodeRating: { type: Number, default: 0 },
+      codechefRating: { type: Number, default: 0 },
+      selectedPlatform: { type: String, default: "" }
+    },
+    hackathons: [{
+      hackathonName: { type: String, required: true },
+      organizer: { type: String, default: "" },
+      date: { type: Date },
+      position: { type: String, default: "" },
+      description: { type: String, default: "" },
+      certificateLink: { type: String, default: "" }
+    }],
+    personalityActivities: [{
+      activityName: { type: String, required: true },
+      organizer: { type: String, default: "" },
+      date: { type: Date },
+      description: { type: String, default: "" },
+      certificateLink: { type: String, default: "" }
+    }],
+    // Extensible generic calculated scores store
+    calculatedScores: {
+      type: Map,
+      of: Number,
+      default: {
+        cgpa: 0,
+        technicalCourses: 0,
+        codingConsistency: 0,
+        projects: 0,
+        contestPerformance: 0,
+        hackathons: 0,
+        personalityDevelopment: 0,
+        total: 0
+      }
+    }
+  },
+  
   // Profile Completeness metric
   profileCompletion: { type: Number, default: 0 },
   

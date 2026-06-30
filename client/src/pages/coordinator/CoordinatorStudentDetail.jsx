@@ -316,6 +316,7 @@ export function CoordinatorStudentDetail() {
         <div className="ct-card" style={{ padding: '0.8rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {[
             { id: 'overview', label: '👤 Profile Overview' },
+            { id: 'mandatory', label: '🎓 Mandatory Accomplishments' },
             { id: 'platforms', label: '🔗 Coding Profiles' },
             { id: 'heatmap', label: '📅 Streaks Heatmap' },
             { id: 'analytics', label: '📊 Solve Analytics' },
@@ -727,6 +728,205 @@ export function CoordinatorStudentDetail() {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* MANDATORY ACCOMPLISHMENTS TAB */}
+        {activeTab === 'mandatory' && (
+          <div className="tab-panel">
+            <div className="ct-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                <div>
+                  <h3 className="card-title" style={{ margin: 0 }}>Mandatory Accomplishments</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Raw Evidence & Detailed Scoring.</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981', lineHeight: 1 }}>
+                    {student.mandatoryAccomplishments?.calculatedScores?.total || 0}
+                    <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 600 }}> / 70</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.3rem' }}>Total Score</div>
+                </div>
+              </div>
+
+              <div className="overview-grid" style={{ gridTemplateColumns: '1fr', gap: '1rem' }}>
+                
+                {/* 1. Technical Courses */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #3b82f6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#3b82f6' }}>1. Technical Courses</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.technicalCourses || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Course Name</th>
+                        <th>Platform</th>
+                        <th>Status</th>
+                        <th>Proof</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(student.mandatoryAccomplishments?.technicalCourses || []).length > 0 ? (
+                        student.mandatoryAccomplishments.technicalCourses.map((c, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '0.5rem 0' }}>{c.courseName}</td>
+                            <td>{c.platform}</td>
+                            <td>{c.status}</td>
+                            <td>{c.certificateLink ? <a href={c.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}>Link ↗</a> : '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan="4" style={{ padding: '0.5rem 0', color: 'var(--text-muted)' }}>No courses added.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 2. Coding Consistency */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #f59e0b' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#f59e0b' }}>2. Coding Consistency (Auto-synced)</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.codingConsistency || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Metric</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem 0' }}>Arrays Solved (LeetCode)</td>
+                        <td>{student.mandatoryAccomplishments?.codingConsistency?.arraysSolved || 0}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem 0' }}>Strings Solved (LeetCode)</td>
+                        <td>{student.mandatoryAccomplishments?.codingConsistency?.stringsSolved || 0}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 3. Technical Projects */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #8b5cf6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#8b5cf6' }}>3. Technical Projects</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.projects || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Project Name</th>
+                        <th>GitHub</th>
+                        <th>Live Link</th>
+                        <th>Demo/Doc Link</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(student.mandatoryAccomplishments?.projects || []).length > 0 ? (
+                        student.mandatoryAccomplishments.projects.map((p, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '0.5rem 0' }}>{p.projectName}</td>
+                            <td>{p.githubLink ? <a href={p.githubLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}>Link ↗</a> : '-'}</td>
+                            <td>{p.liveLink ? <a href={p.liveLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-green)' }}>Link ↗</a> : '-'}</td>
+                            <td>{p.driveLink ? <a href={p.driveLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-purple)' }}>Link ↗</a> : '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan="4" style={{ padding: '0.5rem 0', color: 'var(--text-muted)' }}>No projects added.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 4. Contest Performance */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #ec4899' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#ec4899' }}>4. Contest Performance (Auto-synced)</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.contestPerformance || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Platform</th>
+                        <th>Max Rating</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem 0' }}>LeetCode</td>
+                        <td>{student.mandatoryAccomplishments?.contestPerformance?.leetcodeRating || 0}</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem 0' }}>CodeChef</td>
+                        <td>{student.mandatoryAccomplishments?.contestPerformance?.codechefRating || 0}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 5. Hackathons */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #14b8a6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#14b8a6' }}>5. Technical Hackathons</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.hackathons || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Hackathon Name</th>
+                        <th>Position</th>
+                        <th>Proof</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(student.mandatoryAccomplishments?.hackathons || []).length > 0 ? (
+                        student.mandatoryAccomplishments.hackathons.map((h, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '0.5rem 0' }}>{h.hackathonName}</td>
+                            <td>{h.position}</td>
+                            <td>{h.certificateLink ? <a href={h.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}>Link ↗</a> : '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan="3" style={{ padding: '0.5rem 0', color: 'var(--text-muted)' }}>No hackathons added.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 6. Personality Dev */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #eab308' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#eab308' }}>6. Personality Development Activities</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.personalityDevelopment || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Activity / Event</th>
+                        <th>Proof Link</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(student.mandatoryAccomplishments?.personalityActivities || []).length > 0 ? (
+                        student.mandatoryAccomplishments.personalityActivities.map((a, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '0.5rem 0' }}>{a.activityName}</td>
+                            <td>{a.certificateLink ? <a href={a.certificateLink} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-blue)' }}>Link ↗</a> : '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr><td colSpan="2" style={{ padding: '0.5rem 0', color: 'var(--text-muted)' }}>No activities added.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
           </div>
         )}
 

@@ -36,6 +36,23 @@ const query = `
         displayName
         icon
       }
+      tagProblemCounts {
+        advanced {
+          tagName
+          tagSlug
+          problemsSolved
+        }
+        intermediate {
+          tagName
+          tagSlug
+          problemsSolved
+        }
+        fundamental {
+          tagName
+          tagSlug
+          problemsSolved
+        }
+      }
     }
     recentAcSubmissionList(username: $username, limit: 15) {
       title
@@ -94,6 +111,26 @@ const formatData = (data, username) => {
       ranking: h.ranking || 0
     }));
 
+  let arraysSolved = 0;
+  let stringsSolved = 0;
+
+  if (matchedUser.tagProblemCounts) {
+    const tags = [
+      ...(matchedUser.tagProblemCounts.advanced || []),
+      ...(matchedUser.tagProblemCounts.intermediate || []),
+      ...(matchedUser.tagProblemCounts.fundamental || [])
+    ];
+    
+    tags.forEach(tag => {
+      if (tag.tagSlug === 'array') {
+        arraysSolved += tag.problemsSolved || 0;
+      }
+      if (tag.tagSlug === 'string') {
+        stringsSolved += tag.problemsSolved || 0;
+      }
+    });
+  }
+
   return {
     username,
     totalSolved: acSubmissionNum[0]?.count || 0,
@@ -118,7 +155,9 @@ const formatData = (data, username) => {
       : 0,
     badges: badgesList,
     badgeCount: badgesList.length,
-    contestHistory: formattedHistory
+    contestHistory: formattedHistory,
+    arraysSolved,
+    stringsSolved
   };
 };
 
@@ -186,7 +225,9 @@ async function fetchLeetCodeProfile(username, force = false) {
           contestTopPercentage: 0,
           acceptanceRate: 0,
           badges: [],
-          badgeCount: 0
+          badgeCount: 0,
+          arraysSolved: 0,
+          stringsSolved: 0
         };
       }
       await new Promise(res => setTimeout(res, delay));
