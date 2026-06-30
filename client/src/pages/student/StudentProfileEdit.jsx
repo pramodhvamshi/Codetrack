@@ -2159,10 +2159,21 @@ export function StudentProfileEdit({ tab }) {
                 </div>
               </div>
 
-              {/* Technical Courses */}
+              {/* 1. Academic CGPA */}
               <div className="settings-form-section">
                 <div className="settings-section-title">
-                  <span>1. Technical Courses</span>
+                  <span>1. Academic CGPA (Auto-synced)</span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.5rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.cgpa || 0} / 10</p>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Your Overall CGPA: <strong>{profileData.overallGpa || 'N/A'}</strong> (This is automatically pulled from your Academic Details).
+                </div>
+              </div>
+
+              {/* 2. Technical Courses */}
+              <div className="settings-form-section">
+                <div className="settings-section-title">
+                  <span>2. Technical Courses</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -2262,9 +2273,9 @@ export function StudentProfileEdit({ tab }) {
                 ))}
               </div>
 
-              {/* Coding Consistency (Read-only) */}
+              {/* 3. Coding Consistency (Read-only) */}
               <div className="settings-form-section">
-                <div className="settings-section-title">2. Coding Consistency (Auto-synced from LeetCode)</div>
+                <div className="settings-section-title">3. Coding Consistency (Auto-synced from LeetCode)</div>
                 <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.codingConsistency || 0} / 10</p>
                 <div className="settings-grid-2">
                   <div className="settings-form-group">
@@ -2278,10 +2289,10 @@ export function StudentProfileEdit({ tab }) {
                 </div>
               </div>
 
-              {/* Projects */}
+              {/* 4. Projects */}
               <div className="settings-form-section">
                 <div className="settings-section-title">
-                  <span>3. Technical Projects</span>
+                  <span>4. Technical Projects</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -2379,9 +2390,9 @@ export function StudentProfileEdit({ tab }) {
                 ))}
               </div>
 
-              {/* Contest Performance (Read-only) */}
+              {/* 5. Contest Performance (Read-only) */}
               <div className="settings-form-section">
-                <div className="settings-section-title">4. Contest Performance (Auto-synced)</div>
+                <div className="settings-section-title">5. Contest Performance (Auto-synced)</div>
                 <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '1rem' }}>Score: {profileData.mandatoryAccomplishments?.calculatedScores?.contestPerformance || 0} / 10</p>
                 <div className="settings-grid-2">
                   <div className="settings-form-group">
@@ -2395,10 +2406,10 @@ export function StudentProfileEdit({ tab }) {
                 </div>
               </div>
 
-              {/* Hackathons */}
+              {/* 6. Hackathons */}
               <div className="settings-form-section">
                 <div className="settings-section-title">
-                  <span>5. Technical Hackathons</span>
+                  <span>6. Technical Hackathons</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -2479,10 +2490,10 @@ export function StudentProfileEdit({ tab }) {
                 ))}
               </div>
 
-              {/* Personality Development */}
+              {/* 7. Personality Development */}
               <div className="settings-form-section">
                 <div className="settings-section-title">
-                  <span>6. Personality Development Activities</span>
+                  <span>7. Personality Development Activities</span>
                   <button
                     type="button"
                     onClick={() => {

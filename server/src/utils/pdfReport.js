@@ -553,48 +553,55 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     };
     
     let curMaY = doc.y;
-    // 1. Technical Courses
+    // 1. Academic CGPA
+    drawMABlock("1. Academic CGPA (Auto-synced)", ms.cgpa, [
+      `Overall CGPA: ${profile?.overallGpa || student.overallGpa || 'N/A'}`
+    ], margin, curMaY, '#6366f1');
+
+    // 2. Technical Courses
     const courses = ma.technicalCourses || [];
-    drawMABlock("1. Technical Courses", ms.technicalCourses, [
+    drawMABlock("2. Technical Courses", ms.technicalCourses, [
       `Courses Listed: ${courses.length}`,
       `Completed: ${courses.filter(c => c.status === 'Completed').length}`
-    ], margin, curMaY, '#3b82f6');
+    ], margin + maBlockW + 10, curMaY, '#3b82f6');
 
-    // 2. Coding Consistency
-    drawMABlock("2. Coding Consistency (Auto-synced)", ms.codingConsistency, [
-      `Arrays Solved (LeetCode): ${ma.codingConsistency?.arraysSolved || 0}`,
-      `Strings Solved (LeetCode): ${ma.codingConsistency?.stringsSolved || 0}`
-    ], margin + maBlockW + 10, curMaY, '#f59e0b');
-    
     curMaY += maBlockH + 10;
 
-    // 3. Technical Projects
+    // 3. Coding Consistency
+    drawMABlock("3. Coding Consistency (Auto-synced)", ms.codingConsistency, [
+      `Arrays Solved (LeetCode): ${ma.codingConsistency?.arraysSolved || 0}`,
+      `Strings Solved (LeetCode): ${ma.codingConsistency?.stringsSolved || 0}`
+    ], margin, curMaY, '#f59e0b');
+    
+    // 4. Technical Projects
     const projs = ma.projects || [];
-    drawMABlock("3. Technical Projects", ms.projects, [
+    drawMABlock("4. Technical Projects", ms.projects, [
       `Projects Added: ${projs.length}`,
       `With GitHub Link: ${projs.filter(p => p.githubLink).length}`,
       `With Live Link: ${projs.filter(p => p.liveLink).length}`
-    ], margin, curMaY, '#8b5cf6');
+    ], margin + maBlockW + 10, curMaY, '#8b5cf6');
 
-    // 4. Contest Performance
-    drawMABlock("4. Contest Performance (Auto-synced)", ms.contestPerformance, [
+    curMaY += maBlockH + 10;
+
+    // 5. Contest Performance
+    drawMABlock("5. Contest Performance (Auto-synced)", ms.contestPerformance, [
       `LeetCode Max Rating: ${formatNum(ma.contestPerformance?.leetcodeRating, '0')}`,
       `CodeChef Max Rating: ${formatNum(ma.contestPerformance?.codechefRating, '0')}`
-    ], margin + maBlockW + 10, curMaY, '#ec4899');
+    ], margin, curMaY, '#ec4899');
+    
+    // 6. Technical Hackathons
+    const hacks = ma.hackathons || [];
+    drawMABlock("6. Technical Hackathons", ms.hackathons, [
+      `Hackathons Added: ${hacks.length}`
+    ], margin + maBlockW + 10, curMaY, '#14b8a6');
     
     curMaY += maBlockH + 10;
-    
-    // 5. Hackathons
-    const hacks = ma.hackathons || [];
-    drawMABlock("5. Technical Hackathons", ms.hackathons, [
-      `Hackathons Added: ${hacks.length}`
-    ], margin, curMaY, '#14b8a6');
-    
-    // 6. Personality Dev
+
+    // 7. Personality Dev
     const pers = ma.personalityActivities || [];
-    drawMABlock("6. Personality Development Activities", ms.personalityDevelopment, [
+    drawMABlock("7. Personality Development Activities", ms.personalityDevelopment, [
       `Activities Added: ${pers.length}`
-    ], margin + maBlockW + 10, curMaY, '#eab308');
+    ], margin, curMaY, '#eab308');
     
     doc.y = curMaY + maBlockH + 25;
 

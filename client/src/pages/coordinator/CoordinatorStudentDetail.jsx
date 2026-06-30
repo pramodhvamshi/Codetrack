@@ -751,10 +751,32 @@ export function CoordinatorStudentDetail() {
 
               <div className="overview-grid" style={{ gridTemplateColumns: '1fr', gap: '1rem' }}>
                 
-                {/* 1. Technical Courses */}
+                {/* 1. Academic CGPA */}
+                <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #6366f1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h4 style={{ margin: 0, color: '#6366f1' }}>1. Academic CGPA (Auto-synced)</h4>
+                    <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.cgpa || 0} / 10</span>
+                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0' }}>Metric</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '0.5rem 0' }}>Overall CGPA</td>
+                        <td>{student.overallGpa || 'N/A'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 2. Technical Courses */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #3b82f6' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#3b82f6' }}>1. Technical Courses</h4>
+                    <h4 style={{ margin: 0, color: '#3b82f6' }}>2. Technical Courses</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.technicalCourses || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
@@ -783,10 +805,10 @@ export function CoordinatorStudentDetail() {
                   </table>
                 </div>
 
-                {/* 2. Coding Consistency */}
+                {/* 3. Coding Consistency */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #f59e0b' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#f59e0b' }}>2. Coding Consistency (Auto-synced)</h4>
+                    <h4 style={{ margin: 0, color: '#f59e0b' }}>3. Coding Consistency (Auto-synced)</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.codingConsistency || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
@@ -809,10 +831,10 @@ export function CoordinatorStudentDetail() {
                   </table>
                 </div>
 
-                {/* 3. Technical Projects */}
+                {/* 4. Technical Projects */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #8b5cf6' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#8b5cf6' }}>3. Technical Projects</h4>
+                    <h4 style={{ margin: 0, color: '#8b5cf6' }}>4. Technical Projects</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.projects || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
@@ -841,10 +863,10 @@ export function CoordinatorStudentDetail() {
                   </table>
                 </div>
 
-                {/* 4. Contest Performance */}
+                {/* 5. Contest Performance */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #ec4899' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#ec4899' }}>4. Contest Performance (Auto-synced)</h4>
+                    <h4 style={{ margin: 0, color: '#ec4899' }}>5. Contest Performance (Auto-synced)</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.contestPerformance || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
@@ -867,10 +889,10 @@ export function CoordinatorStudentDetail() {
                   </table>
                 </div>
 
-                {/* 5. Hackathons */}
+                {/* 6. Technical Hackathons */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #14b8a6' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#14b8a6' }}>5. Technical Hackathons</h4>
+                    <h4 style={{ margin: 0, color: '#14b8a6' }}>6. Technical Hackathons</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.hackathons || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
@@ -897,10 +919,10 @@ export function CoordinatorStudentDetail() {
                   </table>
                 </div>
 
-                {/* 6. Personality Dev */}
+                {/* 7. Personality Dev */}
                 <div className="ct-card" style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #eab308' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h4 style={{ margin: 0, color: '#eab308' }}>6. Personality Development Activities</h4>
+                    <h4 style={{ margin: 0, color: '#eab308' }}>7. Personality Development Activities</h4>
                     <span style={{ fontWeight: 'bold', color: '#10b981' }}>{student.mandatoryAccomplishments?.calculatedScores?.personalityDevelopment || 0} / 10</span>
                   </div>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
