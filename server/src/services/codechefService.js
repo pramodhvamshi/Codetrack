@@ -27,15 +27,28 @@ async function fetchCodeChefProfile(username, force = false) {
 
       const contestCount = Array.isArray(data.contests) ? data.contests.length : 0;
 
-      const cleanCurrent = String(data.rating?.currentRatingNumber || '').replace(/[^\d]/g, '');
-      const cleanHighest = String(data.rating?.highestRating || '').replace(/[^\d]/g, '');
-      const cleanGlobal = String(data.rating?.globalRank || '').replace(/[^\d]/g, '');
+      const currentMatch = String(data.rating?.currentRatingNumber || '').match(/\d+/);
+      const highestMatch = String(data.rating?.highestRating || '').match(/\d+/);
+      const globalMatch = String(data.rating?.globalRank || '').match(/\d+/);
+
+      const cleanCurrent = currentMatch ? currentMatch[0] : '';
+      const cleanHighest = highestMatch ? highestMatch[0] : '';
+      const cleanGlobal = globalMatch ? globalMatch[0] : '';
+
+      let currentRating = cleanCurrent ? Number(cleanCurrent) : 0;
+      let highestRating = cleanHighest ? Number(cleanHighest) : 0;
+      let globalRank = cleanGlobal ? Number(cleanGlobal) : 0;
+
+      if (currentRating > 5000) {
+        console.warn(`Invalid CodeChef current rating parsed for ${username}: ${currentRating}. Rejecting as failure.`);
+        throw new Error(`Parsed rating ${currentRating} is impossibly high.`);
+      }
 
       const formatted = {
         problemsSolved: Number(data.problemSolved || 0),
-        currentRating: cleanCurrent ? Number(cleanCurrent) : 0,
-        highestRating: cleanHighest ? Number(cleanHighest) : 0,
-        globalRank: cleanGlobal ? Number(cleanGlobal) : 0,
+        currentRating,
+        highestRating,
+        globalRank,
         countryRank: data.rating?.countryRank || 'Inactive',
         contestCount
       };
