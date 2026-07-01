@@ -5,7 +5,7 @@ import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Info } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
   PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid
@@ -329,6 +329,91 @@ const BRANCHES = [
 ];
 
 /* ─────────────────────────────────────────────
+   HELPERS & GENERIC COMPONENTS
+   ───────────────────────────────────────────── */
+const isValidUrl = (url) => {
+  if (!url) return false;
+  return url.startsWith('http://') || url.startsWith('https://');
+};
+
+const formatNiceDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+// Extensible InfoCard component for Certifications, Hackathons, Internships, etc.
+const InfoCard = ({ icon, title, subtitle, fields, description, badge, actions }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLongDesc = description && description.length > 120;
+  const displayDesc = expanded ? description : (isLongDesc ? description.substring(0, 120) + '...' : description);
+
+  return (
+    <div className="ct-card info-card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+          <div style={{ fontSize: '1.8rem' }}>{icon}</div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#f3f4f6' }}>{title}</h3>
+            {subtitle && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{subtitle}</div>}
+          </div>
+        </div>
+        {badge && (
+          <div className={`status-badge ${badge.type}`}>
+            {badge.text}
+          </div>
+        )}
+      </div>
+
+      {fields && fields.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.8rem', padding: '0.8rem 0', borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: description ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+          {fields.map((f, i) => (
+            <div key={i}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{f.label}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#e5e7eb', marginTop: '0.2rem' }}>{f.value || '—'}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {description && (
+        <div style={{ padding: '0.8rem 0', borderBottom: actions && actions.length > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>Description</div>
+          <div style={{ fontSize: '0.85rem', color: '#d1d5db', lineHeight: 1.5 }}>
+            {displayDesc}
+            {isLongDesc && (
+              <button 
+                onClick={() => setExpanded(!expanded)} 
+                style={{ background: 'none', border: 'none', color: '#60a5fa', fontSize: '0.85rem', cursor: 'pointer', padding: 0, marginLeft: '0.4rem' }}
+              >
+                {expanded ? 'Show Less' : 'Read More'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {actions && actions.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.8rem', paddingTop: '0.8rem' }}>
+          {actions.map((act, i) => (
+            isValidUrl(act.url) ? (
+              <a key={i} href={act.url} target="_blank" rel="noreferrer" className="ct-button-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                {act.label} <span style={{ fontSize: '0.9rem' }}>↗</span>
+              </a>
+            ) : (
+              <span key={i} className="ct-button-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: 0.5, cursor: 'not-allowed' }}>
+                Unavailable
+              </span>
+            )
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────
    MAIN COMPONENT
    ───────────────────────────────────────────── */
 export function PublicStudentProfile() {
@@ -512,6 +597,7 @@ export function PublicStudentProfile() {
     { key: 'statistics', label: '📈 Statistics' },
     { key: 'heatmap', label: '🔥 Heatmap' },
     { key: 'achievements', label: '🏆 Achievements & Badges' },
+    { key: 'certifications-hackathons', label: '🎓 Certifications & Hackathons' },
     { key: 'activity', label: '⚡ Activity' },
   ];
 
@@ -1273,6 +1359,139 @@ export function PublicStudentProfile() {
           )}
 
           {/* ── ACTIVITY TIMELINE ── */}
+
+          {/* ── CERTIFICATIONS & HACKATHONS ── */}
+          {activeTab === 'certifications-hackathons' && (() => {
+            const certs = [...(profile.certifications || [])].sort((a, b) => {
+              if (!a.issueDate) return 1;
+              if (!b.issueDate) return -1;
+              return new Date(b.issueDate) - new Date(a.issueDate);
+            });
+            const hacks = [...(profile.hackathons || [])].sort((a, b) => {
+              if (!a.date) return 1;
+              if (!b.date) return -1;
+              return new Date(b.date) - new Date(a.date);
+            });
+            
+            const hackWins = hacks.filter(h => {
+              const res = (h.result || '').toLowerCase();
+              return res.includes('winner') || res.includes('1st') || res === 'first';
+            }).length;
+            
+            return (
+              <div className="tab-panel">
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '0.8rem 1.2rem', borderRadius: '10px', fontSize: '0.85rem', color: '#93c5fd', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <Info size={16} /> This is a read-only view. Editing remains inside Configure Student Profile.
+                </div>
+                
+                {/* ACHIEVEMENTS SUMMARY */}
+                <div className="ct-card" style={{ marginBottom: '1rem' }}>
+                  <h3 className="card-title" style={{ marginBottom: '1.2rem' }}>⭐ Achievements Summary</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>🎓 Certifications</span>
+                      <span style={{ fontWeight: 800 }}>{certs.length}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>🏆 Hackathons</span>
+                      <span style={{ fontWeight: 800 }}>{hacks.length}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>🥇 Wins</span>
+                      <span style={{ fontWeight: 800 }}>{hackWins}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>⭐ Total Achievements</span>
+                      <span style={{ fontWeight: 800, color: '#f59e0b' }}>{certs.length + hacks.length}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CERTIFICATIONS */}
+                <div className="ct-card">
+                  <h3 className="card-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>🎓 Certifications</h3>
+                  {certs.length > 0 ? (
+                    <div className="certs-hacks-grid">
+                      {certs.map((c, i) => {
+                        const verified = isValidUrl(c.credentialLink);
+                        return (
+                          <InfoCard
+                            key={`cert-${i}`}
+                            icon="🏅"
+                            title={c.title}
+                            subtitle={c.provider}
+                            fields={[{ label: 'Issued', value: formatNiceDate(c.issueDate) }]}
+                            badge={{ type: verified ? 'verified' : 'unverified', text: verified ? 'Verified' : 'No Credential' }}
+                            actions={verified ? [{ label: 'Open Certificate', url: c.credentialLink }] : []}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="empty-state" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '12px', padding: '3rem 2rem' }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎓</div>
+                      <h3 style={{ margin: '0 0 0.5rem 0', color: '#e5e7eb' }}>No Certifications Added</h3>
+                      <p style={{ margin: 0 }}>This student hasn't added any certifications yet.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* HACKATHONS */}
+                <div className="ct-card" style={{ marginTop: '1rem' }}>
+                  <h3 className="card-title" style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>🏆 Hackathons</h3>
+                  {hacks.length > 0 ? (
+                    <div className="certs-hacks-grid">
+                      {hacks.map((h, i) => {
+                        const resLower = (h.result || '').toLowerCase();
+                        let badgeType = 'participant';
+                        let badgeText = h.result || 'Participant';
+                        if (resLower.includes('winner') || resLower.includes('1st') || resLower === 'first') {
+                          badgeType = 'winner';
+                          badgeText = '🥇 ' + badgeText;
+                        } else if (resLower.includes('runner')) {
+                          badgeType = 'runner-up';
+                          badgeText = '🥈 ' + badgeText;
+                        } else if (resLower.includes('finalist')) {
+                          badgeType = 'finalist';
+                          badgeText = '🏅 ' + badgeText;
+                        } else if (resLower) {
+                          badgeText = '👨‍💻 ' + badgeText;
+                        } else {
+                          badgeText = '👨‍💻 Participant';
+                        }
+                        
+                        const hasCert = isValidUrl(h.certificateLink);
+
+                        return (
+                          <InfoCard
+                            key={`hack-${i}`}
+                            icon="🏆"
+                            title={h.name || h.hackathonName}
+                            subtitle={h.organizer}
+                            fields={[
+                              { label: 'Date', value: formatNiceDate(h.date) },
+                              { label: 'Team Size', value: h.teamSize },
+                              { label: 'Position', value: h.position }
+                            ]}
+                            badge={{ type: badgeType, text: badgeText }}
+                            description={h.description}
+                            actions={hasCert ? [{ label: 'Certificate', url: h.certificateLink }] : []}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="empty-state" style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '12px', padding: '3rem 2rem' }}>
+                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏆</div>
+                      <h3 style={{ margin: '0 0 0.5rem 0', color: '#e5e7eb' }}>No Hackathons Added</h3>
+                      <p style={{ margin: 0 }}>This student hasn't added any hackathons yet.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {activeTab === 'activity' && (
             <div className="tab-panel">
               <div className="ct-card">
@@ -1637,6 +1856,27 @@ const PROFILE_STYLES = `
   .activity-title { font-weight: 600; color: #f3f4f6; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .activity-title:hover { text-decoration: underline; color: var(--accent-blue); }
   .activity-time { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* ── INFO CARD ── */
+  .info-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .status-badge {
+    font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; white-space: nowrap;
+  }
+  .status-badge.verified { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  .status-badge.unverified { background: rgba(156,163,175,0.15); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+  .status-badge.winner { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .status-badge.runner-up { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+  .status-badge.finalist { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+  .status-badge.participant { background: rgba(156,163,175,0.15); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+  
+  .certs-hacks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+
   .suggestion-item:hover {
     background-color: rgba(59, 130, 246, 0.15) !important;
   }

@@ -740,6 +740,30 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
       });
     }
 
+    const hackathons = profile?.hackathons || [];
+    drawSectionHeading(doc, "HACKATHONS", 10);
+    doc.moveDown(0.2);
+    if (hackathons.length > 0) {
+      const hackRows = hackathons.map(h => [
+        { text: h.name || h.hackathonName || '-', font: 'Helvetica-Bold' },
+        h.organizer || '-',
+        formatDate(h.date),
+        (h.teamSize || '-').toString(),
+        h.position || '-',
+        h.result || '-',
+        h.certificateLink ? { text: 'View', link: h.certificateLink, color: COLORS.ACCENT } : '-'
+      ]);
+      drawTable(doc, {
+        margin, contentWidth, headers: ["Hackathon", "Organizer", "Date", "Team Size", "Position", "Result", "Certificate"],
+        widths: ['auto', 'auto', 60, 60, 60, 60, 50], rows: hackRows, headerTitle: "PROFESSIONAL DETAILS OVERVIEW"
+      });
+    } else {
+      drawTable(doc, {
+        margin, contentWidth, headers: ["Hackathon", "Organizer", "Date", "Team Size", "Position", "Result", "Certificate"],
+        widths: ['auto', 'auto', 60, 60, 60, 60, 50], rows: [["No Hackathons Added", "-", "-", "-", "-", "-", "-"]], headerTitle: "PROFESSIONAL DETAILS OVERVIEW"
+      });
+    }
+
     // ---------------------------------------------------------
     // PAGE 7: LEETCODE ANALYTICS - PAGE A (Metrics & Logs)
     // ---------------------------------------------------------
