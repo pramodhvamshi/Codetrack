@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
 import { AppShell } from '../../components/AppShell';
-import { Trophy, Shield, Filter, Search, RefreshCw, Award, Code, Compass, HelpCircle, Flame } from 'lucide-react';
+import { Trophy, Shield, Filter, Search, RefreshCw, Award, Code, Compass, HelpCircle, Flame, Download, Settings, X, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LEADERBOARD_CONFIG } from '../../config/LeaderboardConfig';
 
 export function LeaderboardPage() {
   const { token, user } = useAuth();
@@ -12,6 +13,24 @@ export function LeaderboardPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [leaderboardType, setLeaderboardType] = useState('global'); // 'global', 'college', 'branch', 'hostel', 'year'
+
+  // Pagination & Total
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, totalPages: 1, total: 0 });
+
+  // Column Visibility Config
+  const defaultVisibility = LEADERBOARD_CONFIG.platforms.reduce((acc, p) => ({ ...acc, [p.id]: true }), {});
+  const [columnVisibility, setColumnVisibility] = useState(() => {
+    const saved = localStorage.getItem('codetrack_leaderboard_cols');
+    return saved ? JSON.parse(saved) : defaultVisibility;
+  });
+  const [showColSettings, setShowColSettings] = useState(false);
+
+  // Analytics Modal
+  const [activeModal, setActiveModal] = useState(null); // { studentId, platformId, studentName }
+
+  useEffect(() => {
+    localStorage.setItem('codetrack_leaderboard_cols', JSON.stringify(columnVisibility));
+  }, [columnVisibility]);
 
   // Monthly & Weekly leaderboard states
   const [period, setPeriod] = useState('weekly'); // 'weekly' or 'monthly'
@@ -67,7 +86,7 @@ export function LeaderboardPage() {
     branch: '',
     year: '',
     name: '',
-    sortBy: 'scores.weightedRankScore',
+    sortBy: 'scores.competitiveIndex',
     sortOrder: 'desc'
   });
 
@@ -153,9 +172,18 @@ export function LeaderboardPage() {
         if (filters.sortOrder) params.set('sortOrder', filters.sortOrder);
       }
 
+      params.set('page', pagination.page);
+      params.set('limit', pagination.limit);
+
       const query = params.toString() ? `?${params.toString()}` : '';
       const data = await api.getJson(`/leaderboard${query}`, token);
-      setRows(data);
+      if (data && Array.isArray(data.data)) {
+        setRows(data.data);
+        setPagination(p => ({ ...p, totalPages: data.totalPages, total: data.total }));
+      } else if (Array.isArray(data)) {
+        // Fallback for legacy api during transition
+        setRows(data);
+      }
     } catch (err) {
       console.error('Leaderboard load failed:', err);
     } finally {
@@ -165,11 +193,43 @@ export function LeaderboardPage() {
 
   useEffect(() => {
     loadLeaderboard();
-  }, [token, filters, leaderboardType]);
+  }, [token, filters, leaderboardType, pagination.page, pagination.limit]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+    setPagination(p => ({ ...p, page: 1 }));
   };
+
+  const handleSort = (key) => {
+    setFilters(prev => {
+      if (prev.sortBy === key) {
+        return { ...prev, sortOrder: prev.sortOrder === 'desc' ? 'asc' : 'desc' };
+      }
+      return { ...prev, sortBy: key, sortOrder: 'desc' };
+    });
+    setPagination(p => ({ ...p, page: 1 }));
+  };
+
+  const exportCSV = () => {
+    if (user?.role === 'student') return;
+    
+    const headers = ['Rank', 'Name', 'College', 'Branch', 'Competitive Index'];
+    const csvData = rows.map(r => [r.rank, `"${r.name}"`, `"${r.college || ''}"`, `"${r.branch || ''}"`, r.competitiveIndex].join(','));
+    const blob = new Blob([[headers.join(','), '\n', ...csvData].join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'leaderboard_export.csv';
+    a.click();
+  };
+
+  const stickyStyle = (leftOffset, isHeader = false) => ({
+    position: 'sticky',
+    left: leftOffset,
+    background: isHeader ? '#111827' : 'var(--bg-card)',
+    zIndex: isHeader ? 10 : 2,
+    borderRight: '1px solid rgba(255,255,255,0.05)'
+  });
 
   const activeTabStyle = {
     background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
@@ -195,7 +255,7 @@ export function LeaderboardPage() {
                 key={tab.key}
                 className="ct-nav-item"
                 style={leaderboardType === tab.key ? activeTabStyle : {}}
-                onClick={() => setLeaderboardType(tab.key)}
+                onClick={() => { setLeaderboardType(tab.key); setPagination(p => ({ ...p, page: 1 })); }}
               >
                 {tab.label}
               </button>
@@ -419,37 +479,46 @@ export function LeaderboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Trophy color="#F59E0B" /> CP Placement Readiness Leaderboard
+                🏆 Competitive Programming Leaderboard
               </h2>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Ranking evaluated dynamically based on CP solved counts, streaks, activity consistency, and contest ratings.
+                Rankings based on coding performance across LeetCode, CodeChef, GeeksforGeeks, and HackerRank using the Competitive Index.
               </p>
             </div>
             
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <select
-                className="ct-input"
-                style={{ width: '160px' }}
-                value={`${filters.sortBy}:${filters.sortOrder}`}
-                onChange={(e) => {
-                  const [sortBy, sortOrder] = e.target.value.split(':');
-                  setFilters((prev) => ({ ...prev, sortBy, sortOrder }));
-                }}
-              >
-                <option value="scores.weightedRankScore:desc">Readiness Score ↓</option>
-                <option value="scores.weightedRankScore:asc">Readiness Score ↑</option>
-                <option value="scores.totalScore:desc">CP Score ↓</option>
-                <option value="scores.totalScore:asc">CP Score ↑</option>
-                <option value="name:asc">Name A→Z</option>
-              </select>
+              <button className="ct-button-secondary" onClick={() => setShowColSettings(!showColSettings)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Settings size={16} /> Customize Columns
+              </button>
+              {(user?.role === 'admin' || user?.role === 'coordinator') && (
+                <button className="ct-button-secondary" onClick={exportCSV} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Download size={16} /> Export
+                </button>
+              )}
             </div>
           </div>
 
+          {/* COLUMN SETTINGS PANEL */}
+          {showColSettings && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <strong style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Visible Platforms:</strong>
+              {LEADERBOARD_CONFIG.platforms.map(p => (
+                <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={columnVisibility[p.id]} 
+                    onChange={(e) => setColumnVisibility(prev => ({ ...prev, [p.id]: e.target.checked }))} 
+                  />
+                  {p.name}
+                </label>
+              ))}
+            </div>
+          )}
+
           {/* DYNAMIC FILTERS (ONLY ENABLED FOR GLOBAL VIEW) */}
           {leaderboardType === 'global' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
               <div>
-                <label className="ct-label">College</label>
                 <select className="ct-input" value={filters.college} onChange={(e) => handleFilterChange('college', e.target.value)}>
                   <option value="">All Colleges</option>
                   {filterOptions.colleges.map(c => <option key={c} value={c}>{c}</option>)}
@@ -457,7 +526,6 @@ export function LeaderboardPage() {
               </div>
 
               <div>
-                <label className="ct-label">Hostel</label>
                 <select className="ct-input" value={filters.hostel} onChange={(e) => handleFilterChange('hostel', e.target.value)}>
                   <option value="">All Hostels</option>
                   {filterOptions.hostels.map(h => <option key={h} value={h}>{h}</option>)}
@@ -465,7 +533,6 @@ export function LeaderboardPage() {
               </div>
 
               <div>
-                <label className="ct-label">Branch</label>
                 <select className="ct-input" value={filters.branch} onChange={(e) => handleFilterChange('branch', e.target.value)}>
                   <option value="">All Branches</option>
                   {filterOptions.branches.map(b => <option key={b} value={b}>{b}</option>)}
@@ -473,7 +540,6 @@ export function LeaderboardPage() {
               </div>
 
               <div>
-                <label className="ct-label">Year</label>
                 <select className="ct-input" value={filters.year} onChange={(e) => handleFilterChange('year', e.target.value)}>
                   <option value="">All Years</option>
                   {filterOptions.years.map(y => <option key={y} value={y}>{y}</option>)}
@@ -481,14 +547,15 @@ export function LeaderboardPage() {
               </div>
 
               <div>
-                <label className="ct-label">Name Search</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     className="ct-input"
-                    placeholder="Search students..."
+                    placeholder="Search name, username, roll no..."
                     value={filters.name}
                     onChange={(e) => handleFilterChange('name', e.target.value)}
+                    style={{ paddingRight: '2rem' }}
                   />
+                  <Search size={14} style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--text-muted)' }} />
                 </div>
               </div>
             </div>
@@ -505,7 +572,7 @@ export function LeaderboardPage() {
         </div>
 
         {/* DATA TABLE */}
-        <div className="ct-card" style={{ padding: '1rem' }}>
+        <div className="ct-card" style={{ padding: 0, overflow: 'hidden' }}>
           {loading ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
               <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 1rem auto' }} />
@@ -513,73 +580,208 @@ export function LeaderboardPage() {
             </div>
           ) : rows.length === 0 ? (
             <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No students found matching filters.
+              <Trophy size={48} style={{ margin: '0 auto 1rem auto', opacity: 0.2 }} />
+              No students found matching your criteria.
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="ct-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '60px' }}>Rank</th>
-                    <th style={{ width: '40px' }}>Status</th>
-                    <th>Name</th>
-                    <th>College</th>
-                    <th>Branch</th>
-                    <th>Year</th>
-                    <th style={{ color: '#F59E0B' }}>LC</th>
-                    <th style={{ color: '#ef4444' }}>CC</th>
-                    <th style={{ color: '#22C55E' }}>GFG</th>
-                    <th style={{ textAlign: 'right', color: 'var(--accent-blue)' }}>Readiness Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr
-                      key={r.id}
-                      style={{
-                        background: r.isCurrentUser
-                          ? 'linear-gradient(90deg, rgba(59, 130, 246, 0.15), rgba(17, 24, 39, 0.3))'
-                          : undefined,
-                        borderLeft: r.isCurrentUser ? '3px solid var(--accent-blue)' : undefined
-                      }}
-                    >
-                      <td style={{ fontWeight: r.isCurrentUser ? 700 : 400 }}>#{r.rank}</td>
-                      <td>
-                        <span style={{ color: r.activityStatus === 'active' ? '#22C55E' : '#6b7280', fontSize: '1.2rem', lineHeight: '1' }}>
-                          {r.activityStatus === 'active' ? '●' : '○'}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          onClick={() => navigate(`/student/profile/view/${r.id}`)}
-                          style={{
-                            cursor: 'pointer',
-                            fontWeight: 600,
-                            color: r.isCurrentUser ? '#f3f4f6' : 'var(--accent-blue)',
-                            textDecoration: 'underline'
-                          }}
-                        >
-                          {r.name} {r.isCurrentUser && ' (You)'}
-                        </span>
-                      </td>
-                      <td>{r.college || '-'}</td>
-                      <td>{r.branch || '-'}</td>
-                      <td>{r.year || '-'}</td>
-                      <td>{Math.round(r.lcScore || 0)}</td>
-                      <td>{Math.round(r.ccScore || 0)}</td>
-                      <td>{Math.round(r.gfgScore || 0)}</td>
-                      <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: 'var(--accent-blue)' }}>
-                        {Math.round(r.weightedRankScore || 0)}
-                      </td>
+            <>
+              <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                <table className="ct-table" style={{ width: 'max-content', minWidth: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                  <thead>
+                    {/* GROUPED HEADERS */}
+                    <tr>
+                      <th style={{ ...stickyStyle('0px', true), minWidth: '60px', zIndex: 11 }}>Rank</th>
+                      <th style={{ ...stickyStyle('60px', true), minWidth: '200px', zIndex: 11 }}>Student</th>
+                      <th style={{ ...stickyStyle('260px', true), minWidth: '150px', zIndex: 11 }}>College</th>
+                      
+                      {LEADERBOARD_CONFIG.platforms.filter(p => columnVisibility[p.id]).map(p => (
+                        <th key={`group-${p.id}`} colSpan={p.columns.length} style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)', color: p.color, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          {p.name}
+                        </th>
+                      ))}
+                      <th style={{ borderLeft: '1px solid rgba(255,255,255,0.05)', textAlign: 'right', color: 'var(--accent-blue)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        Overall
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    
+                    {/* COLUMN HEADERS */}
+                    <tr>
+                      <th style={{ ...stickyStyle('0px', true), borderBottom: '1px solid rgba(255,255,255,0.1)', zIndex: 11 }}></th>
+                      <th style={{ ...stickyStyle('60px', true), borderBottom: '1px solid rgba(255,255,255,0.1)', zIndex: 11 }}></th>
+                      <th style={{ ...stickyStyle('260px', true), borderBottom: '1px solid rgba(255,255,255,0.1)', zIndex: 11 }}></th>
+                      
+                      {LEADERBOARD_CONFIG.platforms.filter(p => columnVisibility[p.id]).map(p => 
+                        p.columns.map((col, idx) => (
+                          <th 
+                            key={`col-${p.id}-${col.key}`} 
+                            style={{ 
+                              cursor: 'pointer', 
+                              borderLeft: idx === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                              fontSize: '0.8rem',
+                              borderBottom: '1px solid rgba(255,255,255,0.1)',
+                              color: filters.sortBy === col.key ? '#fff' : 'var(--text-muted)',
+                              textAlign: col.isScore ? 'right' : 'left',
+                              userSelect: 'none'
+                            }}
+                            onClick={() => handleSort(col.key)}
+                          >
+                            {col.label} {filters.sortBy === col.key ? (filters.sortOrder === 'desc' ? '↓' : '↑') : ''}
+                          </th>
+                        ))
+                      )}
+                      
+                      <th 
+                        style={{ cursor: 'pointer', textAlign: 'right', borderLeft: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)', color: filters.sortBy === 'scores.competitiveIndex' ? '#fff' : 'var(--accent-blue)', userSelect: 'none' }}
+                        onClick={() => handleSort('scores.competitiveIndex')}
+                      >
+                        Competitive Index {filters.sortBy === 'scores.competitiveIndex' ? (filters.sortOrder === 'desc' ? '↓' : '↑') : ''}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => (
+                      <tr key={r.id} style={{ background: r.isCurrentUser ? 'rgba(59, 130, 246, 0.1)' : (i % 2 === 0 ? 'var(--bg-card)' : 'rgba(255,255,255,0.01)') }}>
+                        <td style={{ ...stickyStyle('0px'), fontWeight: r.isCurrentUser ? 700 : 400 }}>#{r.rank}</td>
+                        <td style={{ ...stickyStyle('60px') }}>
+                          <span
+                            onClick={() => navigate(`/student/profile/view/${r.id}`)}
+                            style={{ cursor: 'pointer', fontWeight: 600, color: r.isCurrentUser ? '#f3f4f6' : 'var(--accent-blue)', textDecoration: 'underline' }}
+                          >
+                            {r.name} {r.isCurrentUser && ' (You)'}
+                          </span>
+                        </td>
+                        <td style={{ ...stickyStyle('260px'), fontSize: '0.85rem' }}>{r.college || '-'}</td>
+                        
+                        {LEADERBOARD_CONFIG.platforms.filter(p => columnVisibility[p.id]).map(p => 
+                          p.columns.map((col, idx) => (
+                            <td 
+                              key={`cell-${p.id}-${col.key}`} 
+                              style={{ 
+                                borderLeft: idx === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                textAlign: col.isScore ? 'right' : 'left',
+                                fontWeight: col.isScore ? 600 : 400,
+                                color: col.isScore ? p.color : 'inherit'
+                              }}
+                            >
+                              {col.isScore ? (
+                                <span 
+                                  style={{ cursor: 'pointer', borderBottom: '1px dashed rgba(255,255,255,0.3)' }}
+                                  onClick={() => setActiveModal({ studentId: r.id, studentName: r.name, platformId: p.id, row: r })}
+                                >
+                                  {col.accessor(r)}
+                                </span>
+                              ) : col.accessor(r)}
+                            </td>
+                          ))
+                        )}
+                        
+                        <td style={{ fontWeight: 800, textAlign: 'right', fontSize: '1rem', color: 'var(--accent-blue)', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+                          {Math.round(r.competitiveIndex || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* PAGINATION */}
+              {pagination.totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <button 
+                    className="ct-button-secondary" 
+                    disabled={pagination.page <= 1} 
+                    onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
+                  >
+                    <ChevronLeft size={16} /> Prev
+                  </button>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    Page {pagination.page} of {pagination.totalPages} ({pagination.total} students)
+                  </span>
+                  <button 
+                    className="ct-button-secondary" 
+                    disabled={pagination.page >= pagination.totalPages} 
+                    onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
       </div>
+
+      {/* MODALS */}
+      {activeModal && (
+        <PlatformAnalyticsModal 
+          isOpen={!!activeModal} 
+          onClose={() => setActiveModal(null)} 
+          data={activeModal} 
+        />
+      )}
+
     </AppShell>
+  );
+}
+
+// ----------------------------------------------------
+// PLATFORM ANALYTICS MODAL COMPONENT
+// ----------------------------------------------------
+function PlatformAnalyticsModal({ isOpen, onClose, data }) {
+  if (!isOpen || !data) return null;
+
+  const { row, platformId, studentName } = data;
+  const config = LEADERBOARD_CONFIG.platforms.find(p => p.id === platformId);
+  if (!config) return null;
+
+  const breakDown = row.competitiveBreakdown?.[platformId] || {};
+  const stats = row.platformStats?.[platformId] || row[platformId] || {}; // Hackerrank uses row.hackerrank
+
+  return (
+    <div className="hm-modal-overlay" onClick={onClose} style={{ zIndex: 9999 }}>
+      <div className="hm-modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+          <h2 style={{ margin: 0, color: config.color, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <BarChart3 size={20} /> {config.name} Analytics
+          </h2>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}><X size={20} /></button>
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Student: </span>
+          <strong style={{ fontSize: '1.1rem' }}>{studentName}</strong>
+          {stats.username && (
+            <div style={{ fontSize: '0.85rem', color: 'var(--accent-blue)', marginTop: '0.2rem' }}>@{stats.username}</div>
+          )}
+        </div>
+
+        <div className="ct-grid-2" style={{ gap: '1rem', marginBottom: '1.5rem' }}>
+          {config.columns.map(col => !col.isScore && (
+            <div key={col.label} style={{ background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{col.label}</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{col.accessor(row)}</div>
+            </div>
+          ))}
+        </div>
+
+        <h3 style={{ fontSize: '1rem', margin: '0 0 1rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>Score Breakdown</h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Base Score</span>
+            <span>{Math.round(breakDown.baseScore || 0)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+            <span style={{ color: 'var(--text-muted)' }}>Multiplier</span>
+            <span>x{breakDown.multiplier?.toFixed(2) || '1.00'}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 800, marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed rgba(255,255,255,0.1)', color: config.color }}>
+            <span>Final Contribution</span>
+            <span>{Math.round(breakDown.score || 0)} / 100</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

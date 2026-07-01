@@ -229,7 +229,7 @@ router.get('/monthly', authMiddleware, async (req, res) => {
   }
 });
 
-// Fetch unique dropdown filter values
+// Fetch unique dropdown filter values and global configs
 router.get('/filters', authMiddleware, async (req, res) => {
   try {
     const students = await User.find({ role: 'student', isOnboarded: true }).select('college hostel branch currentYear year');
@@ -237,8 +237,16 @@ router.get('/filters', authMiddleware, async (req, res) => {
     const hostels = [...new Set(students.map(s => s.hostel).filter(Boolean))].sort();
     const branches = [...new Set(students.map(s => s.branch).filter(Boolean))].sort();
     const years = [...new Set(students.map(s => s.currentYear || mapLegacyYearToEnum(s.year)).filter(Boolean))].sort();
+    
+    const config = require('../config/env');
 
-    return res.json({ colleges, hostels, branches, years });
+    return res.json({ 
+      colleges, 
+      hostels, 
+      branches, 
+      years,
+      COMPETITIVE_INDEX_MAX: config.COMPETITIVE_INDEX_MAX 
+    });
   } catch (err) {
     console.error('Failed to fetch leaderboard filters:', err);
     return res.status(500).json({ message: 'Failed to fetch filters' });
@@ -254,9 +262,11 @@ router.get('/', authMiddleware, async (req, res) => {
       branch,
       year,
       type, // 'global', 'college', 'branch', 'hostel', 'year'
-      sortBy = 'scores.weightedRankScore',
+      sortBy = 'scores.competitiveIndex',
       sortOrder = 'desc',
-      name
+      name,
+      page = 1,
+      limit = 50
     } = req.query;
 
     const filter = { role: 'student', isOnboarded: true };
@@ -285,17 +295,40 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 
     if (name) {
-      const escapedName = String(name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-      filter.name = new RegExp(escapedName, 'i');
+      const escapedQuery = String(name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      const searchRegex = new RegExp(escapedQuery, 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { mssid: searchRegex },
+        { leetcodeUsername: searchRegex },
+        { codechefUsername: searchRegex },
+        { gfgUsername: searchRegex },
+        { hackerrankUsername: searchRegex }
+      ];
     }
 
     const sort = {};
-    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    const validSortKeys = [
+      'scores.competitiveIndex', 'name', 'scores.lcScore', 'scores.ccScore', 'scores.gfgScore', 'scores.hrScore',
+      'platformStats.leetcode.problemsSolved', 'platformStats.leetcode.rating', 'platformStats.leetcode.contestCount',
+      'platformStats.codechef.problemsSolved', 'platformStats.codechef.currentRating', 'platformStats.codechef.contestCount',
+      'platformStats.geeksforgeeks.problemsSolved', 'platformStats.geeksforgeeks.codingScore', 'platformStats.geeksforgeeks.streak',
+      'hackerrank.badgeCount', 'hackerrank.totalProblemsSolved'
+    ];
+    const finalSortBy = validSortKeys.includes(sortBy) ? sortBy : 'scores.competitiveIndex';
+    sort[finalSortBy] = sortOrder === 'asc' ? 1 : -1;
 
-    const students = await User.find(filter).sort(sort);
+    const pageInt = Math.max(1, parseInt(page, 10));
+    const limitInt = Math.max(1, Math.min(1000, parseInt(limit, 10)));
+    const skip = (pageInt - 1) * limitInt;
+
+    const [students, total] = await Promise.all([
+      User.find(filter).sort(sort).skip(skip).limit(limitInt),
+      User.countDocuments(filter)
+    ]);
 
     const rows = students.map((s, index) => ({
-      rank: index + 1,
+      rank: skip + index + 1,
       id: s._id,
       isCurrentUser: req.user && String(req.user.id) === String(s._id),
       activityStatus: s.activityStatus,
@@ -304,17 +337,28 @@ router.get('/', authMiddleware, async (req, res) => {
       hostel: s.hostel,
       branch: s.branch,
       year: s.currentYear || mapLegacyYearToEnum(s.year),
+      
+      // Legacy backwards-compatibility
       lcScore: s.scores?.lcScore || 0,
       ccScore: s.scores?.ccScore || 0,
       gfgScore: s.scores?.gfgScore || 0,
       hrScore: s.scores?.hrScore || 0,
-      activityScore: s.scores?.activityScore || 0,
-      consistencyScore: s.scores?.consistencyScore || 0,
-      totalScore: s.scores?.totalScore || 0,
-      weightedRankScore: s.scores?.weightedRankScore || 0
+      
+      // V5 Analytics Engine metrics
+      competitiveIndex: s.scores?.competitiveIndex || 0,
+      competitiveBreakdown: s.scores?.competitiveBreakdown || {},
+      platformStats: s.platformStats || {},
+      hackerrank: s.hackerrank || {},
+      github: s.github || {}
     }));
 
-    return res.json(rows);
+    return res.json({
+      data: rows,
+      total,
+      page: pageInt,
+      limit: limitInt,
+      totalPages: Math.ceil(total / limitInt)
+    });
   } catch (err) {
     console.error('Leaderboard error', err);
     return res.status(500).json({ message: 'Failed to load leaderboard' });

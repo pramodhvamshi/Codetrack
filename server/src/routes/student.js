@@ -4,12 +4,25 @@ const upload = require('../middleware/upload');
 const { syncPlatformsForUser } = require('../services/platformSyncService');
 const { computeActivityStatus } = require('../utils/activity');
 const { buildResumePdfBuffer } = require('../services/resumeService');
+const { buildAnalyticsReport } = require('../utils/analyticsBuilder');
 // const { isProfileComplete } = require('../utils/profile');
 
 const router = express.Router();
 
 // All /student routes require student role
 router.use(authMiddleware, requireRole('student'));
+
+// Get Analytics Report (On-Demand)
+router.get('/analytics/:type', async (req, res) => {
+  try {
+    const reportType = req.params.type;
+    const report = await buildAnalyticsReport(req.currentUser._id, reportType);
+    res.json(report);
+  } catch (error) {
+    console.error('Analytics Error:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate analytics report' });
+  }
+});
 
 // Get own profile
 router.get('/me', async (req, res) => {
@@ -93,6 +106,7 @@ router.get('/me', async (req, res) => {
       projectMentor: profile.projectMentor || {},
       mandatoryAccomplishments: profile.mandatoryAccomplishments || {},
       
+      placementReadiness: user.placementReadiness,
       resume: user.resume,
       isOnboarded: user.isOnboarded,
       mssid: user.mssid,

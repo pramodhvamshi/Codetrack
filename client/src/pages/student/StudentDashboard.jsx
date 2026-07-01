@@ -6,9 +6,12 @@ import { AppShell } from '../../components/AppShell';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
 import { 
   Trophy, Flame, Activity, Award, Code, GitCommit, 
-  ExternalLink, RefreshCw, AlertCircle, Calendar, Globe, BookOpen, Layers
+  ExternalLink, RefreshCw, AlertCircle, Calendar, Globe, BookOpen, Layers, Info, X
 } from 'lucide-react';
 import styles from '../../styles/Dashboard.module.css';
+
+// Lazy load Analytics Modal
+const AnalyticsModal = React.lazy(() => import('../../components/AnalyticsModal'));
 
 export function StudentDashboard() {
   const navigate = useNavigate();
@@ -20,6 +23,8 @@ export function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState(null);
+  const [config, setConfig] = useState({ COMPETITIVE_INDEX_MAX: 400 });
+  const [selectedBreakdown, setSelectedBreakdown] = useState(null);
   
 
 
@@ -38,15 +43,21 @@ export function StudentDashboard() {
       const heatmapData = await api.getJson('/student/me/heatmap', token);
       setHeatmap(heatmapData);
 
-      // 4. Fetch ranks
-      const [globalList, collegeList, branchList, hostelList] = await Promise.all([
+      // 4. Fetch ranks and config
+      const [globalList, collegeList, branchList, hostelList, filtersData] = await Promise.all([
         api.getJson('/leaderboard', token),
         profile.college ? api.getJson(`/leaderboard?college=${encodeURIComponent(profile.college)}`, token) : Promise.resolve([]),
         profile.branch ? api.getJson(`/leaderboard?branch=${encodeURIComponent(profile.branch)}`, token) : Promise.resolve([]),
-        profile.hostel ? api.getJson(`/leaderboard?hostel=${encodeURIComponent(profile.hostel)}`, token) : Promise.resolve([])
+        profile.hostel ? api.getJson(`/leaderboard?hostel=${encodeURIComponent(profile.hostel)}`, token) : Promise.resolve([]),
+        api.getJson('/leaderboard/filters', token)
       ]);
 
-      const findRank = (list) => {
+      if (filtersData && filtersData.COMPETITIVE_INDEX_MAX) {
+        setConfig({ COMPETITIVE_INDEX_MAX: filtersData.COMPETITIVE_INDEX_MAX });
+      }
+
+      const findRank = (res) => {
+        const list = Array.isArray(res) ? res : (res?.students || res?.data || []);
         const idx = list.findIndex(item => String(item.id) === String(profile.id));
         return idx !== -1 ? idx + 1 : '-';
       };
@@ -191,71 +202,199 @@ export function StudentDashboard() {
           </div>
         </div>
 
-        {/* ================= RANKINGS ROW ================= */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          {[
-            { label: 'Global Rank', value: ranks.global, icon: <Trophy color="#F59E0B" size={24} /> },
-            { label: 'College Rank', value: ranks.college, icon: <Award color="#3B82F6" size={24} /> },
-            { label: 'Branch Rank', value: ranks.branch, icon: <Code color="#8B5CF6" size={24} /> },
-            { label: 'Hostel Rank', value: ranks.hostel, icon: <Layers color="#22C55E" size={24} /> }
-          ].map((r, i) => (
-            <div key={i} className="ct-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem' }}>
-              <div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{r.label}</span>
-                <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '2rem', fontWeight: 800 }}>#{r.value}</h2>
+        {/* ================= CODING PERFORMANCE SECTION ================= */}
+        <div>
+          <h2 className="ct-section-title">Coding Performance</h2>
+          
+          {/* Rankings Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
+            {[
+              { label: 'Global Rank', value: ranks.global, icon: <Trophy color="#F59E0B" size={24} /> },
+              { label: 'College Rank', value: ranks.college, icon: <Award color="#3B82F6" size={24} /> },
+              { label: 'Branch Rank', value: ranks.branch, icon: <Code color="#8B5CF6" size={24} /> },
+              { label: 'Hostel Rank', value: ranks.hostel, icon: <Layers color="#22C55E" size={24} /> }
+            ].map((r, i) => (
+              <div key={i} className="ct-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{r.label}</span>
+                  <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '2rem', fontWeight: 800 }}>#{r.value}</h2>
+                </div>
+                <div>{r.icon}</div>
               </div>
-              <div>{r.icon}</div>
+            ))}
+          </div>
+
+          {/* Performance KPI Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
+            
+            <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-blue)', background: 'var(--grad-score)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  Competitive Index
+                  <span title="Competitive Index is evaluated dynamically across LeetCode, CodeChef, GeeksforGeeks, and HackerRank out of a 400 point maximum." style={{ cursor: 'help' }}><Info size={14} color="var(--text-muted)" /></span>
+                </span>
+                <Award size={18} color="var(--accent-blue)" />
+              </div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>
+                {Math.round(scores.competitiveIndex || 0)} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {config.COMPETITIVE_INDEX_MAX}</span>
+              </h1>
             </div>
-          ))}
+
+            <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-green)', background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(17,24,39,0.95))' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Solved & Contests</span>
+                <Code size={18} color="var(--accent-green)" />
+              </div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{totalSolvedCount}</h1>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Contest participations: {totalContestCount}</p>
+            </div>
+
+            <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-orange)', background: 'var(--grad-streak)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Streaks (Current / Max)</span>
+                <Flame size={18} color="var(--accent-orange)" />
+              </div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>
+                🔥 {me.currentStreak || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {me.longestStreak || 0} days</span>
+              </h1>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Days: {me.activeDaysCount || 0} total</p>
+            </div>
+
+            <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-purple)', background: 'var(--grad-consistency)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Consistency (30 Days)</span>
+                <Activity size={18} color="var(--accent-purple)" />
+              </div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{me.consistencyPercentage || 0}%</h1>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Activity score: {scores.activityScore || 0}</p>
+            </div>
+
+          </div>
         </div>
 
-        {/* ================= KPI STATS CARDS ================= */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
-          
-          <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-blue)', background: 'var(--grad-score)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Weighted Readiness Score</span>
-              <Award size={18} color="var(--accent-blue)" />
-            </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{Math.round(scores.weightedRankScore || 0)}</h1>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Legacy CP Score: {Math.round(scores.totalScore || 0)}</p>
+        {/* ================= COMPETITIVE BREAKDOWN SECTION ================= */}
+        <div>
+          <h2 className="ct-section-title">Competitive Breakdown</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            {[
+              { id: 'leetcode', label: 'LeetCode', color: '#F59E0B', data: scores.competitiveBreakdown?.leetcode },
+              { id: 'codechef', label: 'CodeChef', color: '#ef4444', data: scores.competitiveBreakdown?.codechef },
+              { id: 'geeksforgeeks', label: 'GeeksforGeeks', color: '#22C55E', data: scores.competitiveBreakdown?.geeksforgeeks },
+              { id: 'hackerrank', label: 'HackerRank', color: '#2EC866', data: scores.competitiveBreakdown?.hackerrank }
+            ].map(p => {
+              const max = 100; // Each platform is capped at 100
+              const current = p.data?.score || 0;
+              const perc = Math.min(100, Math.round((current / max) * 100));
+              return (
+                <div 
+                  key={p.id} 
+                  className="ct-card" 
+                  style={{ padding: '1rem', cursor: 'pointer', transition: 'transform 0.2s', position: 'relative' }}
+                  onClick={() => setSelectedBreakdown(p.id)}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                    <strong style={{ color: p.color }}>{p.label}</strong>
+                    <span style={{ fontWeight: 800 }}>{Math.round(current)} / {max}</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${perc}%`, height: '100%', background: p.color, borderRadius: '4px' }} />
+                  </div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                    {perc}% Contribution
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-orange)', background: 'var(--grad-streak)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Streaks (Current / Max)</span>
-              <Flame size={18} color="var(--accent-orange)" />
+        {/* ================= DETAILED BREAKDOWN MODAL ================= */}
+        <React.Suspense fallback={null}>
+          <AnalyticsModal 
+            isOpen={!!selectedBreakdown} 
+            onClose={() => setSelectedBreakdown(null)} 
+            reportType={selectedBreakdown} 
+          />
+        </React.Suspense>
+
+        {/* ================= CAREER READINESS SECTION ================= */}
+        <div>
+          <h2 className="ct-section-title">Career Readiness</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.2rem' }}>
+            
+            <div 
+              className="ct-card" 
+              style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => setSelectedBreakdown('placement')}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#F59E0B', fontWeight: 600 }}>Placement Readiness</span>
+                <span style={{ fontWeight: 800 }}>{me.placementReadiness?.finalScore || 0}%</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ width: `${me.placementReadiness?.finalScore || 0}%`, height: '100%', background: '#F59E0B' }} />
+              </div>
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>
-              🔥 {me.currentStreak || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {me.longestStreak || 0} days</span>
-            </h1>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Days: {me.activeDaysCount || 0} total</p>
-          </div>
 
-          <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-purple)', background: 'var(--grad-consistency)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Consistency (30 Days)</span>
-              <Activity size={18} color="var(--accent-purple)" />
+            <div 
+              className="ct-card" 
+              style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => setSelectedBreakdown('dsa')}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#3B82F6', fontWeight: 600 }}>DSA Score</span>
+                <span style={{ fontWeight: 800 }}>{me.placementReadiness?.dsa?.raw || 0} / 100</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ width: `${me.placementReadiness?.dsa?.raw || 0}%`, height: '100%', background: '#3B82F6' }} />
+              </div>
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{me.consistencyPercentage || 0}%</h1>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Activity score: {scores.activityScore || 0}</p>
-          </div>
 
-          <div className="ct-card" style={{ borderLeft: '4px solid var(--accent-green)', background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(17,24,39,0.95))' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Solved & Contests</span>
-              <Code size={18} color="var(--accent-green)" />
+            <div 
+              className="ct-card" 
+              style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => setSelectedBreakdown('projects')}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#10B981', fontWeight: 600 }}>Projects & Courses</span>
+                <span style={{ fontWeight: 800 }}>{Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2)} / 100</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2)}%`, height: '100%', background: '#10B981' }} />
+              </div>
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{totalSolvedCount}</h1>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Contest participations: {totalContestCount}</p>
-          </div>
 
+            <div 
+              className="ct-card" 
+              style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => setSelectedBreakdown('cgpa')}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>CGPA Score</span>
+                <span style={{ fontWeight: 800 }}>{Math.round(((me.overallGpa || 0) / 10) * 100)} / 100</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.round(((me.overallGpa || 0) / 10) * 100)}%`, height: '100%', background: '#8B5CF6' }} />
+              </div>
+            </div>
+
+          </div>
         </div>
 
         {/* ================= PLATFORMS GRID ================= */}
         <div>
           <h2 className="ct-section-title">Coding Profiles overview</h2>
-          <div className={styles.platformCards}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.2rem' }}>
             
             {/* LeetCode */}
             <div 

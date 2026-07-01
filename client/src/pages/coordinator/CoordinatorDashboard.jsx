@@ -305,7 +305,7 @@ export function CoordinatorDashboard() {
                       <th style={{ width: '50px' }}>Rank</th>
                       <th>Name</th>
                       <th>Branch</th>
-                      <th style={{ textAlign: 'right' }}>Readiness Score</th>
+                      <th style={{ textAlign: 'right' }}>Competitive Index</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -319,7 +319,7 @@ export function CoordinatorDashboard() {
                           {coder.name}
                         </td>
                         <td>{coder.branch || '-'}</td>
-                        <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-purple)' }}>{Math.round(coder.weightedRankScore)}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-purple)' }}>{Math.round(coder.competitiveIndex)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -493,9 +493,9 @@ export function CoordinatorDashboard() {
                               {student.activityStatus === 'active' ? '●' : '○'}
                             </span>
                           </td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-purple)' }}>
-                            {Math.round(student.score)}
-                          </td>
+                          <td style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
+                          {Math.round(student.scores?.competitiveIndex || 0)}
+                        </td>
                         </tr>
                       ))}
                     </tbody>

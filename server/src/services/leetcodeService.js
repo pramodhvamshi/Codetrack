@@ -111,8 +111,10 @@ const formatData = (data, username) => {
       ranking: h.ranking || 0
     }));
 
-  let arraysSolved = 0;
-  let stringsSolved = 0;
+  let topics = {
+    arrays: 0, strings: 0, hashTable: 0, twoPointers: 0, binarySearch: 0,
+    trees: 0, dynamicProgramming: 0, graphs: 0, greedy: 0, linkedList: 0
+  };
 
   if (matchedUser.tagProblemCounts) {
     const tags = [
@@ -122,14 +124,52 @@ const formatData = (data, username) => {
     ];
     
     tags.forEach(tag => {
-      if (tag.tagSlug === 'array') {
-        arraysSolved += tag.problemsSolved || 0;
-      }
-      if (tag.tagSlug === 'string') {
-        stringsSolved += tag.problemsSolved || 0;
-      }
+      const slug = tag.tagSlug;
+      const count = tag.problemsSolved || 0;
+      if (slug === 'array') topics.arrays += count;
+      if (slug === 'string') topics.strings += count;
+      if (slug === 'hash-table') topics.hashTable += count;
+      if (slug === 'two-pointers') topics.twoPointers += count;
+      if (slug === 'binary-search') topics.binarySearch += count;
+      if (['tree', 'binary-tree', 'binary-search-tree'].includes(slug)) topics.trees += count;
+      if (slug === 'dynamic-programming') topics.dynamicProgramming += count;
+      if (['graph', 'depth-first-search', 'breadth-first-search', 'union-find', 'shortest-path'].includes(slug)) topics.graphs += count;
+      if (slug === 'greedy') topics.greedy += count;
+      if (slug === 'linked-list') topics.linkedList += count;
     });
   }
+
+  // Calculate topicScores
+  const targets = {
+    arrays: { target: 100, maxScore: 4 },
+    strings: { target: 75, maxScore: 3 },
+    hashTable: { target: 50, maxScore: 3 },
+    twoPointers: { target: 40, maxScore: 3 },
+    binarySearch: { target: 30, maxScore: 3 },
+    trees: { target: 30, maxScore: 3 },
+    dynamicProgramming: { target: 25, maxScore: 3 },
+    graphs: { target: 25, maxScore: 3 },
+    greedy: { target: 20, maxScore: 3 },
+    linkedList: { target: 20, maxScore: 2 }
+  };
+
+  let topicScores = {};
+  let totalTopicScore = 0;
+  Object.keys(targets).forEach(key => {
+    const solved = topics[key];
+    const { target, maxScore } = targets[key];
+    const score = Math.min(solved, target) / target * maxScore;
+    const completion = Math.min(100, Math.round((solved / target) * 100));
+    topicScores[key] = {
+      solved,
+      target,
+      completion,
+      score: Number(score.toFixed(2)),
+      maxScore
+    };
+    totalTopicScore += score;
+  });
+  topicScores.totalTopicScore = Number(totalTopicScore.toFixed(2));
 
   return {
     username,
@@ -150,14 +190,14 @@ const formatData = (data, username) => {
     contestRating: contest.rating || 0,
     contestRanking: contest.globalRanking || 0,
     contestTopPercentage: contest.topPercentage || 0,
-    acceptanceRate: totalSubmissionNum[0]?.submissions > 0 
-      ? (acSubmissionNum[0]?.submissions / totalSubmissionNum[0]?.submissions) * 100 
-      : 0,
     badges: badgesList,
     badgeCount: badgesList.length,
     contestHistory: formattedHistory,
-    arraysSolved,
-    stringsSolved
+    topics,
+    topicScores,
+    acceptanceRate: totalSubmissionNum[0]?.submissions > 0 
+      ? Number(((acSubmissionNum[0]?.submissions / totalSubmissionNum[0]?.submissions) * 100).toFixed(2)) 
+      : 0
   };
 };
 

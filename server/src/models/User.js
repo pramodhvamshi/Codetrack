@@ -97,6 +97,7 @@ const PlatformStatsSchema = new mongoose.Schema(
     leetcode: {
       username: { type: String },
       problemsSolved: { type: Number, default: 0 },
+      totalSolved: { type: Number, default: 0 },
       easySolved: { type: Number, default: 0 },
       mediumSolved: { type: Number, default: 0 },
       hardSolved: { type: Number, default: 0 },
@@ -109,7 +110,12 @@ const PlatformStatsSchema = new mongoose.Schema(
       badgeCount: { type: Number, default: 0 },
       recentSubmissions: { type: Array, default: [] },
       acceptanceRate: { type: Number, default: 0 },
-      contestHistory: { type: Array, default: [] }
+      contestHistory: { type: Array, default: [] },
+      topics: { type: mongoose.Schema.Types.Mixed, default: {} },
+      topicScores: { type: mongoose.Schema.Types.Mixed, default: {} },
+      activeDays: { type: Number, default: 0 },
+      maxStreak: { type: Number, default: 0 },
+      currentStreak: { type: Number, default: 0 }
     },
     codechef: {
       username: { type: String },
@@ -162,7 +168,9 @@ const ScoreSchema = new mongoose.Schema(
     activityScore: { type: Number, default: 0 },
     consistencyScore: { type: Number, default: 0 },
     totalScore: { type: Number, default: 0 },
-    weightedRankScore: { type: Number, default: 0 }
+    weightedRankScore: { type: Number, default: 0 },
+    competitiveIndex: { type: Number, default: 0 },
+    competitiveBreakdown: { type: Object, default: {} }
   },
   { _id: false }
 );
@@ -241,6 +249,7 @@ const UserSchema = new mongoose.Schema(
     /* Platform Analytics */
     platformStats: { type: PlatformStatsSchema, default: () => ({}) },
     scores: { type: ScoreSchema, default: () => ({}) },
+    placementReadiness: { type: mongoose.Schema.Types.Mixed, default: {} },
 
     /* Unified Activity Streak Metrics */
     currentStreak: { type: Number, default: 0 },
@@ -276,5 +285,6 @@ const UserSchema = new mongoose.Schema(
 UserSchema.index({ email: 1 });
 UserSchema.index({ 'scores.totalScore': -1 });
 UserSchema.index({ 'scores.weightedRankScore': -1 });
+UserSchema.index({ 'scores.competitiveIndex': -1 });
 
 module.exports = mongoose.model('User', UserSchema);

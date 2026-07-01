@@ -36,6 +36,32 @@ const config = {
     contestPerformance: parseFloat(process.env.WEIGHT_CONTEST_PERFORMANCE || '0.25'),
     activityScore: parseFloat(process.env.WEIGHT_ACTIVITY_SCORE || '0.20'),
     consistencyScore: parseFloat(process.env.WEIGHT_CONSISTENCY_SCORE || '0.15')
+  },
+
+  // Competitive Index configuration (Max Score 400)
+  COMPETITIVE_INDEX_MAX: 400,
+  
+  SCORING_CONFIG: {
+    leetcode: {
+      solved: 40,
+      rating: 40,
+      contests: 20
+    },
+    codechef: {
+      solved: 30,
+      rating: 50,
+      contests: 20
+    },
+    gfg: {
+      codingScore: 50,
+      solved: 30,
+      streak: 20
+    },
+    hackerrank: {
+      solved: 50,
+      badges: 30,
+      certifications: 20
+    }
   }
 };
 

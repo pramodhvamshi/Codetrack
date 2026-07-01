@@ -39,6 +39,64 @@ function computeGitHubScore(gh = {}) {
   return repos * 5 + stars * 10;
 }
 
+// -------------------------------------------------------------
+// COMPETITIVE INDEX IMPLEMENTATION (Max 100 per platform)
+// -------------------------------------------------------------
+
+function getCompetitiveLeetCodeScore(metrics = {}, w = config.SCORING_CONFIG.leetcode) {
+  const solved = Number(metrics.problemsSolved || metrics.totalSolved || 0);
+  const rating = Number(metrics.rating || 0);
+  const contests = Number(metrics.contestCount || 0);
+  
+  const solvedScore = Math.min(solved, 500) / 500 * w.solved;
+  const ratingScore = Math.min(rating, 2000) / 2000 * w.rating;
+  const contestsScore = Math.min(contests, 50) / 50 * w.contests;
+  
+  const score = Number((solvedScore + ratingScore + contestsScore).toFixed(2));
+  return { baseScore: score, multiplier: 1.0, score: score };
+}
+
+function getCompetitiveCodeChefScore(metrics = {}, w = config.SCORING_CONFIG.codechef) {
+  const solved = Number(metrics.problemsSolved || 0);
+  const rating = Number(metrics.rating || metrics.currentRating || 0);
+  const contests = Number(metrics.contestCount || 0);
+  
+  const solvedScore = Math.min(solved, 500) / 500 * w.solved;
+  const ratingScore = Math.min(rating, 2500) / 2500 * w.rating;
+  const contestsScore = Math.min(contests, 50) / 50 * w.contests;
+  
+  const score = Number((solvedScore + ratingScore + contestsScore).toFixed(2));
+  return { baseScore: score, multiplier: 1.0, score: score };
+}
+
+function getCompetitiveGFGScore(metrics = {}, w = config.SCORING_CONFIG.gfg) {
+  const score = Number(metrics.codingScore || 0);
+  const solved = Number(metrics.problemsSolved || 0);
+  const streak = Number(metrics.streak || 0);
+  
+  const codingScore = Math.min(score, 2000) / 2000 * w.codingScore;
+  const solvedScore = Math.min(solved, 500) / 500 * w.solved;
+  const streakScore = Math.min(streak, 100) / 100 * w.streak;
+  
+  const finalScore = Number((codingScore + solvedScore + streakScore).toFixed(2));
+  return { baseScore: finalScore, multiplier: 1.0, score: finalScore };
+}
+
+function getCompetitiveHackerRankScore(metrics = {}, w = config.SCORING_CONFIG.hackerrank) {
+  const solved = Number(metrics.totalProblemsSolved || 0);
+  const badges = Number(metrics.badgeCount || 0);
+  const certs = Array.isArray(metrics.certifications) ? metrics.certifications.length : 0;
+  
+  const solvedScore = Math.min(solved, 200) / 200 * w.solved;
+  const badgesScore = Math.min(badges, 20) / 20 * w.badges;
+  const certsScore = Math.min(certs, 5) / 5 * w.certifications;
+  
+  const score = Number((solvedScore + badgesScore + certsScore).toFixed(2));
+  return { baseScore: score, multiplier: 1.0, score: score };
+}
+
+// -------------------------------------------------------------
+
 function computeAggregateScores({ platformStats = {}, hackerrank = {}, currentActivityScore = 0, currentConsistencyScore = 0 }) {
   const lcMetrics = platformStats.leetcode || {};
   const ccMetrics = platformStats.codechef || {};
@@ -92,6 +150,20 @@ function computeAggregateScores({ platformStats = {}, hackerrank = {}, currentAc
     (activityScore * weights.activityScore) +
     (consistencyScore * weights.consistencyScore);
 
+  // Compute V3 Competitive Index & Breakdown
+  const lcComp = getCompetitiveLeetCodeScore(lcMetrics);
+  const ccComp = getCompetitiveCodeChefScore(ccMetrics);
+  const gfgComp = getCompetitiveGFGScore(gfgMetrics);
+  const hrComp = getCompetitiveHackerRankScore(hr);
+  
+  const competitiveIndex = Number((lcComp.score + ccComp.score + gfgComp.score + hrComp.score).toFixed(2));
+  const competitiveBreakdown = {
+    leetcode: lcComp,
+    codechef: ccComp,
+    geeksforgeeks: gfgComp,
+    hackerrank: hrComp
+  };
+
   return {
     lcScore: lcScoreLegacy,
     ccScore: ccScoreLegacy,
@@ -101,7 +173,9 @@ function computeAggregateScores({ platformStats = {}, hackerrank = {}, currentAc
     activityScore,
     consistencyScore,
     totalScore: Math.round(legacyTotalScore),
-    weightedRankScore: Math.round(weightedRankScore)
+    weightedRankScore: Math.round(weightedRankScore),
+    competitiveIndex,
+    competitiveBreakdown
   };
 }
 
@@ -111,6 +185,10 @@ module.exports = {
   computeHackerRankScore,
   computeGeeksforGeeksScore,
   computeGitHubScore,
+  getCompetitiveLeetCodeScore,
+  getCompetitiveCodeChefScore,
+  getCompetitiveGFGScore,
+  getCompetitiveHackerRankScore,
   computeAggregateScores
 };
 

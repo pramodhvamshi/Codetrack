@@ -6,8 +6,8 @@ import { api } from '../../api/client';
 import styles from '../../styles/StudentList.module.css';
 
 const SORT_OPTIONS = [
-  { value: 'scores.weightedRankScore:desc', label: 'Readiness Score (High → Low)' },
-  { value: 'scores.weightedRankScore:asc', label: 'Readiness Score (Low → High)' },
+  { value: 'scores.competitiveIndex:desc', label: 'Competitive Index (High → Low)' },
+  { value: 'scores.competitiveIndex:asc', label: 'Competitive Index (Low → High)' },
   { value: 'scores.totalScore:desc', label: 'Legacy CP Score (High → Low)' },
   { value: 'name:asc', label: 'Name (A → Z)' },
   { value: 'name:desc', label: 'Name (Z → A)' },

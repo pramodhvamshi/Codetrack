@@ -41,7 +41,7 @@ async function test() {
     leetcodeGrowthSnapshots
   });
 
-  const destPath = path.join('C:/Users/Medha Trust/.gemini/antigravity-ide/brain/752ba533-9e2c-4b83-a44c-f7be4d4902af', 'student_report_test.pdf');
+  const destPath = path.join('C:/Users/Medha Trust/.gemini/antigravity-ide/brain/a96168a6-1caf-4047-83f4-ab5992f42d8c', 'student_report_test.pdf');
   fs.writeFileSync(destPath, buffer);
   console.log(`PDF report generated and written successfully to: ${destPath}`);
   console.log(`Buffer size: ${buffer.length} bytes`);

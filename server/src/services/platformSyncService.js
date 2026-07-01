@@ -162,9 +162,16 @@ async function syncNormalizedProfiles(user, { lcData, ccData, gfgData, ghData, h
 
   studentProfile.profileCompletion = calculateProfileCompletion(user, studentProfile);
 
-  const defaultResume = await ResumeVersion.findOne({ userId: user._id, isDefault: true });
-  const readiness = calculatePlacementReadiness(user, studentProfile, codingProfile, defaultResume);
-  studentProfile.readinessProfile = readiness;
+  const readiness = calculatePlacementReadiness(user, studentProfile);
+  studentProfile.readinessProfile = {
+    ...readiness,
+    overallReadiness: readiness.finalScore || 0,
+    dsaScore: readiness.dsa?.raw || 0,
+    projectsScore: readiness.projects?.raw || 0,
+    resumeScore: readiness.cgpa?.raw || 0,
+    profileScore: readiness.github?.raw || 0
+  };
+  await User.updateOne({ _id: user._id }, { $set: { placementReadiness: readiness } });
 
   // Phase 2: Mandatory Accomplishments syncing
   if (!studentProfile.mandatoryAccomplishments) {
@@ -175,8 +182,8 @@ async function syncNormalizedProfiles(user, { lcData, ccData, gfgData, ghData, h
     if (!studentProfile.mandatoryAccomplishments.codingConsistency) {
       studentProfile.mandatoryAccomplishments.codingConsistency = {};
     }
-    studentProfile.mandatoryAccomplishments.codingConsistency.arraysSolved = lcData.arraysSolved || 0;
-    studentProfile.mandatoryAccomplishments.codingConsistency.stringsSolved = lcData.stringsSolved || 0;
+    studentProfile.mandatoryAccomplishments.codingConsistency.arraysSolved = lcData.topics?.arrays || 0;
+    studentProfile.mandatoryAccomplishments.codingConsistency.stringsSolved = lcData.topics?.strings || 0;
     studentProfile.mandatoryAccomplishments.codingConsistency.lastSyncedAt = new Date();
   }
 
@@ -272,6 +279,7 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
       platformStats.leetcode = {
         username: user.leetcodeUsername,
         problemsSolved: lcData.totalSolved,
+        totalSolved: lcData.totalSolved,
         easySolved: lcData.easySolved,
         mediumSolved: lcData.mediumSolved,
         hardSolved: lcData.hardSolved,
@@ -284,8 +292,23 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
         badgeCount: lcData.badgeCount || 0,
         recentSubmissions: lcData.recentSubmissions || [],
         acceptanceRate: lcData.acceptanceRate || 0,
+        topics: lcData.topics || {},
+        topicScores: lcData.topicScores || {},
+        activeDays: Object.keys(lcData.submissionCalendar || {}).length,
+        maxStreak: 0,
+        currentStreak: 0,
         contestHistory: []
       };
+
+      console.log("BACKEND VALIDATION - LeetCode Sync:", {
+        totalSolved: platformStats.leetcode.totalSolved,
+        easySolved: platformStats.leetcode.easySolved,
+        mediumSolved: platformStats.leetcode.mediumSolved,
+        hardSolved: platformStats.leetcode.hardSolved,
+        arrays: platformStats.leetcode.topics.arrays,
+        strings: platformStats.leetcode.topics.strings,
+        hashTable: platformStats.leetcode.topics.hashTable
+      });
 
       if (lcData.contestHistory && Array.isArray(lcData.contestHistory)) {
         const LeetCodeContestSnapshot = require('../models/LeetCodeContestSnapshot');
