@@ -317,7 +317,7 @@ function AnimatedNumber({ value, duration = 1000 }) {
 }
 
 const COLLEGES = [
-  'CBIT', 'VASAVI', 'MVSR', 'GRIET', 'VARDHAMAN', 'JNTU', 'GNWC', 'BVRIT', 'OU', 'KMIT', 'HCU', 'NIT', 'IIT', 'Loyola', 'Other'
+  'CBIT', 'VASAVI', 'VNR', 'MVSR', 'GRIET', 'VARDHAMAN', 'JNTU', 'GNWC', 'BVRIT', 'OU', 'KMIT', 'HCU', 'NIT', 'IIT', 'Loyola', 'Other'
 ];
 
 const HOSTELS = [

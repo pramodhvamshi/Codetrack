@@ -429,6 +429,7 @@ export function RegisterPage() {
                       <option value="">Select college</option>
                       <option>CBIT</option>
                       <option>VASAVI</option>
+                      <option>VNR</option>
                       <option>MVSR</option>
                       <option>GRIET</option>
                       <option>VARDHAMAN</option>
