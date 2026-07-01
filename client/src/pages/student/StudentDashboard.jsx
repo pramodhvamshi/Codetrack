@@ -385,10 +385,10 @@ export function StudentDashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>CGPA Score</span>
-                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${Math.round(((me.overallGpa || 0) / 10) * 100)} / 100` : 'Not Calculated'}</span>
+                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${Math.round(me.placementReadiness?.cgpa?.raw || 0)} / 100` : 'Not Calculated'}</span>
               </div>
               <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: `${hasSynced ? Math.round(((me.overallGpa || 0) / 10) * 100) : 0}%`, height: '100%', background: '#8B5CF6' }} />
+                <div style={{ width: `${hasSynced ? Math.round(me.placementReadiness?.cgpa?.raw || 0) : 0}%`, height: '100%', background: '#8B5CF6' }} />
               </div>
             </div>
 

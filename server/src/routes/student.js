@@ -111,7 +111,8 @@ router.get('/me', async (req, res) => {
       isOnboarded: user.isOnboarded,
       mssid: user.mssid,
       bio: user.bio,
-      graduationYear: user.graduationYear
+      graduationYear: user.graduationYear,
+      lastPlatformSyncAt: user.lastPlatformSyncAt
     });
   } catch (err) {
     console.error('Error fetching /me profile details:', err);
