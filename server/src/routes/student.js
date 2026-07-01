@@ -464,22 +464,32 @@ router.put('/me/profile/coding', async (req, res) => {
     const ghUsername = cleanStr(githubUsername);
     const hrUsername = cleanStr(hackerrankUsername);
 
-    // Validate
+    // Validate Existence & Uniqueness
+    const User = require('../models/User');
+
     if (lUsername && lUsername !== user.leetcodeUsername) {
+      const exists = await User.findOne({ leetcodeUsername: lUsername });
+      if (exists) return res.status(400).json({ message: 'LeetCode username is already linked to another account' });
       const isValid = await validateLeetCode(lUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username' });
+      if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
     }
     if (ccUsername && ccUsername !== user.codechefUsername) {
+      const exists = await User.findOne({ codechefUsername: ccUsername });
+      if (exists) return res.status(400).json({ message: 'CodeChef username is already linked to another account' });
       const isValid = await validateCodeChef(ccUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username' });
+      if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
     }
     if (gfgUser && gfgUser !== user.gfgUsername) {
+      const exists = await User.findOne({ gfgUsername: gfgUser });
+      if (exists) return res.status(400).json({ message: 'GeeksforGeeks username is already linked to another account' });
       const isValid = await validateGeeksforGeeks(gfgUser);
-      if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username' });
+      if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
     }
     if (ghUsername && ghUsername !== user.githubUsername) {
+      const exists = await User.findOne({ githubUsername: ghUsername });
+      if (exists) return res.status(400).json({ message: 'GitHub username is already linked to another account' });
       const isValid = await validateGitHub(ghUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username' });
+      if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
     }
 
     user.leetcodeUsername = lUsername || undefined;
@@ -630,10 +640,10 @@ router.put('/me/profile', async (req, res) => {
 
     if (trimmedLeetcode !== undefined && trimmedLeetcode !== user.leetcodeUsername) {
       if (trimmedLeetcode) {
+        const exists = await User.findOne({ leetcodeUsername: trimmedLeetcode });
+        if (exists) return res.status(400).json({ message: 'LeetCode username is already linked to another account' });
         const isValid = await validateLeetCode(trimmedLeetcode);
-        if (!isValid) {
-          return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
-        }
+        if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
         user.leetcodeUsername = trimmedLeetcode;
       } else {
         user.leetcodeUsername = undefined;
@@ -642,10 +652,10 @@ router.put('/me/profile', async (req, res) => {
 
     if (trimmedCodechef !== undefined && trimmedCodechef !== user.codechefUsername) {
       if (trimmedCodechef) {
+        const exists = await User.findOne({ codechefUsername: trimmedCodechef });
+        if (exists) return res.status(400).json({ message: 'CodeChef username is already linked to another account' });
         const isValid = await validateCodeChef(trimmedCodechef);
-        if (!isValid) {
-          return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
-        }
+        if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
         user.codechefUsername = trimmedCodechef;
       } else {
         user.codechefUsername = undefined;
@@ -654,10 +664,10 @@ router.put('/me/profile', async (req, res) => {
 
     if (trimmedGfg !== undefined && trimmedGfg !== user.gfgUsername) {
       if (trimmedGfg) {
+        const exists = await User.findOne({ gfgUsername: trimmedGfg });
+        if (exists) return res.status(400).json({ message: 'GeeksforGeeks username is already linked to another account' });
         const isValid = await validateGeeksforGeeks(trimmedGfg);
-        if (!isValid) {
-          return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
-        }
+        if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
         user.gfgUsername = trimmedGfg;
       } else {
         user.gfgUsername = undefined;
@@ -666,10 +676,10 @@ router.put('/me/profile', async (req, res) => {
 
     if (trimmedGithub !== undefined && trimmedGithub !== user.githubUsername) {
       if (trimmedGithub) {
+        const exists = await User.findOne({ githubUsername: trimmedGithub });
+        if (exists) return res.status(400).json({ message: 'GitHub username is already linked to another account' });
         const isValid = await validateGitHub(trimmedGithub);
-        if (!isValid) {
-          return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
-        }
+        if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
         user.githubUsername = trimmedGithub;
         user.githubUrl = `https://github.com/${trimmedGithub}`;
       } else {

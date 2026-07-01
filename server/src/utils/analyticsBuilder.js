@@ -68,7 +68,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '/LeetCode_logo_black.png',
       studentName: user.name,
       username: lc.username || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#F59E0B'
     };
     
@@ -99,7 +99,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '/codechef.svg',
       studentName: user.name,
       username: cc.username || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#ef4444'
     };
     
@@ -130,7 +130,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '/gfg.svg',
       studentName: user.name,
       username: gfg.username || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#22C55E'
     };
     
@@ -159,7 +159,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '/hackerrank.svg',
       studentName: user.name,
       username: hr.username || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#2EC866'
     };
     
@@ -181,7 +181,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '', 
       studentName: user.name,
       username: user.mssid || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#F59E0B'
     };
     
@@ -253,7 +253,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '',
       studentName: user.name,
       username: stats.leetcode?.username || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#3B82F6'
     };
     
@@ -277,7 +277,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '', 
       studentName: user.name,
       username: user.mssid || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#10B981'
     };
     
@@ -321,7 +321,7 @@ async function buildAnalyticsReport(studentId, reportType) {
       platformIcon: '', 
       studentName: user.name,
       username: user.mssid || '',
-      lastSynced: user.lastPlatformSyncAt || user.updatedAt,
+      lastSynced: user.lastPlatformSyncAt,
       color: '#8B5CF6'
     };
 

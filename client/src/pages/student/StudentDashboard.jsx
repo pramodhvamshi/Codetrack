@@ -167,6 +167,8 @@ export function StudentDashboard() {
     (lc.contestCount || 0) + 
     (cc.contestCount || 0);
 
+  const hasSynced = !!me.lastPlatformSyncAt;
+
   return (
     <AppShell active="student-dashboard">
       <div className={`${styles.dashboard} animate-fade-in`} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -236,7 +238,8 @@ export function StudentDashboard() {
                 <Award size={18} color="var(--accent-blue)" />
               </div>
               <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>
-                {Math.round(scores.competitiveIndex || 0)} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {config.COMPETITIVE_INDEX_MAX}</span>
+                {hasSynced ? Math.round(scores.competitiveIndex || 0) : 'Not Calculated'}
+                {hasSynced && <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}> / {config.COMPETITIVE_INDEX_MAX}</span>}
               </h1>
             </div>
 
@@ -255,7 +258,8 @@ export function StudentDashboard() {
                 <Flame size={18} color="var(--accent-orange)" />
               </div>
               <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>
-                🔥 {me.currentStreak || 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ {me.longestStreak || 0} days</span>
+                {hasSynced ? `🔥 ${me.currentStreak || 0}` : 'Not Calculated'}
+                {hasSynced && <span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 400 }}> / {me.longestStreak || 0} days</span>}
               </h1>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Days: {me.activeDaysCount || 0} total</p>
             </div>
@@ -265,8 +269,8 @@ export function StudentDashboard() {
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Consistency (30 Days)</span>
                 <Activity size={18} color="var(--accent-purple)" />
               </div>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{me.consistencyPercentage || 0}%</h1>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Activity score: {scores.activityScore || 0}</p>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0.5rem 0' }}>{hasSynced ? `${me.consistencyPercentage || 0}%` : 'Not Calculated'}</h1>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>{hasSynced ? `Activity score: ${scores.activityScore || 0}` : 'Activity score unavailable'}</p>
             </div>
 
           </div>
@@ -333,10 +337,10 @@ export function StudentDashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#F59E0B', fontWeight: 600 }}>Placement Readiness</span>
-                <span style={{ fontWeight: 800 }}>{me.placementReadiness?.finalScore || 0}%</span>
+                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${me.placementReadiness?.finalScore || 0}%` : 'Not Calculated'}</span>
               </div>
               <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: `${me.placementReadiness?.finalScore || 0}%`, height: '100%', background: '#F59E0B' }} />
+                <div style={{ width: `${hasSynced ? (me.placementReadiness?.finalScore || 0) : 0}%`, height: '100%', background: '#F59E0B' }} />
               </div>
             </div>
 
@@ -349,10 +353,10 @@ export function StudentDashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#3B82F6', fontWeight: 600 }}>DSA Score</span>
-                <span style={{ fontWeight: 800 }}>{me.placementReadiness?.dsa?.raw || 0} / 100</span>
+                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${me.placementReadiness?.dsa?.raw || 0} / 100` : 'Not Calculated'}</span>
               </div>
               <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: `${me.placementReadiness?.dsa?.raw || 0}%`, height: '100%', background: '#3B82F6' }} />
+                <div style={{ width: `${hasSynced ? (me.placementReadiness?.dsa?.raw || 0) : 0}%`, height: '100%', background: '#3B82F6' }} />
               </div>
             </div>
 
@@ -365,10 +369,10 @@ export function StudentDashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#10B981', fontWeight: 600 }}>Projects & Courses</span>
-                <span style={{ fontWeight: 800 }}>{Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2)} / 100</span>
+                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2)} / 100` : 'Not Calculated'}</span>
               </div>
               <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2)}%`, height: '100%', background: '#10B981' }} />
+                <div style={{ width: `${hasSynced ? Math.round(((me.placementReadiness?.projects?.raw || 0) + (me.placementReadiness?.courses?.raw || 0)) / 2) : 0}%`, height: '100%', background: '#10B981' }} />
               </div>
             </div>
 
@@ -381,10 +385,10 @@ export function StudentDashboard() {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.9rem', color: '#8B5CF6', fontWeight: 600 }}>CGPA Score</span>
-                <span style={{ fontWeight: 800 }}>{Math.round(((me.overallGpa || 0) / 10) * 100)} / 100</span>
+                <span style={{ fontWeight: 800, fontSize: hasSynced ? '1rem' : '0.8rem' }}>{hasSynced ? `${Math.round(((me.overallGpa || 0) / 10) * 100)} / 100` : 'Not Calculated'}</span>
               </div>
               <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.round(((me.overallGpa || 0) / 10) * 100)}%`, height: '100%', background: '#8B5CF6' }} />
+                <div style={{ width: `${hasSynced ? Math.round(((me.overallGpa || 0) / 10) * 100) : 0}%`, height: '100%', background: '#8B5CF6' }} />
               </div>
             </div>
 

@@ -159,6 +159,15 @@ const AnalyticsModal = ({ isOpen, onClose, reportType }) => {
               </div>
             </div>
           ) : report && report.metadata ? (
+            !report.summary.lastSynced ? (
+              <div className="am-emptyState" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                  <TrendingUp size={48} color={report.summary.color || 'var(--text-muted)'} opacity={0.5} />
+                </div>
+                <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Analytics Unavailable</h3>
+                <p style={{ maxWidth: '400px', lineHeight: '1.6' }}>Detailed analytics will be generated automatically after your first successful profile sync.</p>
+              </div>
+            ) : (
             <div className="am-reportContainer">
               
               {/* 1. HERO SECTION (COMPACT) */}
@@ -379,8 +388,8 @@ const AnalyticsModal = ({ isOpen, onClose, reportType }) => {
                   )}
                 </div>
               )}
-
             </div>
+            )
           ) : null}
         </div>
 
