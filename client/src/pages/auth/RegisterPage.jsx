@@ -461,6 +461,7 @@ export function RegisterPage() {
                       <option>Nagergul</option>
                       <option>Shamshabad</option>
                       <option>Loyola</option>
+                      <option>Campus Hostel</option>
                     </select>
                   </div>
                 </div>

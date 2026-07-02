@@ -1147,7 +1147,7 @@ export function StudentProfileEdit({ tab }) {
                       onChange={(e) => handlePersonalChange('hostelName', e.target.value)}
                     >
                       <option value="">Select Hostel</option>
-                      {['Mehdipatnam', 'Kukatpally', 'Uppal', 'Nagergul', 'Shamshabad', 'Loyola', 'Other'].map(h => (
+                      {['Mehdipatnam', 'Kukatpally', 'Uppal', 'Nagergul', 'Shamshabad', 'Loyola', 'Campus Hostel', 'Other'].map(h => (
                         <option key={h} value={h}>{h}</option>
                       ))}
                     </select>

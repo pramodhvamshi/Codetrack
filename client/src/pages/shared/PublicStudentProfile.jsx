@@ -321,7 +321,7 @@ const COLLEGES = [
 ];
 
 const HOSTELS = [
-  'Mehdipatnam', 'Kukatpally', 'Uppal', 'Nagergul', 'Shamshabad', 'Loyola'
+  'Mehdipatnam', 'Kukatpally', 'Uppal', 'Nagergul', 'Shamshabad', 'Loyola', 'Campus Hostel'
 ];
 
 const BRANCHES = [
