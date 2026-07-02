@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cheerio = require('cheerio');
 
 // In-memory cache (TTL: 5 minutes)
 const cache = new Map();
@@ -44,14 +45,62 @@ async function fetchCodeChefProfile(username, force = false) {
         throw new Error(`Parsed rating ${currentRating} is impossibly high.`);
       }
 
+      let problemsSolved = data.problemSolved ? Number(data.problemSolved) : null;
+
+      if (problemsSolved === null || isNaN(problemsSolved) || problemsSolved === 0) {
+        try {
+          const scrapeRes = await axios.get(`https://www.codechef.com/users/${encodeURIComponent(username)}`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            timeout: 10000
+          });
+          const html = String(scrapeRes.data);
+          const $ = cheerio.load(html);
+          
+          let extracted = null;
+          // Try Cheerio first
+          $('section.rating-data-section h3').each(function() {
+            const text = $(this).text();
+            if (text.includes('Total Problems Solved')) {
+              const num = text.match(/\d+/);
+              if (num) extracted = Number(num[0]);
+            }
+          });
+          
+          // Regex fallback
+          if (extracted === null || isNaN(extracted)) {
+            const match = html.match(/Total Problems Solved[^0-9]*(\d+)/i);
+            if (match && match[1]) {
+              extracted = Number(match[1]);
+            }
+          }
+          
+          if (extracted !== null && !isNaN(extracted)) {
+            problemsSolved = extracted;
+          }
+        } catch (scrapeErr) {
+          console.warn(`CodeChef HTML scrape failed for ${username}: ${scrapeErr.message}`);
+        }
+      }
+
+      problemsSolved = problemsSolved || 0; // Final safety fallback
+
       const formatted = {
-        problemsSolved: Number(data.problemSolved || 0),
+        problemsSolved,
         currentRating,
         highestRating,
         globalRank,
         countryRank: data.rating?.countryRank || 'Inactive',
         contestCount
       };
+
+      console.log({
+        rating: formatted.currentRating,
+        highestRating: formatted.highestRating,
+        globalRank: formatted.globalRank,
+        countryRank: formatted.countryRank,
+        contestCount: formatted.contestCount,
+        problemsSolved: formatted.problemsSolved
+      });
 
       cache.set(username, { timestamp: now, data: formatted });
       return formatted;

@@ -454,17 +454,27 @@ export function StudentProfileEdit({ tab }) {
       validatePhone(profileData.communicationMentor, 'Communication Skills Mentor');
       validatePhone(profileData.projectMentor, 'Project Mentor');
 
+      if (profileData.goal === 'Placement & Paid Internship Track' && !profileData.interestedDomain) {
+        throw new Error('Interested Domain is mandatory when Placement & Paid Internship Track is selected.');
+      }
+
       const payload = {
         personalDetails: profileData.personalDetails,
         familyDetails: profileData.familyDetails,
         goal: profileData.goal,
+        interestedDomain: profileData.interestedDomain,
         collegeMentor: profileData.collegeMentor,
         academicMentor: profileData.academicMentor,
         codingMentor: profileData.codingMentor,
         communicationMentor: profileData.communicationMentor,
         projectMentor: profileData.projectMentor
       };
-      await api.putJson('/student/me/profile/personal', payload, token);
+      const res = await api.putJson('/student/me/profile/personal', payload, token);
+      
+      if (res && res.profileCompletion !== undefined) {
+        setProfileData(prev => ({ ...prev, profileCompletion: res.profileCompletion }));
+      }
+      
       toast.success('Personal details saved successfully!');
       
       // Update context user if fields changed
@@ -497,7 +507,12 @@ export function StudentProfileEdit({ tab }) {
         certifications: profileData.certifications,
         hackathons: profileData.hackathons || []
       };
-      await api.putJson('/student/me/profile/professional', payload, token);
+      const res = await api.putJson('/student/me/profile/professional', payload, token);
+      
+      if (res && res.profileCompletion !== undefined) {
+        setProfileData(prev => ({ ...prev, profileCompletion: res.profileCompletion }));
+      }
+      
       toast.success('Professional details saved successfully!');
     } catch (err) {
       console.error(err);
@@ -642,7 +657,12 @@ export function StudentProfileEdit({ tab }) {
       }
 
       const res = await api.putJson('/student/me/profile/academic', payload, token);
-      toast.success('Academic Details Updated Successfully');
+      
+      if (res && res.profileCompletion !== undefined) {
+        setProfileData(prev => ({ ...prev, profileCompletion: res.profileCompletion }));
+      }
+      
+      toast.success('Academic details saved successfully!');
       setAcademicForm(prev => ({
         ...prev,
         academicStatus: res.academicStatus || prev.academicStatus
@@ -1173,7 +1193,13 @@ export function StudentProfileEdit({ tab }) {
                   <select
                     className="settings-select"
                     value={profileData.goal || ''}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, goal: e.target.value || null }))}
+                    onChange={(e) => {
+                      const newGoal = e.target.value || null;
+                      setProfileData(prev => ({ 
+                        ...prev, 
+                        goal: newGoal
+                      }));
+                    }}
                   >
                     <option value="">No Track Selected</option>
                     <option value="Placement & Paid Internship Track">Placement & Paid Internship Track</option>
@@ -1182,6 +1208,24 @@ export function StudentProfileEdit({ tab }) {
                     <option value="Both Placement and GATE">Both Placement and GATE</option>
                   </select>
                 </div>
+                
+                {profileData.goal === 'Placement & Paid Internship Track' && (
+                  <div className="settings-form-group" style={{ marginTop: '1rem' }}>
+                    <label>Interested Domain <span style={{color: '#9ca3af', fontSize: '0.8rem'}}>(Required for Placement Track)</span></label>
+                    <select
+                      className="settings-select"
+                      value={profileData.interestedDomain || ''}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, interestedDomain: e.target.value || null }))}
+                    >
+                      <option value="">Select Domain</option>
+                      <option value="Java Stack Development">Java Stack Development</option>
+                      <option value="Artificial Intelligence">Artificial Intelligence</option>
+                      <option value="Cybersecurity">Cybersecurity</option>
+                      <option value="Data Science">Data Science</option>
+                      <option value="Internet of Things (IoT)">Internet of Things (IoT)</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* MENTOR DETAILS SECTION */}

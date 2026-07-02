@@ -24,20 +24,7 @@ function getPlatformLabel(p) {
   return map[p] || p;
 }
 
-function computeProfileCompletion(s) {
-  if (!s || !s.profile) return 0;
-  const p = s.profile;
-  const checks = [
-    p.name, p.college, p.branch, p.graduationYear, p.hostel,
-    p.leetcodeUsername, p.codechefUsername, p.gfgUsername,
-    p.githubUsername,
-    p.projects?.length > 0,
-    p.certifications?.length > 0,
-    p.achievements?.length > 0,
-    p.linkedinUrl,
-  ];
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-}
+
 
 function computePlacementReadiness(s) {
   if (!s || !s.profile) return { score: 0, strengths: [], improve: [] };
@@ -276,7 +263,7 @@ function computeAutoAchievements(s) {
   else if ((p.longestStreak || 0) >= 30) badges.push({ icon: '🔥', title: '30 Day Streak', desc: 'Excellent habit', color: '#F59E0B' });
   else if ((p.currentStreak || 0) >= 7) badges.push({ icon: '⚡', title: '7 Day Streak', desc: 'On a roll!', color: '#22C55E' });
 
-  if ((lc.contestRating || 0) >= 2000) badges.push({ icon: '👑', title: 'LeetCode Knight+', desc: `Rating ${lc.contestRating}`, color: '#F59E0B' });
+  if ((lc.contestRating || 0) >= 1800) badges.push({ icon: '👑', title: 'LeetCode Knight+', desc: `Rating ${lc.contestRating}`, color: '#F59E0B' });
   else if ((lc.contestRating || 0) >= 1500) badges.push({ icon: '⚔️', title: 'LeetCode Guardian', desc: `Rating ${lc.contestRating}`, color: '#3B82F6' });
 
   if (hr.skills && hr.skills.length > 0) {
@@ -555,7 +542,7 @@ export function PublicStudentProfile() {
   const scores = profile?.scores || {};
 
   const totalSolved = (lc.totalSolved || 0) + (cc.problemsSolved || 0) + (gfg.totalProblemsSolved || 0) + (hr.totalProblemsSolved || 0);
-  const profileCompletion = computeProfileCompletion(student);
+  const profileCompletion = profile.profileCompletion || 0;
   const readiness = computePlacementReadiness(student);
   const autoAchievements = computeAutoAchievements(student);
 
@@ -703,6 +690,7 @@ export function PublicStudentProfile() {
                 {profile.goal && (
                   <div style={{ fontSize: '0.88rem', color: '#60a5fa', fontWeight: 600, marginTop: '0.2rem' }}>
                     Track: {profile.goal}
+                    {profile.interestedDomain && ` • Domain: ${profile.interestedDomain}`}
                   </div>
                 )}
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>

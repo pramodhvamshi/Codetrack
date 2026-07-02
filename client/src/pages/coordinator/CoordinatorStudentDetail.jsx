@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
+import { formatPercentage } from '../../utils/formatters';
 
 export function CoordinatorStudentDetail() {
   const { token } = useAuth();
@@ -349,7 +350,7 @@ export function CoordinatorStudentDetail() {
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Overall Readiness</span>
                   <h2 style={{ margin: '0.5rem 0', color: 'var(--accent-orange)', fontSize: '2rem', fontWeight: '800' }}>
-                    {student.readinessProfile?.overallReadiness ?? 0}%
+                    {formatPercentage(student.readinessProfile?.overallReadiness)}
                   </h2>
                   <div style={{ width: '100%', background: 'rgba(255, 255, 255, 0.1)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${student.readinessProfile?.overallReadiness ?? 0}%`, background: 'var(--accent-orange)', height: '100%' }} />
@@ -359,7 +360,7 @@ export function CoordinatorStudentDetail() {
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>DSA Score</span>
                   <h2 style={{ margin: '0.5rem 0', color: 'var(--accent-blue)', fontSize: '2rem', fontWeight: '800' }}>
-                    {student.readinessProfile?.dsaScore ?? 0}%
+                    {formatPercentage(student.readinessProfile?.dsaScore)}
                   </h2>
                   <div style={{ width: '100%', background: 'rgba(255, 255, 255, 0.1)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${student.readinessProfile?.dsaScore ?? 0}%`, background: 'var(--accent-blue)', height: '100%' }} />
@@ -369,7 +370,7 @@ export function CoordinatorStudentDetail() {
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Projects Score</span>
                   <h2 style={{ margin: '0.5rem 0', color: 'var(--accent-green)', fontSize: '2rem', fontWeight: '800' }}>
-                    {student.readinessProfile?.projectsScore ?? 0}%
+                    {formatPercentage(student.readinessProfile?.projectsScore)}
                   </h2>
                   <div style={{ width: '100%', background: 'rgba(255, 255, 255, 0.1)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${student.readinessProfile?.projectsScore ?? 0}%`, background: 'var(--accent-green)', height: '100%' }} />
@@ -379,7 +380,7 @@ export function CoordinatorStudentDetail() {
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Resume Score</span>
                   <h2 style={{ margin: '0.5rem 0', color: 'var(--accent-purple)', fontSize: '2rem', fontWeight: '800' }}>
-                    {student.readinessProfile?.resumeScore ?? 0}%
+                    {formatPercentage(student.readinessProfile?.resumeScore)}
                   </h2>
                   <div style={{ width: '100%', background: 'rgba(255, 255, 255, 0.1)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${student.readinessProfile?.resumeScore ?? 0}%`, background: 'var(--accent-purple)', height: '100%' }} />
@@ -389,7 +390,7 @@ export function CoordinatorStudentDetail() {
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Profile Score</span>
                   <h2 style={{ margin: '0.5rem 0', color: '#10b981', fontSize: '2rem', fontWeight: '800' }}>
-                    {student.readinessProfile?.profileScore ?? student.profileCompletion ?? 0}%
+                    {formatPercentage(student.readinessProfile?.profileScore ?? student.profileCompletion)}
                   </h2>
                   <div style={{ width: '100%', background: 'rgba(255, 255, 255, 0.1)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${student.readinessProfile?.profileScore ?? student.profileCompletion ?? 0}%`, background: '#10b981', height: '100%' }} />
@@ -590,7 +591,10 @@ export function CoordinatorStudentDetail() {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem' }}>
                   {student.goal && (
-                    <span style={{ color: '#60a5fa' }}>🎯 Selected Goal / Track: <strong>{student.goal}</strong></span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                      <span style={{ color: '#60a5fa' }}>🎯 Selected Goal / Track: <strong>{student.goal}</strong></span>
+                      <span style={{ color: '#a78bfa', paddingLeft: '1.4rem' }}>Interested Domain: <strong>{student.interestedDomain || 'Not Selected'}</strong></span>
+                    </div>
                   )}
                   <span>🏫 College: <strong>{student.personalDetails?.college || student.college || '—'}</strong></span>
                   <span>💻 Branch: <strong>{student.personalDetails?.branch || student.branch || '—'}</strong></span>

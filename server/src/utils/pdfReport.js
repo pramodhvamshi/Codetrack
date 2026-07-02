@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const { calculateMandatoryScores } = require('./mandatoryAccomplishmentsUtils');
+const { formatPercentage } = require('./formatters');
 
 // =========================================================
 // UTILITIES & CONSTANTS
@@ -317,6 +318,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     addProfileRow("Section:", pd.section, 70);
     addProfileRow("Email:", student.email, 84);
     addProfileRow("Track / Goal:", profile?.goal, 98);
+    addProfileRow("Interested Domain:", profile?.interestedDomain || 'Not Selected', 112);
 
     const photoX = margin + 355;
     doc.rect(photoX, topY, 160, 150).fillColor(COLORS.CARD_BG).fill();
@@ -345,7 +347,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     const cardWidth = (contentWidth - 30) / 4; 
     const cardHeight = 85;
     
-    drawInfoCard(doc, "Placement Readiness", `${formatNum(rpFinalScore)}%`, margin, gridY, cardWidth, cardHeight, COLORS.WARNING);
+    drawInfoCard(doc, "Placement Readiness", formatPercentage(rpFinalScore), margin, gridY, cardWidth, cardHeight, COLORS.WARNING);
     drawInfoCard(doc, "DSA Score", formatNum(dsaRawScore), margin + cardWidth + 10, gridY, cardWidth, cardHeight, COLORS.DANGER);
     drawInfoCard(doc, "CGPA", formatNum(academic.cgpa || student.overallGpa), margin + (cardWidth + 10) * 2, gridY, cardWidth, cardHeight, COLORS.SUCCESS);
     drawInfoCard(doc, "LeetCode Rating", String(Math.round(lc.rating || 0)), margin + (cardWidth + 10) * 3, gridY, cardWidth, cardHeight, COLORS.ACCENT);
@@ -382,7 +384,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     const evalRows = [
       ["DSA Level", `${mentorship.dsaLevel || 'Intermediate'} (${formatNum(dsaRawScore)}/100)`],
       ["Placement Readiness", `${mentorship.readinessLevel || 'Foundation'}`],
-      ["Placement Score", `${formatNum(rpFinalScore)}%`],
+      ["Placement Score", formatPercentage(rpFinalScore)],
       ["Status", statusText]
     ];
     

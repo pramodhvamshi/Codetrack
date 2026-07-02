@@ -235,7 +235,9 @@ router.get('/filters', authMiddleware, async (req, res) => {
     const students = await User.find({ role: 'student', isOnboarded: true }).select('college hostel branch currentYear year');
     const colleges = [...new Set(students.map(s => s.college).filter(Boolean))].sort();
     const hostels = [...new Set(students.map(s => s.hostel).filter(Boolean))].sort();
-    const branches = [...new Set(students.map(s => s.branch).filter(Boolean))].sort();
+    const baseBranches = ['CSE', 'CSB', 'CSD', 'CSM', 'AIML', 'IT', 'AIDS', 'ECE', 'CSE-IoT', 'CSC (Cybersecurity)'];
+    const dbBranches = students.map(s => s.branch).filter(Boolean);
+    const branches = [...new Set([...baseBranches, ...dbBranches])].sort();
     const years = [...new Set(students.map(s => s.currentYear || mapLegacyYearToEnum(s.year)).filter(Boolean))].sort();
     
     const config = require('../config/env');
@@ -317,6 +319,7 @@ router.get('/', authMiddleware, async (req, res) => {
     ];
     const finalSortBy = validSortKeys.includes(sortBy) ? sortBy : 'scores.competitiveIndex';
     sort[finalSortBy] = sortOrder === 'asc' ? 1 : -1;
+    sort['_id'] = 1; // Deterministic tie-breaker for consistent pagination
 
     const pageInt = Math.max(1, parseInt(page, 10));
     const limitInt = Math.max(1, Math.min(1000, parseInt(limit, 10)));

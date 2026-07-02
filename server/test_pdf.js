@@ -1,40 +1,34 @@
 const mongoose = require('mongoose');
-const { syncPlatformsForUser } = require('./src/services/platformSyncService');
-const { buildStudentReportPdf } = require('./src/utils/pdfReport');
 const User = require('./src/models/User');
 const StudentProfile = require('./src/models/StudentProfile');
-const CodingProfile = require('./src/models/CodingProfile');
+const { buildStudentReportPdf } = require('./src/utils/pdfReport');
 const fs = require('fs');
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
-async function testPdf() {
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log("Connected to MongoDB.");
-
-  // Get first user with leetcode username
-  const user = await User.findOne({ leetcodeUsername: { $ne: null } });
-  if (!user) {
-    console.log("No user found.");
-    process.exit(1);
+async function run() {
+  await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/codetrack');
+  
+  // Find a user with a domain
+  const profileWithDomain = await StudentProfile.findOne({ interestedDomain: { $ne: null } });
+  if (profileWithDomain) {
+    const user1 = await User.findById(profileWithDomain.userId);
+    const pdf1 = await buildStudentReportPdf(user1, profileWithDomain, null, {});
+    fs.writeFileSync('test1.pdf', pdf1);
+    console.log('Saved test1.pdf with domain:', profileWithDomain.interestedDomain);
   }
 
-  console.log("Syncing platforms for user:", user.email);
-  const updatedUser = await syncPlatformsForUser(user, { force: true });
-  console.log("Sync complete.");
+  // Find a user without a domain
+  const profileWithoutDomain = await StudentProfile.findOne({ interestedDomain: null, goal: 'Placement & Paid Internship Track' });
+  if (profileWithoutDomain) {
+    const user2 = await User.findById(profileWithoutDomain.userId);
+    const pdf2 = await buildStudentReportPdf(user2, profileWithoutDomain, null, {});
+    fs.writeFileSync('test2.pdf', pdf2);
+    console.log('Saved test2.pdf without domain');
+  }
 
-  const studentProfile = await StudentProfile.findOne({ userId: user._id });
-  const codingProfile = await CodingProfile.findOne({ userId: user._id });
-
-  const pdfBuffer = await buildStudentReportPdf(updatedUser, studentProfile, codingProfile);
-
-  fs.writeFileSync('test_report.pdf', pdfBuffer);
-  console.log("PDF saved to test_report.pdf");
-
+  console.log('Done');
   process.exit(0);
 }
 
-testPdf().catch(e => {
-  console.error(e);
-  process.exit(1);
-});
+run().catch(console.error);

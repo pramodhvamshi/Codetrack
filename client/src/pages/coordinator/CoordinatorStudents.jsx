@@ -257,9 +257,17 @@ export function CoordinatorStudents() {
                       </div>
                       <span className={styles.cardScore}>{score}</span>
                     </div>
-                    <div className={styles.cardDetails}>
-                      <span>{student.branch}</span>
-                      <span>Year {student.year}</span>
+                    <div className={styles.cardDetails} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', width: '100%', justifyContent: 'space-between' }}>
+                        <span>{student.branch}</span>
+                        <span>Year {student.year}</span>
+                      </div>
+                      {student.goal && (
+                        <div style={{ color: '#60a5fa', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          <span><strong>Track:</strong> {student.goal}</span>
+                          <span style={{ color: '#a78bfa' }}><strong>Domain:</strong> {student.interestedDomain || 'Not Selected'}</span>
+                        </div>
+                      )}
                     </div>
                     <div className={styles.platformBadges} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
                       <div style={{ display: 'flex', gap: '0.2rem' }}>

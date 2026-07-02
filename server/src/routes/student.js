@@ -99,6 +99,7 @@ router.get('/me', async (req, res) => {
       readinessProfile: profile.readinessProfile || {},
       hackathons: profile.hackathons || [],
       goal: profile.goal || null,
+      interestedDomain: profile.interestedDomain || null,
       collegeMentor: profile.collegeMentor || {},
       academicMentor: profile.academicMentor || {},
       codingMentor: profile.codingMentor || {},
@@ -138,6 +139,7 @@ router.get('/me/profile/personal', async (req, res) => {
         },
         familyDetails: { parentStatus: 'Both Parents', father: { name: "", occupation: "", education: "", mobile: "" }, mother: { name: "", occupation: "", education: "", mobile: "" }, siblings: [] },
         goal: null,
+        interestedDomain: null,
         collegeMentor: {},
         academicMentor: {},
         codingMentor: {},
@@ -149,6 +151,7 @@ router.get('/me/profile/personal', async (req, res) => {
       personalDetails: profile.personalDetails,
       familyDetails: profile.familyDetails,
       goal: profile.goal || null,
+      interestedDomain: profile.interestedDomain || null,
       collegeMentor: profile.collegeMentor || {},
       academicMentor: profile.academicMentor || {},
       codingMentor: profile.codingMentor || {},
@@ -170,6 +173,7 @@ router.put('/me/profile/personal', async (req, res) => {
       personalDetails,
       familyDetails,
       goal,
+      interestedDomain,
       collegeMentor,
       academicMentor,
       codingMentor,
@@ -244,6 +248,12 @@ router.put('/me/profile/personal', async (req, res) => {
 
     if (goal !== undefined) {
       profile.goal = goal;
+      
+      if (interestedDomain !== undefined) {
+        profile.interestedDomain = interestedDomain;
+      }
+    } else if (interestedDomain !== undefined) {
+      profile.interestedDomain = interestedDomain;
     }
     if (collegeMentor !== undefined) {
       profile.collegeMentor = collegeMentor;
@@ -274,11 +284,13 @@ router.put('/me/profile/personal', async (req, res) => {
       personalDetails: profile.personalDetails,
       familyDetails: profile.familyDetails,
       goal: profile.goal,
+      interestedDomain: profile.interestedDomain,
       collegeMentor: profile.collegeMentor,
       academicMentor: profile.academicMentor,
       codingMentor: profile.codingMentor,
       communicationMentor: profile.communicationMentor,
-      projectMentor: profile.projectMentor
+      projectMentor: profile.projectMentor,
+      profileCompletion: profile.profileCompletion
     });
   } catch (err) {
     console.error(err);
@@ -348,7 +360,8 @@ router.put('/me/profile/professional', async (req, res) => {
       projects: profile.projects,
       experiences: profile.experiences,
       certifications: profile.certifications,
-      hackathons: profile.hackathons
+      hackathons: profile.hackathons,
+      profileCompletion: profile.profileCompletion
     });
   } catch (err) {
     console.error(err);

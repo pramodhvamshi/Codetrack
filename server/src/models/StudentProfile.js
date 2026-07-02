@@ -77,6 +77,21 @@ const StudentProfileSchema = new mongoose.Schema({
     ],
     default: null
   },
+  
+  interestedDomain: {
+    type: String,
+    enum: [
+      'Java Stack Development',
+      'Artificial Intelligence',
+      'Cybersecurity',
+      'Data Science',
+      'Internet of Things (IoT)'
+    ],
+    default: null,
+    required: function() {
+      return this.goal === 'Placement & Paid Internship Track';
+    }
+  },
 
   collegeMentor: { type: MentorSchema, default: () => ({}) },
   academicMentor: { type: MentorSchema, default: () => ({}) },

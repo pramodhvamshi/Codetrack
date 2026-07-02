@@ -30,6 +30,11 @@ async function buildResumePdfBuffer(user, options = {}) {
     const academic = await AcademicProfile.findOne({ userId: user._id });
     const resolvedGpa = academic?.cgpa != null ? String(academic.cgpa) : (user.overallGpa != null ? String(user.overallGpa) : '');
 
+    const StudentProfile = require('../models/StudentProfile');
+    const studentProfile = await StudentProfile.findOne({ userId: user._id });
+    const goalStr = studentProfile?.goal || '';
+    const domainStr = studentProfile?.interestedDomain || '';
+
     content = {
       personalDetails: {
         name: user.name || '',
@@ -38,7 +43,9 @@ async function buildResumePdfBuffer(user, options = {}) {
         githubUrl: user.githubUrl || (user.githubUsername ? `https://github.com/${user.githubUsername}` : ''),
         linkedinUrl: user.linkedinUrl || '',
         portfolioUrl: '',
-        summary: 'Motivated student eager to apply competitive technical capabilities.'
+        summary: 'Motivated student eager to apply competitive technical capabilities.',
+        goal: goalStr,
+        interestedDomain: domainStr
       },
       education: [
         {
@@ -148,6 +155,13 @@ async function buildResumePdfBuffer(user, options = {}) {
 
       doc.font('Helvetica').fontSize(8.5).fillColor(COLOR_MUTED)
          .text(contactParts.join('  |  '), { align: 'center' });
+
+      if (pd.goal) {
+        doc.moveDown(0.2);
+        const goalStr = pd.interestedDomain ? `${pd.goal} (${pd.interestedDomain})` : pd.goal;
+        doc.font('Helvetica-Oblique').fontSize(8.5).fillColor(COLOR_HEADING)
+           .text(goalStr, { align: 'center' });
+      }
 
       if (pd.summary) {
         doc.moveDown(0.3);

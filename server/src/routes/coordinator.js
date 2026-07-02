@@ -245,9 +245,11 @@ router.get('/students', async (req, res) => {
     const ResumeFile = require('../models/ResumeFile');
     
     const studentIds = students.map(s => s._id);
-    const [defaultVersions, defaultFiles] = await Promise.all([
+    const StudentProfile = require('../models/StudentProfile');
+    const [defaultVersions, defaultFiles, studentProfiles] = await Promise.all([
       ResumeVersion.find({ userId: { $in: studentIds }, isDefault: true }),
-      ResumeFile.find({ userId: { $in: studentIds }, isDefault: true })
+      ResumeFile.find({ userId: { $in: studentIds }, isDefault: true }),
+      StudentProfile.find({ userId: { $in: studentIds } }, 'userId goal interestedDomain')
     ]);
 
     // Construct the pipeline stages before sort/skip/limit for summary metrics
@@ -329,6 +331,7 @@ router.get('/students', async (req, res) => {
 
     const versionsMap = new Map(defaultVersions.map(v => [String(v.userId), v]));
     const filesMap = new Map(defaultFiles.map(f => [String(f.userId), f]));
+    const profilesMap = new Map(studentProfiles.map(p => [String(p.userId), p]));
 
     const studentsList = students.map((s) => {
       const dVersion = versionsMap.get(String(s._id));
@@ -340,6 +343,8 @@ router.get('/students', async (req, res) => {
       } else if (dVersion) {
         resumeInfo = { hasResume: true, score: dVersion.completenessScore || 0, atsScore: dVersion.atsScore || 70, type: 'builder', id: dVersion._id };
       }
+      
+      const sp = profilesMap.get(String(s._id));
 
       return {
         id: s._id,
@@ -364,7 +369,9 @@ router.get('/students', async (req, res) => {
           codechef: !!s.codechefUsername,
           hackerrank: !!(s.hackerrank && s.hackerrank.username)
         },
-        resumeInfo
+        resumeInfo,
+        goal: sp?.goal || null,
+        interestedDomain: sp?.interestedDomain || null
       };
     });
 
@@ -403,8 +410,8 @@ router.get('/export-data', async (req, res) => {
     const students = await User.find({ role: 'student', isOnboarded: true }).sort({ name: 1 });
 
     const StudentProfile = require('../models/StudentProfile');
-    const profiles = await StudentProfile.find({}, 'userId goal');
-    const profileMap = new Map(profiles.map(p => [String(p.userId), p.goal]));
+    const profiles = await StudentProfile.find({}, 'userId goal interestedDomain');
+    const profileMap = new Map(profiles.map(p => [String(p.userId), p]));
 
     const exportData = students.map(s => {
       const lc = s.platformStats?.leetcode || {};
@@ -438,7 +445,8 @@ router.get('/export-data', async (req, res) => {
         GitHubUsername: s.githubUsername || '',
         GitHubRepos: gh.reposCount || 0,
         GitHubContributions: gh.contributions?.length || 0,
-        Goal: profileMap.get(String(s._id)) || ''
+        Goal: profileMap.get(String(s._id))?.goal || '',
+        InterestedDomain: profileMap.get(String(s._id))?.interestedDomain || ''
       };
     });
 
@@ -520,6 +528,7 @@ router.get('/students/:id', async (req, res) => {
       profileCompletion: profile?.profileCompletion || 0,
       readinessProfile: profile?.readinessProfile || {},
       goal: profile?.goal || null,
+      interestedDomain: profile?.interestedDomain || null,
       collegeMentor: profile?.collegeMentor || {},
       academicMentor: profile?.academicMentor || {},
       codingMentor: profile?.codingMentor || {},

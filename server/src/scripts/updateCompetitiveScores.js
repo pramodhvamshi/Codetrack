@@ -22,6 +22,7 @@ async function run() {
       });
 
       student.scores = scores;
+      student.markModified('scores');
       await student.save();
       
       updatedCount++;

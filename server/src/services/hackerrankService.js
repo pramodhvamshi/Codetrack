@@ -6,10 +6,10 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 
 function parseBadge(badge) {
   return {
-    solved: Number(badge.solved || 0),
-    stars: Number(badge.stars || 0),
-    rank: Number(badge.hacker_rank || 0),
-    points: Number(badge.total_points || 0)
+    solved: badge.solved !== undefined ? Number(badge.solved) : null,
+    stars: badge.stars !== undefined ? Number(badge.stars) : null,
+    rank: badge.hacker_rank !== undefined ? Number(badge.hacker_rank) : null,
+    points: badge.total_points !== undefined ? Number(badge.total_points) : null
   };
 }
 
@@ -19,27 +19,31 @@ const formatData = (profile, badgesData, username) => {
 
   const result = {
     username,
-    avatar: model.avatar || "",
-    country: model.country || "",
+    avatar: model.avatar || null,
+    country: model.country || null,
     profileUrl: `https://www.hackerrank.com/profile/${username}`,
     problemSolving: {
-      solved: 0,
-      totalChallenges: 0,
-      stars: 0,
-      rank: 0,
-      points: 0
+      solved: null,
+      totalChallenges: null,
+      stars: null,
+      rank: null,
+      points: null
     },
-    python: { solved: 0, stars: 0, rank: 0, points: 0 },
-    sql: { solved: 0, stars: 0, rank: 0, points: 0 },
-    c: { solved: 0, stars: 0, rank: 0, points: 0 },
-    cpp: { solved: 0, stars: 0, rank: 0, points: 0 },
-    java: { solved: 0, stars: 0, rank: 0, points: 0 },
-    javascript: { solved: 0, stars: 0, rank: 0, points: 0 },
-    ruby: { solved: 0, stars: 0, rank: 0, points: 0 },
-    daysOfCode: { solved: 0, stars: 0, rank: 0, points: 0 },
-    daysOfJS: { solved: 0, stars: 0, rank: 0, points: 0 },
-    daysOfStatistics: { solved: 0, stars: 0, rank: 0, points: 0 },
-    react: { solved: 0, stars: 0, rank: 0, points: 0 }
+    python: { solved: null, stars: null, rank: null, points: null },
+    sql: { solved: null, stars: null, rank: null, points: null },
+    c: { solved: null, stars: null, rank: null, points: null },
+    cpp: { solved: null, stars: null, rank: null, points: null },
+    java: { solved: null, stars: null, rank: null, points: null },
+    javascript: { solved: null, stars: null, rank: null, points: null },
+    ruby: { solved: null, stars: null, rank: null, points: null },
+    daysOfCode: { solved: null, stars: null, rank: null, points: null },
+    daysOfJS: { solved: null, stars: null, rank: null, points: null },
+    daysOfStatistics: { solved: null, stars: null, rank: null, points: null },
+    react: { solved: null, stars: null, rank: null, points: null },
+    totalCertifications: Array.isArray(model.certificates) ? model.certificates.length : null,
+    certificates: model.certificates || null,
+    skills: model.skills || null,
+    lastSynced: new Date()
   };
 
   for (const b of badges) {
@@ -120,21 +124,25 @@ async function fetchHackerRankProfile(username, force = false) {
         // Return fallback
         return {
           username,
-          avatar: "",
-          country: "",
+          avatar: null,
+          country: null,
           profileUrl: `https://www.hackerrank.com/profile/${username}`,
-          problemSolving: { solved: 0, totalChallenges: 0, stars: 0, rank: 0, points: 0 },
-          python: { solved: 0, stars: 0, rank: 0, points: 0 },
-          sql: { solved: 0, stars: 0, rank: 0, points: 0 },
-          c: { solved: 0, stars: 0, rank: 0, points: 0 },
-          cpp: { solved: 0, stars: 0, rank: 0, points: 0 },
-          java: { solved: 0, stars: 0, rank: 0, points: 0 },
-          javascript: { solved: 0, stars: 0, rank: 0, points: 0 },
-          ruby: { solved: 0, stars: 0, rank: 0, points: 0 },
-          daysOfCode: { solved: 0, stars: 0, rank: 0, points: 0 },
-          daysOfJS: { solved: 0, stars: 0, rank: 0, points: 0 },
-          daysOfStatistics: { solved: 0, stars: 0, rank: 0, points: 0 },
-          react: { solved: 0, stars: 0, rank: 0, points: 0 }
+          problemSolving: { solved: null, totalChallenges: null, stars: null, rank: null, points: null },
+          python: { solved: null, stars: null, rank: null, points: null },
+          sql: { solved: null, stars: null, rank: null, points: null },
+          c: { solved: null, stars: null, rank: null, points: null },
+          cpp: { solved: null, stars: null, rank: null, points: null },
+          java: { solved: null, stars: null, rank: null, points: null },
+          javascript: { solved: null, stars: null, rank: null, points: null },
+          ruby: { solved: null, stars: null, rank: null, points: null },
+          daysOfCode: { solved: null, stars: null, rank: null, points: null },
+          daysOfJS: { solved: null, stars: null, rank: null, points: null },
+          daysOfStatistics: { solved: null, stars: null, rank: null, points: null },
+          react: { solved: null, stars: null, rank: null, points: null },
+          totalCertifications: null,
+          certificates: null,
+          skills: null,
+          lastSynced: new Date()
         };
       }
       await new Promise(res => setTimeout(res, delay));
