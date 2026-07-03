@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
-import { Search, Download, RefreshCw, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Trophy, Award, Search, Filter, Download, ExternalLink, ChevronDown, ChevronUp, UserCheck, AlertTriangle } from 'lucide-react';
+import { formatDisplayDate } from '../../utils/formatters';
 import * as XLSX from 'xlsx';
 
 export function CoordinatorStudentsList() {
@@ -448,9 +449,7 @@ export function CoordinatorStudentsList() {
                       <th>MSSID</th>
                       <th>Branch</th>
                       <th style={{ textAlign: 'right' }}>LeetCode</th>
-                      <th style={{ textAlign: 'right' }}>GFG</th>
-                      <th style={{ textAlign: 'right' }}>CodeChef</th>
-                      <th style={{ textAlign: 'right' }}>GitHub Repos</th>
+                      <th style={{ textAlign: 'center' }}>Mentoring</th>
                       <th style={{ textAlign: 'right' }}>Coding Score</th>
                       <th style={{ textAlign: 'center', width: '120px' }}>Profile</th>
                     </tr>
@@ -475,14 +474,20 @@ export function CoordinatorStudentsList() {
                           <td style={{ textAlign: 'right', fontWeight: 600 }}>
                             {student.leetcodeSolved ?? 0}
                           </td>
-                          <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                            {student.gfgSolved ?? 0}
-                          </td>
-                          <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                            {student.codechefSolved ?? 0}
-                          </td>
-                          <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                            {student.githubRepos ?? 0}
+                          <td style={{ textAlign: 'center', fontSize: '0.8rem', lineHeight: '1.4' }}>
+                            {student.mentoringStats ? (
+                              <>
+                                <div style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>📝 {student.mentoringStats.notesCount} Notes</div>
+                                <div style={{ color: student.mentoringStats.openTasksCount > 0 ? '#F59E0B' : 'var(--text-muted)' }}>
+                                  {student.mentoringStats.openTasksCount} Open Tasks
+                                </div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                                  {student.mentoringStats.lastMeeting ? `Last: ${formatDisplayDate(student.mentoringStats.lastMeeting)}` : 'No meetings'}
+                                </div>
+                              </>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)' }}>No Notes</span>
+                            )}
                           </td>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-blue)' }}>
                             {codingScore}

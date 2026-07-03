@@ -24,10 +24,16 @@ function formatNum(val, fallback = 'N/A') {
   return Number(val).toFixed(2).replace(/\.00$/, ''); 
 }
 
-function formatDate(d) {
-  if (!d) return 'N/A';
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
 
 function sanitizeText(str) {
   if (str === null || str === undefined) return '';
@@ -248,7 +254,7 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
   if (codingProfile && typeof codingProfile.toObject === 'function') codingProfile = codingProfile.toObject();
   if (options.academic && typeof options.academic.toObject === 'function') options.academic = options.academic.toObject();
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
     const chunks = [];
     doc.on('data', chunk => chunks.push(chunk));
@@ -1097,35 +1103,102 @@ function buildStudentReportPdf(student, profile, codingProfile, options = {}) {
     // V6: Historical Growth Snapshot Logs Removed Completely
 
     // ---------------------------------------------------------
-    // PAGE 14: MENTOR FEEDBACK
+    // PAGE 14: MENTOR FEEDBACK & ACTION HISTORY
     // ---------------------------------------------------------
-    doc.addPage();
-    drawPageHeader(doc, "MENTOR FEEDBACK", margin, contentWidth);
+    const mentoringRecords = options.mentoringRecords || [];
     
-    const feedbackRows = [];
-    if (mentorship.strengths && mentorship.strengths.length > 0) {
-      mentorship.strengths.forEach(s => feedbackRows.push(["Strength", s]));
-    }
-    if (mentorship.weaknesses && mentorship.weaknesses.length > 0) {
-      mentorship.weaknesses.forEach(w => feedbackRows.push(["Area of Improvement", w]));
-    }
-    if (mentorship.recommendations && mentorship.recommendations.length > 0) {
-      mentorship.recommendations.forEach(r => feedbackRows.push(["Recommendation", r]));
-    }
-    if (mentorship.feedback) {
-      feedbackRows.push(["Overall Feedback", mentorship.feedback]);
-    }
-    
-    if (feedbackRows.length > 0) {
+    if (mentoringRecords.length > 0) {
+      doc.addPage();
+      drawPageHeader(doc, "MENTOR FEEDBACK & ACTION HISTORY", margin, contentWidth);
+      
+      const { calculateMentoringStats } = require('../services/mentorNotesService');
+      const stats = await calculateMentoringStats(student._id);
+
+      drawSectionHeading(doc, "MENTORING SUMMARY", 10);
+      doc.moveDown(0.2);
       drawTable(doc, {
         margin, contentWidth,
-        headers: ["Category", "Feedback"],
-        widths: [120, 'auto'],
-        rows: feedbackRows,
-        headerTitle: "MENTOR FEEDBACK"
+        headers: ["Total Meetings", "Open Tasks", "Completed Tasks", "Last Meeting"],
+        widths: ['auto', 'auto', 'auto', 'auto'],
+        rows: [[
+          String(stats.totalMeetings),
+          String(stats.openTasks),
+          String(stats.completedTasks),
+          stats.lastMeeting ? formatDate(stats.lastMeeting) : '—'
+        ]],
+        headerTitle: "MENTOR FEEDBACK & ACTION HISTORY"
+      });
+
+      doc.moveDown(1);
+      drawSectionHeading(doc, "MEETING TIMELINE", 10);
+      doc.moveDown(0.2);
+
+      mentoringRecords.forEach((record, index) => {
+        const actionText = (record.actionItems || []).map(task => `[${task.completed ? 'x' : ' '}] ${task.task}`).join('\n') || 'None';
+        const coordinatorName = record.createdBy?.name || record.createdByName || 'Unknown';
+        const displayDate = record.meetingDate || record.createdAt;
+        
+        const mRows = [
+          ["Date & Coordinator", `${formatDate(displayDate)}\n${coordinatorName}`],
+          ["Meeting Type", `${record.meetingType || 'General'} (Priority: ${record.priority || 'Medium'})`],
+          ["Status & Mode", `${record.status || 'Open'}\nMode: ${record.meetingMode || 'Offline'} - ${record.meetingDuration || 'N/A'}`],
+          ["Observation", record.observation || '—']
+        ];
+
+        if (record.overallRecommendation) {
+          mRows.push(["Recommendation", record.overallRecommendation]);
+        }
+        
+        mRows.push(["Action Items", actionText]);
+        
+        if (record.studentProgress && record.studentProgress.previousGoal) {
+          mRows.push(["Student Progress", `Prev Goal: ${record.studentProgress.previousGoal}\nStatus: ${record.studentProgress.currentStatus || 'N/A'}\nNext Goal: ${record.studentProgress.nextGoal || 'N/A'}`]);
+        }
+        
+        mRows.push(["Target Date", formatDate(record.targetDate)]);
+        mRows.push(["Next Review", formatDate(record.nextReviewDate)]);
+        mRows.push(["Remarks", record.remarks || '—']);
+
+        drawSectionHeading(doc, `Meeting #${record.meetingNumber || (index + 1)}`, 9);
+        doc.moveDown(0.1);
+        drawTable(doc, {
+          margin, contentWidth,
+          widths: [120, 'auto'],
+          rows: mRows,
+          headerTitle: "MENTOR FEEDBACK & ACTION HISTORY"
+        });
+        doc.moveDown(0.5);
       });
     } else {
-      drawSectionHeading(doc, "NO MENTOR FEEDBACK AVAILABLE", 10, COLORS.MUTED);
+      doc.addPage();
+      drawPageHeader(doc, "MENTOR FEEDBACK & ACTION HISTORY", margin, contentWidth);
+      
+      // Fallback to old mentor feedback if no new records exist
+      const feedbackRows = [];
+      if (mentorship.strengths && mentorship.strengths.length > 0) {
+        mentorship.strengths.forEach(s => feedbackRows.push(["Strength", s]));
+      }
+      if (mentorship.weaknesses && mentorship.weaknesses.length > 0) {
+        mentorship.weaknesses.forEach(w => feedbackRows.push(["Area of Improvement", w]));
+      }
+      if (mentorship.recommendations && mentorship.recommendations.length > 0) {
+        mentorship.recommendations.forEach(r => feedbackRows.push(["Recommendation", r]));
+      }
+      if (mentorship.feedback) {
+        feedbackRows.push(["Overall Feedback", mentorship.feedback]);
+      }
+      
+      if (feedbackRows.length > 0) {
+        drawTable(doc, {
+          margin, contentWidth,
+          headers: ["Category", "Feedback"],
+          widths: [120, 'auto'],
+          rows: feedbackRows,
+          headerTitle: "MENTOR FEEDBACK"
+        });
+      } else {
+        drawSectionHeading(doc, "NO MENTOR FEEDBACK AVAILABLE", 10, COLORS.MUTED);
+      }
     }
 
     // NOTE: ATS RESUME COMPLETELY REMOVED FROM FINAL REPORT 

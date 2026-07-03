@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
+import { MentoringTimeline } from '../../components/MentoringTimeline';
 import { formatPercentage } from '../../utils/formatters';
 
 export function CoordinatorStudentDetail() {
@@ -322,6 +323,7 @@ export function CoordinatorStudentDetail() {
             { id: 'heatmap', label: '📅 Streaks Heatmap' },
             { id: 'analytics', label: '📊 Solve Analytics' },
             { id: 'timeline', label: '⏳ Activity Timeline' },
+            { id: 'mentor-notes', label: '📝 Mentor Notes' },
             { id: 'resume', label: '📜 PDF Resume' }
           ].map(t => (
             <button
@@ -1206,6 +1208,11 @@ export function CoordinatorStudentDetail() {
               </div>
             )}
           </div>
+        )}
+
+        {/* MENTOR NOTES TAB */}
+        {activeTab === 'mentor-notes' && (
+          <MentoringTimeline studentId={id} />
         )}
 
         {/* RESUME PREVIEW TAB */}

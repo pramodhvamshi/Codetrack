@@ -8,3 +8,16 @@ export const formatPercentage = (value) => {
   }
   return `${num.toFixed(1).replace(/\.0$/, '')}%`;
 };
+
+export const formatDisplayDate = (dateString) => {
+  if (!dateString) return '—';
+  
+  const d = new Date(dateString);
+  if (Number.isNaN(d.getTime())) return '—';
+
+  return d.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};

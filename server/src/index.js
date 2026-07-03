@@ -13,6 +13,7 @@ const profileRoutes = require('./routes/profiles');
 const resumeRoutes = require('./routes/resume');
 const adminRoutes = require('./routes/admin');
 const bugRoutes = require('./routes/bugs');
+const mentorNotesRoutes = require('./routes/mentorNotes');
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -69,6 +70,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/bugs', bugRoutes);
+app.use('/api/coordinator/mentor-notes', mentorNotesRoutes);
 
 // Fallback
 app.use((req, res) => {

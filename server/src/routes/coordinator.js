@@ -246,10 +246,12 @@ router.get('/students', async (req, res) => {
     
     const studentIds = students.map(s => s._id);
     const StudentProfile = require('../models/StudentProfile');
-    const [defaultVersions, defaultFiles, studentProfiles] = await Promise.all([
+    const StudentMentoringRecord = require('../models/StudentMentoringRecord');
+    const [defaultVersions, defaultFiles, studentProfiles, mentoringRecords] = await Promise.all([
       ResumeVersion.find({ userId: { $in: studentIds }, isDefault: true }),
       ResumeFile.find({ userId: { $in: studentIds }, isDefault: true }),
-      StudentProfile.find({ userId: { $in: studentIds } }, 'userId goal interestedDomain')
+      StudentProfile.find({ userId: { $in: studentIds } }, 'userId goal interestedDomain'),
+      StudentMentoringRecord.find({ studentId: { $in: studentIds }, isDeleted: false })
     ]);
 
     // Construct the pipeline stages before sort/skip/limit for summary metrics
@@ -333,6 +335,23 @@ router.get('/students', async (req, res) => {
     const filesMap = new Map(defaultFiles.map(f => [String(f.userId), f]));
     const profilesMap = new Map(studentProfiles.map(p => [String(p.userId), p]));
 
+    const mentoringMap = new Map();
+    studentIds.forEach(id => {
+      mentoringMap.set(String(id), { notesCount: 0, openTasksCount: 0, lastMeeting: null });
+    });
+    mentoringRecords.forEach(record => {
+      const stats = mentoringMap.get(String(record.studentId));
+      if (stats) {
+        stats.notesCount += 1;
+        if (record.actionItems && Array.isArray(record.actionItems)) {
+          stats.openTasksCount += record.actionItems.filter(task => !task.completed).length;
+        }
+        if (!stats.lastMeeting || new Date(record.createdAt) > new Date(stats.lastMeeting)) {
+          stats.lastMeeting = record.createdAt;
+        }
+      }
+    });
+
     const studentsList = students.map((s) => {
       const dVersion = versionsMap.get(String(s._id));
       const dFile = filesMap.get(String(s._id));
@@ -345,6 +364,7 @@ router.get('/students', async (req, res) => {
       }
       
       const sp = profilesMap.get(String(s._id));
+      const mentoringStats = mentoringMap.get(String(s._id));
 
       return {
         id: s._id,
@@ -371,7 +391,8 @@ router.get('/students', async (req, res) => {
         },
         resumeInfo,
         goal: sp?.goal || null,
-        interestedDomain: sp?.interestedDomain || null
+        interestedDomain: sp?.interestedDomain || null,
+        mentoringStats
       };
     });
 
@@ -578,6 +599,11 @@ router.get('/students/:id/report/pdf', async (req, res) => {
     const contestSnapshots = await ContestSnapshot.find({ userId: student._id }).sort({ monthKey: 1 });
     const leetcodeGrowthSnapshots = await LeetCodeGrowthSnapshot.find({ userId: student._id }).sort({ weekKey: 1 });
 
+    const StudentMentoringRecord = require('../models/StudentMentoringRecord');
+    const mentoringRecords = await StudentMentoringRecord.find({ studentId: student._id, isDeleted: false })
+      .populate('createdBy', 'name role')
+      .sort({ createdAt: 1 });
+
     const defaultResume = await ResumeVersion.findOne({ userId: student._id, isDefault: true })
       || await ResumeVersion.findOne({ userId: student._id }).sort({ updatedAt: -1 });
     const defaultFile = await ResumeFile.findOne({ userId: student._id, isDefault: true });
@@ -606,7 +632,8 @@ router.get('/students/:id/report/pdf', async (req, res) => {
       leetcodeGrowthSnapshots,
       leetcodeContests,
       defaultResume,
-      photoBuffer
+      photoBuffer,
+      mentoringRecords
     });
 
     let finalBuffer = reportBuffer;

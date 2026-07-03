@@ -5,6 +5,7 @@ import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
+import { MentoringTimeline } from '../../components/MentoringTimeline';
 import { RefreshCw, Info } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
@@ -585,8 +586,13 @@ export function PublicStudentProfile() {
     { key: 'heatmap', label: '🔥 Heatmap' },
     { key: 'achievements', label: '🏆 Achievements & Badges' },
     { key: 'certifications-hackathons', label: '🎓 Certifications & Hackathons' },
-    { key: 'activity', label: '⚡ Activity' },
   ];
+
+  if (isCoordinator || user?.role === 'admin') {
+    tabs.push({ key: 'mentor-notes', label: '📝 Mentor Notes' });
+  }
+
+  tabs.push({ key: 'activity', label: '⚡ Activity' });
 
   if (loading) {
     return (
@@ -1480,7 +1486,12 @@ export function PublicStudentProfile() {
             );
           })()}
 
-          {activeTab === 'activity' && (
+            {activeTab === 'mentor-notes' && (isCoordinator || user?.role === 'admin') && (
+              <MentoringTimeline studentId={id} />
+            )}
+
+            {/* ACTIVITY TAB */}
+            {activeTab === 'activity' && (
             <div className="tab-panel">
               <div className="ct-card">
                 <h3 className="card-title">⚡ Recent Activity (LeetCode Only)</h3>
