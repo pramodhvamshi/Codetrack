@@ -7,6 +7,37 @@ const { buildResumePdfBuffer } = require('../services/resumeService');
 const { buildAnalyticsReport } = require('../utils/analyticsBuilder');
 // const { isProfileComplete } = require('../utils/profile');
 
+function extractUsername(input, platform) {
+  if (!input || typeof input !== 'string') return input;
+  let val = input.trim();
+  if (val.includes(platform + '.com') || val.includes(platform + '.org')) {
+     if (platform === 'codechef') {
+       const m = val.match(/codechef\.com\/users\/([^/?]+)/);
+       if (m) return m[1];
+     } else if (platform === 'leetcode') {
+       const m = val.match(/leetcode\.com\/(?:u\/)?([^/?]+)/);
+       if (m) return m[1];
+     } else if (platform === 'geeksforgeeks') {
+       const m = val.match(/geeksforgeeks\.org\/user\/([^/?]+)/);
+       if (m) return m[1];
+     } else if (platform === 'github') {
+       const m = val.match(/github\.com\/([^/?]+)/);
+       if (m) return m[1];
+     } else if (platform === 'hackerrank') {
+       const m = val.match(/hackerrank\.com\/(?:profile\/)?([^/?]+)/);
+       if (m) return m[1];
+     }
+  }
+  if (val.startsWith('http://') || val.startsWith('https://')) {
+     try {
+       const url = new URL(val);
+       const paths = url.pathname.split('/').filter(Boolean);
+       return paths[paths.length - 1] || val;
+     } catch(e) {}
+  }
+  return val.replace(/\/+$/, '');
+}
+
 const router = express.Router();
 
 // All /student routes require student role
@@ -470,13 +501,16 @@ router.put('/me/profile/coding', async (req, res) => {
       validateGitHub
     } = require('../services/validationService');
 
-    const cleanStr = val => typeof val === 'string' ? val.trim() : "";
+    const cleanStr = (val, platform) => {
+      let extracted = extractUsername(val, platform);
+      return typeof extracted === 'string' ? extracted.trim() : "";
+    };
 
-    const lUsername = cleanStr(leetcodeUsername);
-    const ccUsername = cleanStr(codechefUsername);
-    const gfgUser = cleanStr(gfgUsername);
-    const ghUsername = cleanStr(githubUsername);
-    const hrUsername = cleanStr(hackerrankUsername);
+    const lUsername = cleanStr(leetcodeUsername, 'leetcode');
+    const ccUsername = cleanStr(codechefUsername, 'codechef');
+    const gfgUser = cleanStr(gfgUsername, 'geeksforgeeks');
+    const ghUsername = cleanStr(githubUsername, 'github');
+    const hrUsername = cleanStr(hackerrankUsername, 'hackerrank');
 
     // Validate Existence & Uniqueness
     const User = require('../models/User');
@@ -647,10 +681,15 @@ router.put('/me/profile', async (req, res) => {
     }
 
     // 4. Perform platform username validations if they changed
-    const trimmedLeetcode = leetcodeUsername !== undefined && typeof leetcodeUsername === 'string' ? leetcodeUsername.trim() : leetcodeUsername;
-    const trimmedCodechef = codechefUsername !== undefined && typeof codechefUsername === 'string' ? codechefUsername.trim() : codechefUsername;
-    const trimmedGfg = gfgUsername !== undefined && typeof gfgUsername === 'string' ? gfgUsername.trim() : gfgUsername;
-    const trimmedGithub = githubUsername !== undefined && typeof githubUsername === 'string' ? githubUsername.trim() : githubUsername;
+    const cleanStr = (val, platform) => {
+      let extracted = extractUsername(val, platform);
+      return typeof extracted === 'string' ? extracted.trim() : extracted;
+    };
+
+    const trimmedLeetcode = cleanStr(leetcodeUsername, 'leetcode');
+    const trimmedCodechef = cleanStr(codechefUsername, 'codechef');
+    const trimmedGfg = cleanStr(gfgUsername, 'geeksforgeeks');
+    const trimmedGithub = cleanStr(githubUsername, 'github');
 
     if (trimmedLeetcode !== undefined && trimmedLeetcode !== user.leetcodeUsername) {
       if (trimmedLeetcode) {

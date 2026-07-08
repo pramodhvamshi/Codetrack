@@ -44,14 +44,41 @@ async function validateCodeChef(username) {
   try {
     const response = await axios.get(
       `https://hades-black.vercel.app/api/codechef/user/${encodeURIComponent(username)}`,
-      { timeout: 10000 }
+      { timeout: 5000 }
     );
     // If user doesn't exist, codechef API typically returns an error or empty object
-    return response.status === 200 && response.data?.success !== false && !!response.data?.data;
+    if (response.status === 200 && response.data?.success !== false && !!response.data?.data) {
+      return true;
+    }
   } catch (err) {
-    console.error(`CodeChef validation failed for ${username}:`, err.message);
-    return false;
+    console.warn(`Hades Black API failed for CodeChef validation (${username}):`, err.message);
   }
+
+  // Fallback to scraping CodeChef profile page
+  try {
+    console.log(`Falling back to scraping CodeChef profile for ${username}`);
+    const scrapeRes = await axios.get(`https://www.codechef.com/users/${encodeURIComponent(username)}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      timeout: 10000
+    });
+    
+    // CodeChef returns 200 even for non-existent users, so check page content
+    const html = String(scrapeRes.data);
+    const $ = cheerio.load(html);
+    
+    const title = $('title').text() || '';
+    if (title.includes('CodeChef User Profile')) {
+      return true;
+    }
+    
+    if ($('.rating-data-section').length > 0 || $('.user-details-container').length > 0) {
+      return true;
+    }
+  } catch (scrapeErr) {
+    console.error(`CodeChef scraping validation failed for ${username}:`, scrapeErr.message);
+  }
+
+  return false;
 }
 
 /**
