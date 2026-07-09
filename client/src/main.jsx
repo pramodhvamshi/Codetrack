@@ -5,11 +5,15 @@ import { Analytics } from '@vercel/analytics/react';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+import { ThemeProvider } from './components/ThemeProvider';
+
 ReactDOM.createRoot(document.getElementById('app')).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </ThemeProvider>
     <Analytics />
   </React.StrictMode>
 );

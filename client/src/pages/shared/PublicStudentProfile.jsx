@@ -313,7 +313,7 @@ const HOSTELS = [
 ];
 
 const BRANCHES = [
-  'CSE', 'CSB', 'CSD', 'CSM', 'AIML', 'IT', 'AIDS', 'ECE', 'CSE-IoT', 'CSC (Cybersecurity)'
+  'CSE', 'CSB', 'CSD', 'CSM', 'AIML', 'IT', 'AIDS', 'ECE', 'CSE-IoT', 'CSC (Cybersecurity)', 'Civil', 'Mechanical', 'EE', 'EEE'
 ];
 
 /* ─────────────────────────────────────────────

@@ -1138,7 +1138,7 @@ export function StudentProfileEdit({ tab }) {
                       onChange={(e) => handlePersonalChange('branch', e.target.value)}
                     >
                       <option value="">Select Branch</option>
-                      {['CSE', 'CSB', 'CSD', 'CSM', 'AIML', 'IT', 'AIDS', 'ECE', 'CSE-IoT', 'CSC (Cybersecurity)'].map(b => (
+                      {['CSE', 'CSB', 'CSD', 'CSM', 'AIML', 'IT', 'AIDS', 'ECE', 'CSE-IoT', 'CSC (Cybersecurity)', 'Civil', 'Mechanical', 'EE', 'EEE'].map(b => (
                         <option key={b} value={b}>{b}</option>
                       ))}
                     </select>

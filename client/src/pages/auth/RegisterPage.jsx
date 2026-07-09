@@ -487,6 +487,10 @@ export function RegisterPage() {
                       <option>ECE</option>
                       <option>CSE-IoT</option>
                       <option>CSC (Cybersecurity)</option>
+                      <option>Civil</option>
+                      <option>Mechanical</option>
+                      <option>EE</option>
+                      <option>EEE</option>
                     </select>
                   </div>
 

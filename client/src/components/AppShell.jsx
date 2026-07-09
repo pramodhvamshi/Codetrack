@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { api, API_BASE_URL } from '../api/client';
+import { ModeToggle } from './ModeToggle';
 
 export function AppShell({ active, children }) {
   const { user, token, login, logout } = useAuth();
@@ -329,8 +330,10 @@ export function AppShell({ active, children }) {
           </div>
 
           {user && (
-            <div className="ct-user-dropdown" ref={dropdownRef}>
-              {/* AVATAR TRIGGER BUTTON */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <ModeToggle />
+              <div className="ct-user-dropdown" ref={dropdownRef}>
+                {/* AVATAR TRIGGER BUTTON */}
               <button
                 className="ct-avatar-btn"
                 onClick={() => setDropdownOpen(o => !o)}
@@ -386,6 +389,7 @@ export function AppShell({ active, children }) {
                   </div>
                 </div>
               )}
+            </div>
             </div>
           )}
         </div>
