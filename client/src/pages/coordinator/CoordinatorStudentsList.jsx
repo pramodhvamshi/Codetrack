@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
-import { Trophy, Award, Search, Filter, Download, ExternalLink, ChevronDown, ChevronUp, UserCheck, AlertTriangle } from 'lucide-react';
+import { Trophy, Award, Search, Filter, Download, ExternalLink, ChevronDown, ChevronUp, UserCheck, AlertTriangle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDisplayDate } from '../../utils/formatters';
 import * as XLSX from 'xlsx';
 

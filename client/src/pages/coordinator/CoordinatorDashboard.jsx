@@ -19,6 +19,10 @@ export function CoordinatorDashboard() {
   const [branchStats, setBranchStats] = useState([]);
   const [branchSort, setBranchSort] = useState({ key: 'branch', desc: false });
 
+  // Year-wise analytics comparison state
+  const [yearData, setYearData] = useState(null);
+  const [yearLoading, setYearLoading] = useState(true);
+
   // Modal lists
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState(''); // 'total', 'active', 'inactive', 'ready', 'needs_improvement', 'at_risk'
@@ -50,7 +54,8 @@ export function CoordinatorDashboard() {
     setCodersLoading(true);
     try {
       const res = await api.getJson('/leaderboard', token);
-      setTopCoders(res.slice(0, 10));
+      const list = Array.isArray(res) ? res : (res?.data || []);
+      setTopCoders(list.slice(0, 10));
     } catch (err) {
       console.error('Failed to load top coders:', err);
     } finally {
@@ -96,10 +101,24 @@ export function CoordinatorDashboard() {
     }
   };
 
+  const loadYearAnalytics = async () => {
+    if (!token) return;
+    setYearLoading(true);
+    try {
+      const res = await api.getJson('/coordinator/year-wise-analytics', token);
+      setYearData(res);
+    } catch (err) {
+      console.error('Failed to load year-wise analytics:', err);
+    } finally {
+      setYearLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadDashboardData();
     loadTopCoders();
     loadBranchStats();
+    loadYearAnalytics();
   }, [token]);
 
   // Modal dynamic fetch logic
@@ -285,7 +304,313 @@ export function CoordinatorDashboard() {
 
         </div>
 
+        {/* YEAR-WISE ANALYTICS COMPARISON */}
+        <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', padding: '2rem' }}>
+          <div>
+            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f3f4f6' }}>
+              <BarChart3 color="var(--accent-blue)" /> Year-Wise Analytics Comparison
+            </h2>
+            <p style={{ margin: '0.3rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              Analyze performance and engagement indices across academic batches with custom guidance models.
+            </p>
+          </div>
 
+          {yearLoading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+              <RefreshCw className="animate-spin" size={24} style={{ marginRight: '0.5rem' }} /> Loading year-wise metrics...
+            </div>
+          ) : !yearData ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No year-wise analytics data found.
+            </div>
+          ) : (
+            <>
+              {/* Overall Rankings Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem' }}>
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(17,24,39,0.95))',
+                  border: '1px solid rgba(245,158,11,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{ fontSize: '2rem' }}>🥇</div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Best Performing Batch</span>
+                    <h3 style={{ margin: '0.1rem 0 0 0', fontSize: '1.4rem', color: '#F59E0B' }}>{yearData.rankings?.bestBatch || '-'}</h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Highest avg placement score</span>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(17,24,39,0.95))',
+                  border: '1px solid rgba(34,197,94,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{ fontSize: '2rem' }}>📈</div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Most Improved Batch</span>
+                    <h3 style={{ margin: '0.1rem 0 0 0', fontSize: '1.4rem', color: '#22C55E' }}>{yearData.rankings?.mostImprovedBatch || '-'}</h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Highest avg coding days/month</span>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(239,68,68,0.08), rgba(17,24,39,0.95))',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{ fontSize: '2rem' }}>⚠️</div>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Needs Attention</span>
+                    <h3 style={{ margin: '0.1rem 0 0 0', fontSize: '1.4rem', color: '#EF4444' }}>{yearData.rankings?.needsAttentionBatch || '-'}</h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Highest risk factor batch</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Comparison Table */}
+              <div style={{ overflowX: 'auto', marginTop: '0.5rem' }}>
+                <table className="ct-table">
+                  <thead>
+                    <tr>
+                      <th style={{ minWidth: '220px' }}>Metric</th>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <th key={year} style={{ textAlign: 'center', width: '120px' }}>{year}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <td style={{ fontWeight: 600, color: '#f3f4f6' }}>Students Enrolled</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].totalStudents}</td>
+                      ))}
+                    </tr>
+
+                    <tr>
+                      <td colSpan={5} style={{ background: 'rgba(255,255,255,0.04)', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-blue)', letterSpacing: '0.05em' }}>Engagement Metrics</td>
+                    </tr>
+                    <tr>
+                      <td>Daily Active Students</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].dailyActivePercent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Students with 30+ Day Streak</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].streak30Percent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Average Coding Days / Month</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].avgCodingDaysMonth} days</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Average Profile Completion</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].avgProfileCompletion}%</td>
+                      ))}
+                    </tr>
+
+                    <tr>
+                      <td colSpan={5} style={{ background: 'rgba(255,255,255,0.04)', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-blue)', letterSpacing: '0.05em' }}>Coding Performance</td>
+                    </tr>
+                    <tr>
+                      <td>Average Problems Solved</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontWeight: 600 }}>{yearData.statistics[year].avgSolved}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ LeetCode Solved (Avg)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{yearData.statistics[year].avgLeetcodeSolved}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ GeeksforGeeks Solved (Avg)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{yearData.statistics[year].avgGfgSolved}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ CodeChef Solved (Avg)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{yearData.statistics[year].avgCodechefSolved}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ HackerRank Solved (Avg)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{yearData.statistics[year].avgHackerrankSolved}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Contest Participation Rate</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].contestParticipationPercent}%</td>
+                      ))}
+                    </tr>
+
+                    <tr>
+                      <td colSpan={5} style={{ background: 'rgba(255,255,255,0.04)', fontWeight: 700, padding: '0.5rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-blue)', letterSpacing: '0.05em' }}>Portfolio & Development</td>
+                    </tr>
+                    <tr>
+                      <td>Resume Upload Rate</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].resumeUploadPercent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Average GitHub Contributions</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].avgGithubContributions}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>Students with 2+ Projects</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center' }}>{yearData.statistics[year].studentsWith2ProjectsPercent}%</td>
+                      ))}
+                    </tr>
+
+                    <tr style={{ background: 'rgba(59,130,246,0.03)' }}>
+                      <td style={{ fontWeight: 700, color: 'var(--accent-blue)' }}>Placement Readiness Score (Avg)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => {
+                        const score = yearData.statistics[year].avgReadinessScore;
+                        let color = '#EF4444';
+                        if (score >= 80) color = '#22C55E';
+                        else if (score >= 60) color = '#3B82F6';
+                        else if (score >= 40) color = '#F59E0B';
+                        return (
+                          <td key={year} style={{ textAlign: 'center', fontWeight: 800, color, fontSize: '1.05rem' }}>
+                            {score} / 100
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ Ready (Score 80-100)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: '#22C55E' }}>{yearData.statistics[year].readyPercent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ Progressing (Score 60-79)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: '#3B82F6' }}>{yearData.statistics[year].progressingPercent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ Needs Improvement (Score 40-59)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: '#F59E0B' }}>{yearData.statistics[year].needsImprovementPercent}%</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td style={{ paddingLeft: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>↳ At Risk (Score &lt; 40)</td>
+                      {['1st Year', '2nd Year', '3rd Year', '4th Year'].filter(y => yearData.statistics && yearData.statistics[y]).map(year => (
+                        <td key={year} style={{ textAlign: 'center', fontSize: '0.8rem', color: '#EF4444' }}>{yearData.statistics[year].atRiskPercent}%</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* AI batch guidance cards */}
+              <div style={{ marginTop: '0.5rem' }}>
+                <h3 style={{ margin: '0.5rem 0 1rem 0', color: '#f3f4f6', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span>💡</span> Batch Insights & Actionable Guidance
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                  {yearData.insights?.map(batch => {
+                    const priorityColor = batch.priority === 'High' ? '#EF4444' : batch.priority === 'Medium' ? '#F59E0B' : '#22C55E';
+                    return (
+                      <div key={batch.year} className="ct-card" style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        padding: '1.25rem',
+                        borderTop: `4px solid ${priorityColor}`,
+                        background: 'rgba(255,255,255,0.015)'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#f3f4f6' }}>{batch.year} Batch</h4>
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: '4px',
+                            background: `${priorityColor}20`,
+                            color: priorityColor,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}>
+                            {batch.priority} Priority
+                          </span>
+                        </div>
+
+                        {/* Average Placement readiness visual bar */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>
+                            <span>Placement Readiness Score</span>
+                            <span style={{ fontWeight: 700, color: '#f3f4f6' }}>{batch.overallScore} / 100</span>
+                          </div>
+                          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${batch.overallScore}%`, height: '100%', background: priorityColor, borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.85rem' }}>
+                          <div>
+                            <span style={{ fontWeight: 700, color: '#22C55E', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+                              <span>✅</span> Strengths
+                            </span>
+                            <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+                              {batch.strengths?.map((s, i) => <li key={i} style={{ marginBottom: '0.2rem' }}>{s}</li>)}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <span style={{ fontWeight: 700, color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+                              <span>⚠️</span> Weaknesses
+                            </span>
+                            <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+                              {batch.weaknesses?.map((w, i) => <li key={i} style={{ marginBottom: '0.2rem' }}>{w}</li>)}
+                            </ul>
+                          </div>
+
+                          <div style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.3rem' }}>
+                              <span>💡</span> Actionable Recommendations
+                            </span>
+                            <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-muted)' }}>
+                              {batch.recommendations?.map((r, i) => <li key={i} style={{ marginBottom: '0.2rem', color: '#e5e7eb' }}>{r}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* INSTITUTION STATS & RANKINGS ROW */}
         <div className="ct-grid-2" style={{ gap: '1.5rem' }}>

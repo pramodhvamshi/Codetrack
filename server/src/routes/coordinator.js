@@ -7,6 +7,26 @@ const router = express.Router();
 router.use(authMiddleware, requireAnyRole(['coordinator', 'admin']));
 
 // Dashboard summary: total students, active vs inactive, platform-wise stats (individual, not summed)
+router.get('/roadmaps/:studentId/:roadmapId/progress', async (req, res) => {
+  try {
+    const roadmapService = require('../services/roadmap.service');
+    const progress = await roadmapService.getStudentProgress(req.params.studentId, req.params.roadmapId);
+    res.json(progress);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/dsa/:studentId/:sheetId/progress', async (req, res) => {
+  try {
+    const dsaService = require('../services/dsa.service');
+    const progress = await dsaService.getStudentProgress(req.params.studentId, req.params.sheetId);
+    res.json(progress);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/dashboard', async (req, res) => {
   try {
     const studentsMatch = { role: 'student', isOnboarded: true };
@@ -2124,4 +2144,314 @@ router.post('/students/:id/sync', async (req, res) => {
   }
 });
 
+// GET year-wise student analytics comparison
+router.get('/year-wise-analytics', async (req, res) => {
+  try {
+    const students = await User.find({ role: 'student', isOnboarded: true });
+
+    function getYearLabel(s) {
+      const y = s.currentYear || s.year;
+      if (!y) return 'Unknown';
+      if (y === '1' || y === '1st Year') return '1st Year';
+      if (y === '2' || y === '2nd Year') return '2nd Year';
+      if (y === '3' || y === '3rd Year') return '3rd Year';
+      if (y === '4' || y === '4th Year') return '4th Year';
+      return y;
+    }
+
+    const yearGroups = {};
+    students.forEach(s => {
+      const yearKey = getYearLabel(s);
+      // Only include standard academic years
+      if (['1st Year', '2nd Year', '3rd Year', '4th Year'].includes(yearKey)) {
+        if (!yearGroups[yearKey]) {
+          yearGroups[yearKey] = [];
+        }
+        yearGroups[yearKey].push(s);
+      }
+    });
+
+    const statistics = {};
+
+    Object.entries(yearGroups).forEach(([year, list]) => {
+      const total = list.length;
+      if (total === 0) return;
+
+      let sumSolved = 0;
+      let sumLeetcodeSolved = 0;
+      let sumGfgSolved = 0;
+      let sumCodechefSolved = 0;
+      let sumHackerrankSolved = 0;
+      let sumOverallScore = 0;
+      let sumActiveDays = 0;
+      let sumStreak = 0;
+      let sumGithubRepos = 0;
+      let sumGithubContributions = 0;
+      let sumProjects = 0;
+      let sumCodingDaysMonth = 0;
+      let sumProfileCompletion = 0;
+      let sumReadinessScore = 0;
+
+      let countActive = 0;
+      let countStreak30 = 0;
+      let countResume = 0;
+      let count2Projects = 0;
+      let countContests = 0;
+
+      let countReady = 0;
+      let countProgressing = 0;
+      let countNeedsImprovement = 0;
+      let countAtRisk = 0;
+
+      list.forEach(s => {
+        const lc = s.platformStats?.leetcode || {};
+        const cc = s.platformStats?.codechef || {};
+        const gfg = s.platformStats?.geeksforgeeks || {};
+        const hr = s.hackerrank || {};
+
+        const lcSolved = lc.problemsSolved || 0;
+        const ccSolved = cc.problemsSolved || 0;
+        const gfgSolved = gfg.problemsSolved || gfg.totalProblemsSolved || 0;
+        const hrSolved = hr.totalProblemsSolved || 0;
+        const totalSolved = lcSolved + ccSolved + gfgSolved + hrSolved;
+
+        sumSolved += totalSolved;
+        sumLeetcodeSolved += lcSolved;
+        sumGfgSolved += gfgSolved;
+        sumCodechefSolved += ccSolved;
+        sumHackerrankSolved += hrSolved;
+
+        sumOverallScore += s.scores?.totalScore || 0;
+        sumActiveDays += s.activeDaysCount || lc.activeDays || 0;
+        
+        const currentStreak = s.currentStreak || lc.currentStreak || 0;
+        const longestStreak = s.longestStreak || lc.maxStreak || 0;
+        const bestStreak = Math.max(currentStreak, longestStreak);
+        sumStreak += bestStreak;
+
+        const githubRepos = s.platformStats?.github?.reposCount || 0;
+        const githubContributions = s.platformStats?.github?.contributions?.length || 0;
+        sumGithubRepos += githubRepos;
+        sumGithubContributions += githubContributions;
+
+        const projectsCount = (s.projects || []).length;
+        sumProjects += projectsCount;
+
+        const monthsActive = Math.max(1, Math.round((Date.now() - new Date(s.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30.5)));
+        const codingDaysMonth = Math.min(30, Math.round((s.activeDaysCount || 0) / monthsActive));
+        sumCodingDaysMonth += Math.max(s.monthlyActivityCount || 0, codingDaysMonth);
+
+        // Profile Completion Score Out of 100
+        let completionPoints = 0;
+        if (s.bio) completionPoints += 15;
+        if (s.linkedinUrl) completionPoints += 10;
+        if (s.githubUsername) completionPoints += 10;
+        if (s.leetcodeUsername) completionPoints += 10;
+        if (s.gfgUsername) completionPoints += 10;
+        if (s.codechefUsername) completionPoints += 10;
+        if (s.currentYear || s.year) completionPoints += 15;
+        if (s.branch) completionPoints += 10;
+        if (s.college) completionPoints += 10;
+        const profileCompletion = Math.min(100, Math.max(s.isOnboarded ? 50 : 0, completionPoints));
+        sumProfileCompletion += profileCompletion;
+
+        // Resume Completion
+        const hasResume = !!(s.resume?.lastGeneratedAt || s.resume?.uploadedAt || s.resume?.manualUrl);
+        if (hasResume) countResume++;
+
+        // Activity status
+        if (s.activityStatus === 'active') countActive++;
+        if (bestStreak >= 30) countStreak30++;
+        if (projectsCount >= 2) count2Projects++;
+
+        const participatesInContests = (lc.contestCount || 0) > 0 || (cc.contestCount || 0) > 0;
+        if (participatesInContests) countContests++;
+
+        // Placement Readiness Score (weighted multi-factor formula)
+        // 1. Coding: solved count out of 300
+        const codingScore = Math.min(100, (totalSolved / 300) * 100);
+
+        // 2. Contest Performance
+        const lcRating = lc.rating || 0;
+        const ccRating = cc.currentRating || cc.rating || 0;
+        const maxRating = Math.max(lcRating, ccRating);
+        const contestScore = maxRating > 0 ? Math.min(100, (maxRating / 1800) * 100) : (participatesInContests ? 40 : 0);
+
+        // 3. GitHub Activity
+        const githubScore = s.githubUsername ? Math.min(100, 30 + (githubRepos * 5) + (githubContributions * 1)) : 0;
+
+        // 4. Projects
+        const projectsScore = Math.min(100, projectsCount * 50);
+
+        // 5. Resume Score
+        const resumeScore = hasResume ? 100 : 0;
+
+        // 6. Profile Completion Score
+        const profileScore = profileCompletion;
+
+        const readinessScore = (codingScore * 0.3) + (contestScore * 0.2) + (githubScore * 0.15) + (projectsScore * 0.15) + (resumeScore * 0.1) + (profileScore * 0.1);
+        sumReadinessScore += readinessScore;
+
+        // Classify placement readiness
+        if (readinessScore >= 80) countReady++;
+        else if (readinessScore >= 60) countProgressing++;
+        else if (readinessScore >= 40) countNeedsImprovement++;
+        else countAtRisk++;
+      });
+
+      statistics[year] = {
+        totalStudents: total,
+        dailyActivePercent: Math.round((countActive / total) * 100),
+        streak30Percent: Math.round((countStreak30 / total) * 100),
+        avgCodingDaysMonth: Math.round(sumCodingDaysMonth / total),
+        avgProfileCompletion: Math.round(sumProfileCompletion / total),
+        resumeUploadPercent: Math.round((countResume / total) * 100),
+        avgGithubContributions: Math.round(sumGithubContributions / total),
+        studentsWith2ProjectsPercent: Math.round((count2Projects / total) * 100),
+        contestParticipationPercent: Math.round((countContests / total) * 100),
+        avgReadinessScore: Math.round(sumReadinessScore / total),
+        avgSolved: Math.round(sumSolved / total),
+        avgLeetcodeSolved: Math.round(sumLeetcodeSolved / total),
+        avgGfgSolved: Math.round(sumGfgSolved / total),
+        avgCodechefSolved: Math.round(sumCodechefSolved / total),
+        avgHackerrankSolved: Math.round(sumHackerrankSolved / total),
+        avgOverallScore: Math.round(sumOverallScore / total),
+        avgActiveDays: Math.round(sumActiveDays / total),
+        avgStreak: Math.round(sumStreak / total),
+        avgGithubRepos: Math.round((sumGithubRepos / total) * 10) / 10,
+        avgProjects: Math.round((sumProjects / total) * 10) / 10,
+        readyPercent: Math.round((countReady / total) * 100),
+        progressingPercent: Math.round((countProgressing / total) * 100),
+        needsImprovementPercent: Math.round((countNeedsImprovement / total) * 100),
+        atRiskPercent: Math.round((countAtRisk / total) * 100)
+      };
+    });
+
+    // Fallback static insights generator
+    function generateFallbackInsights(statsData) {
+      return Object.entries(statsData).map(([year, stats]) => {
+        const strengths = [];
+        const weaknesses = [];
+        const recommendations = [];
+        let priority = "Medium";
+
+        if (stats.avgSolved > 150) strengths.push(`Strong overall problem-solving metrics (Avg: ${stats.avgSolved} solved).`);
+        if (stats.avgProfileCompletion > 80) strengths.push(`Excellent student profile completeness (${stats.avgProfileCompletion}%).`);
+        if (stats.resumeUploadPercent > 70) strengths.push(`High resume completion rates (${stats.resumeUploadPercent}%).`);
+        if (stats.avgGithubContributions > 15) strengths.push(`Active version control and GitHub engagement (Avg: ${stats.avgGithubContributions} contributions).`);
+        if (strengths.length === 0) strengths.push("Basic profile setup completed by the majority of the batch.");
+
+        if (stats.avgSolved < 100) {
+          weaknesses.push(`Low problem-solving volume (Avg: ${stats.avgSolved} solved).`);
+          priority = "High";
+        }
+        if (stats.contestParticipationPercent < 30) weaknesses.push(`Low contest participation rate (${stats.contestParticipationPercent}%).`);
+        if (stats.avgProjects < 1) weaknesses.push(`Insufficient project experience (Avg: ${stats.avgProjects} projects per student).`);
+        if (stats.dailyActivePercent < 20) weaknesses.push(`Low daily coding activity engagement (${stats.dailyActivePercent}%).`);
+        if (weaknesses.length === 0) weaknesses.push("Need to transition from basic syntax to advanced DSA mock interview practice.");
+
+        if (stats.avgSolved < 120) {
+          recommendations.push("Increase weekly coding sessions to boost problem-solving metrics.");
+        }
+        if (stats.avgProjects < 1.2) {
+          recommendations.push("Conduct workshops on project development and Git version control.");
+        }
+        if (stats.contestParticipationPercent < 40) {
+          recommendations.push("Encourage and incentivize participation in weekly LeetCode/CodeChef contests.");
+        }
+        if (stats.resumeUploadPercent < 60) {
+          recommendations.push("Organize a resume building and review drive to complete professional portfolios.");
+        }
+        if (stats.avgReadinessScore < 50) {
+          recommendations.push("Schedule mock interviews and core CS fundamentals review sessions.");
+        }
+        if (recommendations.length === 0) {
+          recommendations.push("Assign industry mentors for advanced project design and placement guidance.");
+        }
+
+        return {
+          year,
+          overallScore: Math.round(stats.avgReadinessScore),
+          strengths,
+          weaknesses,
+          recommendations,
+          priority
+        };
+      });
+    }
+
+    // Rank the batches
+    const yearStatsList = Object.entries(statistics).map(([year, stats]) => ({
+      year,
+      avgReadinessScore: stats.avgReadinessScore,
+      avgCodingDaysMonth: stats.avgCodingDaysMonth,
+      atRiskPercent: stats.atRiskPercent
+    }));
+
+    let bestBatch = '-';
+    let mostImprovedBatch = '-';
+    let needsAttentionBatch = '-';
+
+    if (yearStatsList.length > 0) {
+      const sortedByReadiness = [...yearStatsList].sort((a, b) => b.avgReadinessScore - a.avgReadinessScore);
+      bestBatch = sortedByReadiness[0].year;
+
+      const sortedByImprovement = [...yearStatsList].sort((a, b) => b.avgCodingDaysMonth - a.avgCodingDaysMonth);
+      mostImprovedBatch = sortedByImprovement[0].year;
+
+      const sortedByRisk = [...yearStatsList].sort((a, b) => b.atRiskPercent - a.atRiskPercent || a.avgReadinessScore - b.avgReadinessScore);
+      needsAttentionBatch = sortedByRisk[0].year;
+    }
+
+    const rankings = { bestBatch, mostImprovedBatch, needsAttentionBatch };
+
+    // AI Insight Generator
+    let insights = [];
+    let isAiGenerated = false;
+
+    const configEnv = require('../config/env');
+    if (configEnv.geminiApiKey || process.env.GEMINI_API_KEY) {
+      try {
+        const aiService = require('../services/ai.service');
+        const systemInstruction = "You are an expert academic and placement coordinator assistant. Analyse batch metrics and return structured JSON suggestions.";
+        const prompt = `Here are the year-wise statistics for students in our program:
+${JSON.stringify(statistics, null, 2)}
+
+For each academic year present in the statistics, provide an analysis.
+You MUST return EXACTLY a JSON array matching the schema:
+[
+  {
+    "year": "2nd Year",
+    "overallScore": 58,
+    "strengths": ["...", "..."],
+    "weaknesses": ["...", "..."],
+    "recommendations": ["...", "..."],
+    "priority": "High | Medium | Low"
+  }
+]
+Make recommendations extremely concrete and actionable (e.g. 'Conduct GitHub workshops', 'Increase weekly coding sessions', 'Improve contest participation', 'Encourage resume completion').
+Return ONLY raw JSON array. Do not include markdown code block formatting.`;
+
+        const resJson = await aiService.generateJSON(prompt, systemInstruction);
+        if (Array.isArray(resJson)) {
+          insights = resJson;
+          isAiGenerated = true;
+        }
+      } catch (err) {
+        console.warn('Gemini year-wise analytics generation failed. Using static rules instead:', err.message);
+      }
+    }
+
+    if (!isAiGenerated || insights.length === 0) {
+      insights = generateFallbackInsights(statistics);
+    }
+
+    return res.json({ rankings, statistics, insights });
+  } catch (err) {
+    console.error('Failed to load year-wise analytics:', err);
+    return res.status(500).json({ message: 'Failed to load year-wise analytics' });
+  }
+});
+
 module.exports = router;
+
