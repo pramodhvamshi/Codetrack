@@ -1,0 +1,199 @@
+{
+  "title": "Python Developer",
+  "description": "A comprehensive roadmap to master Python, from basic syntax to advanced applications.",
+  "icon": "Terminal",
+  "nodes": [
+    {
+      "title": "Python Basics",
+      "description": "Fundamental concepts of Python programming.",
+      "difficulty": "Beginner",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Syntax & Variables",
+          "description": "Data types, strings, numbers, and boolean.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Control Structures",
+          "description": "If/else statements, for loops, and while loops.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Data Structures",
+      "description": "Built-in data structures in Python.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Lists & Tuples",
+          "description": "Ordered collections, mutability vs immutability.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Dictionaries & Sets",
+          "description": "Key-value pairs and unique collections.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Functions & Modules",
+      "description": "Reusable code and structuring large applications.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Functions & Lambdas",
+          "description": "Defining functions, args, kwargs, and anonymous functions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Modules & Packages",
+          "description": "Importing modules, standard library, and PIP.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Object-Oriented Programming (OOP)",
+      "description": "Classes, inheritance, and encapsulation.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "Classes & Objects",
+          "description": "Defining classes, __init__, and self.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Inheritance & Polymorphism",
+          "description": "Subclasses, super(), and method overriding.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        },
+        {
+          "title": "Magic Methods",
+          "description": "Dunder methods like __str__, __len__, __add__.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "Low",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Advanced Python",
+      "description": "Decorators, generators, and context managers.",
+      "difficulty": "Advanced",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Medium",
+      "order": 5,
+      "children": [
+        {
+          "title": "Iterators & Generators",
+          "description": "Yield keyword and custom iterators.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1
+        },
+        {
+          "title": "Decorators",
+          "description": "Higher-order functions and wrapping behavior.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        },
+        {
+          "title": "Context Managers",
+          "description": "The 'with' statement and __enter__/__exit__.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "File I/O & Exception Handling",
+      "description": "Interacting with the file system and handling errors.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 6,
+      "children": [
+        {
+          "title": "Reading & Writing Files",
+          "description": "Working with txt, csv, and json files.",
+          "difficulty": "Beginner",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Exceptions",
+          "description": "Try, except, finally, and custom exceptions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    }
+  ]
+}

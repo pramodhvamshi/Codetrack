@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { StudentResume } from './pages/student/StudentResume';
+import { MockInterviewDashboard } from './features/mockInterview/pages/MockInterviewDashboard';
 import { StudentProfileEdit } from './pages/student/StudentProfileEdit';
 
 import { CoordinatorDashboard } from './pages/coordinator/CoordinatorDashboard';
@@ -25,6 +26,15 @@ import { ReportBugPage } from './pages/shared/ReportBugPage';
 import { LeaderboardPage } from './pages/shared/LeaderboardPage';
 import { PublicStudentProfile } from './pages/shared/PublicStudentProfile';
 import { LandingPage } from './pages/shared/LandingPage';
+
+// Features
+import RoadmapsDashboard from './features/roadmaps/pages/RoadmapsDashboard';
+import RoadmapDetail from './features/roadmaps/pages/RoadmapDetail';
+import CoordinatorRoadmapView from './features/roadmaps/pages/CoordinatorRoadmapView';
+
+import DSADashboard from './features/dsa/pages/DSADashboard';
+import DSASheetView from './features/dsa/pages/DSASheetView';
+import CoordinatorDSAView from './features/dsa/pages/CoordinatorDSAView';
 
 import './styles/global.css';
 
@@ -111,6 +121,15 @@ function AppRoutes() {
           element={
             <ProtectedRoute role="student">
               <StudentResume />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/interview"
+          element={
+            <ProtectedRoute role="student">
+              <MockInterviewDashboard />
             </ProtectedRoute>
           }
         />
@@ -254,6 +273,24 @@ function AppRoutes() {
           }
         />
 
+        <Route
+          path="/coordinator/students/:studentId/roadmap/:roadmapId"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorRoadmapView />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/coordinator/students/:studentId/dsa/:sheetId"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorDSAView />
+            </ProtectedRoute>
+          }
+        />
+
         {/* ADMIN */}
         <Route
           path="/admin/dashboard"
@@ -324,6 +361,42 @@ function AppRoutes() {
         <Route
           path="/student/profile/view/:id"
           element={<PublicStudentProfile />}
+        />
+
+        {/* ROADMAPS */}
+        <Route
+          path="/roadmaps"
+          element={
+            <ProtectedRoute>
+              <RoadmapsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roadmaps/:id"
+          element={
+            <ProtectedRoute>
+              <RoadmapDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* DSA TRACKER */}
+        <Route
+          path="/dsa"
+          element={
+            <ProtectedRoute>
+              <DSADashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dsa/:id"
+          element={
+            <ProtectedRoute>
+              <DSASheetView />
+            </ProtectedRoute>
+          }
         />
 
         {/* FALLBACK */}

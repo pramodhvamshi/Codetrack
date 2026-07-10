@@ -1,0 +1,217 @@
+{
+  "title": "Artificial Intelligence",
+  "description": "A comprehensive roadmap to become an AI Engineer, from basics to advanced models.",
+  "icon": "Cpu",
+  "nodes": [
+    {
+      "title": "Programming & Fundamentals",
+      "description": "Learn the core programming languages and math for AI.",
+      "difficulty": "Beginner",
+      "estimatedTime": "4 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Python for Data Science",
+          "description": "Pandas, NumPy, Matplotlib, and Scikit-learn basics.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Linear Algebra & Calculus",
+          "description": "Vectors, Matrices, Derivatives, and Gradients.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Machine Learning",
+      "description": "Core predictive modeling algorithms.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "6 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Supervised Learning",
+          "description": "Regression, Classification, Decision Trees, SVM, and Ensembles (Random Forest, XGBoost).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Unsupervised Learning",
+          "description": "Clustering (K-Means), PCA, and Anomaly Detection.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        },
+        {
+          "title": "Model Evaluation",
+          "description": "Cross-validation, Precision, Recall, F1 Score, and ROC-AUC.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Deep Learning",
+      "description": "Neural Networks and representation learning.",
+      "difficulty": "Advanced",
+      "estimatedTime": "6 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Neural Network Fundamentals",
+          "description": "Perceptrons, Backpropagation, and Activation Functions.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1
+        },
+        {
+          "title": "PyTorch / TensorFlow",
+          "description": "Deep learning frameworks.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        },
+        {
+          "title": "Computer Vision (CNNs)",
+          "description": "Convolutional Neural Networks for image processing.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Natural Language Processing (NLP)",
+      "description": "Processing and understanding human language.",
+      "difficulty": "Advanced",
+      "estimatedTime": "4 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "Text Processing & Embeddings",
+          "description": "Tokenization, TF-IDF, Word2Vec, GloVe.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Sequence Models",
+          "description": "RNNs, LSTMs, and GRUs.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 2
+        },
+        {
+          "title": "Transformers & Attention",
+          "description": "Self-Attention, BERT, GPT architectures.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Generative AI & LLMs",
+      "description": "Building and utilizing modern Large Language Models.",
+      "difficulty": "Advanced",
+      "estimatedTime": "4 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 5,
+      "children": [
+        {
+          "title": "Prompt Engineering",
+          "description": "Effective techniques for querying LLMs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "RAG (Retrieval-Augmented Generation)",
+          "description": "Vector Databases, LangChain, LlamaIndex.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        },
+        {
+          "title": "Fine-Tuning",
+          "description": "LoRA, QLoRA, and adapting pre-trained models.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "MLOps & Deployment",
+      "description": "Taking models to production.",
+      "difficulty": "Advanced",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 6,
+      "children": [
+        {
+          "title": "Model Serving",
+          "description": "FastAPI, Flask, ONNX, TensorRT.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Cloud AI Services",
+          "description": "AWS SageMaker, Google Vertex AI, Azure ML.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    }
+  ]
+}

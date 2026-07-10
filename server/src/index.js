@@ -14,6 +14,10 @@ const resumeRoutes = require('./routes/resume');
 const adminRoutes = require('./routes/admin');
 const bugRoutes = require('./routes/bugs');
 const mentorNotesRoutes = require('./routes/mentorNotes');
+const progressRoutes = require('./routes/progress');
+const roadmapRoutes = require('./routes/roadmap.routes');
+const dsaRoutes = require('./routes/dsa.routes');
+const aiRoutes = require('./routes/ai.routes');
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -64,6 +68,10 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/student/resume', resumeRoutes);
+app.use('/api/student/progress', progressRoutes);
+app.use('/api/roadmaps', roadmapRoutes);
+app.use('/api/dsa', dsaRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);

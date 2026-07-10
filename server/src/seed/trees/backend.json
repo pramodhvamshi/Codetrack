@@ -1,0 +1,228 @@
+{
+  "title": "Backend Development",
+  "description": "A complete, step-by-step curriculum to become a Backend Developer.",
+  "icon": "Server",
+  "nodes": [
+    {
+      "title": "Internet & Web Basics",
+      "description": "Understand how the internet and web work behind the scenes.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "Medium",
+      "projectImportance": "Medium",
+      "order": 1,
+      "children": [
+        {
+          "title": "How the Internet Works",
+          "description": "DNS, IP Addresses, and Hosting.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 hours",
+          "interviewImportance": "Medium",
+          "projectImportance": "Low",
+          "order": 1
+        },
+        {
+          "title": "HTTP/HTTPS",
+          "description": "Methods, status codes, and secure communication.",
+          "difficulty": "Beginner",
+          "estimatedTime": "3 hours",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Programming Language (Choose One)",
+      "description": "Master a backend language.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "4 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Node.js (JavaScript)",
+          "description": "Asynchronous event-driven JavaScript runtime.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Java",
+          "description": "Object-oriented, class-based, concurrent language.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        },
+        {
+          "title": "Python",
+          "description": "Interpreted high-level general-purpose language.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 weeks",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "Relational Databases (SQL)",
+      "description": "Storing and querying structured data.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "SQL Basics & Joins",
+          "description": "SELECT, INSERT, UPDATE, DELETE, and table joins.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Indexing & Performance",
+          "description": "Optimizing queries and understanding execution plans.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        },
+        {
+          "title": "ACID Transactions",
+          "description": "Atomicity, Consistency, Isolation, Durability.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 hours",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 3
+        }
+      ]
+    },
+    {
+      "title": "NoSQL Databases",
+      "description": "Flexible schema data storage.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "Medium",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "MongoDB",
+          "description": "Document-oriented NoSQL database.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Redis",
+          "description": "In-memory data structure store, used as a database, cache, and message broker.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "APIs (Application Programming Interfaces)",
+      "description": "Building communication bridges.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 5,
+      "children": [
+        {
+          "title": "REST APIs",
+          "description": "Representational State Transfer principles and design.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "GraphQL",
+          "description": "Query language for APIs.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Authentication & Security",
+      "description": "Securing your applications.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 6,
+      "children": [
+        {
+          "title": "JWT & OAuth",
+          "description": "Token-based authentication and authorization frameworks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 hours",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1
+        },
+        {
+          "title": "Hashing & Encryption",
+          "description": "Bcrypt, salt, and securing passwords.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 hours",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "title": "Architecture & Scaling",
+      "description": "Designing scalable systems.",
+      "difficulty": "Advanced",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Low",
+      "order": 7,
+      "children": [
+        {
+          "title": "Microservices vs Monoliths",
+          "description": "Architectural patterns and trade-offs.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1
+        },
+        {
+          "title": "Message Brokers",
+          "description": "RabbitMQ, Kafka - asynchronous communication.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 week",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2
+        }
+      ]
+    }
+  ]
+}

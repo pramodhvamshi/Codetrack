@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef, useTransition } from 'react';
+// Force Vite HMR reload
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import { api, API_BASE_URL } from '../../api/client';
 import { ResumePreviewHTML } from '../../components/ResumePreviewHTML';
+import { ATSAnalysisTab } from '../../features/resume/components/ATSAnalysisTab';
 import { 
   ArrowUp, ArrowDown, Eye, EyeOff, Download, 
   Layout, Upload, CheckCircle, RefreshCw, AlertCircle,
@@ -78,6 +80,7 @@ export function StudentResume() {
 
   // Resume Preview State
   const [previewResumeUrl, setPreviewResumeUrl] = useState(null);
+  const [atsTarget, setAtsTarget] = useState(null); // { type: 'version' | 'file', id: string }
 
   useEffect(() => {
     if (previewResumeUrl) {
@@ -159,6 +162,7 @@ export function StudentResume() {
   // Switch to select a specific version
   const selectVersion = (version) => {
     setCurrentVersion(version);
+    setAtsTarget({ id: version._id, type: 'version' });
     setSelectedTemplate(resolveTemplateKey(version.templateKey) || 'single_column');
     setFormData(version.content || {});
     setLayout(version.layout || {
@@ -177,23 +181,36 @@ export function StudentResume() {
 
   // Run ATS Checker
   const runAtsCheck = async () => {
-    if (!token || !currentVersion) return;
+    if (!token || !atsTarget) return;
     setCalculatingAts(true);
     try {
-      // First save draft
-      const completeness = calculateCompleteness();
-      await api.putJson(`/student/resume/versions/${currentVersion._id}`, {
-        templateKey: selectedTemplate,
-        layout,
-        content: formData,
-        completenessScore: completeness
-      }, token);
+      let payload = { type: atsTarget.type };
+      if (atsTarget.type === 'version') {
+        // First save draft
+        const completeness = calculateCompleteness();
+        await api.putJson(`/student/resume/versions/${currentVersion._id}`, {
+          templateKey: selectedTemplate,
+          layout,
+          content: formData,
+          completenessScore: completeness
+        }, token);
+        payload.resumeVersionId = atsTarget.id;
+      } else {
+        payload.fileId = atsTarget.id;
+      }
 
       // Call ATS checker
-      const res = await api.postJson(`/student/resume/versions/${currentVersion._id}/ats-check`, {}, token);
+      const res = await api.postJson(`/ai/resume/analyze`, payload, token);
+      
+      if (atsTarget.type === 'version') {
+        const updatedVersion = { ...currentVersion, atsScore: res.atsScore };
+        setCurrentVersion(updatedVersion);
+        setVersions(versions.map(v => v._id === updatedVersion._id ? updatedVersion : v));
+      }
+
       setAtsDetails({
         score: res.atsScore || 70,
-        suggestions: res.atsSuggestions || []
+        suggestions: res.suggestions || []
       });
     } catch (err) {
       console.error('ATS check failed:', err);
@@ -289,6 +306,13 @@ export function StudentResume() {
       const data = await api.getJson('/student/resume/versions', token);
       setVersions(data.generated || []);
       setUploads(data.uploaded || []);
+      
+      const vId = rId;
+      const ver = (data.generated || []).find(v => v._id === vId);
+      if (ver) {
+        setCurrentVersion(ver);
+        setAtsTarget({ id: ver._id, type: 'version' });
+      }
       alert('Default resume updated successfully!');
     } catch (err) {
       alert('Failed to set default: ' + err.message);
@@ -719,14 +743,21 @@ export function StudentResume() {
               style={{ flex: 1, border: editorMode === 'builder' ? '1px solid var(--accent-blue)' : undefined, background: editorMode === 'builder' ? 'rgba(59, 130, 246, 0.1)' : undefined }}
               onClick={() => setEditorMode('builder')}
             >
-              Resume Builder
+              Builder
+            </button>
+            <button 
+              className={`ct-button-secondary`}
+              style={{ flex: 1, border: editorMode === 'ats' ? '1px solid var(--accent-purple)' : undefined, background: editorMode === 'ats' ? 'rgba(168, 85, 247, 0.1)' : undefined }}
+              onClick={() => setEditorMode('ats')}
+            >
+              ATS Analysis
             </button>
             <button 
               className={`ct-button-secondary`}
               style={{ flex: 1, border: editorMode === 'uploads' ? '1px solid var(--accent-blue)' : undefined, background: editorMode === 'uploads' ? 'rgba(59, 130, 246, 0.1)' : undefined }}
               onClick={() => setEditorMode('uploads')}
             >
-              Uploaded Resumes ({uploads.length})
+              History ({uploads.length})
             </button>
           </div>
 
@@ -1234,23 +1265,12 @@ export function StudentResume() {
                   </div>
                   <button 
                     className="ct-button" 
-                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
-                    onClick={runAtsCheck} 
-                    disabled={calculatingAts}
+                    style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)', color: '#fff' }}
+                    onClick={() => setEditorMode('ats')} 
                   >
-                    {calculatingAts ? <RefreshCw size={12} className="animate-spin" /> : 'Run Check'}
+                    View Full ATS Report
                   </button>
                 </div>
-                {atsDetails.suggestions && atsDetails.suggestions.length > 0 && (
-                  <div style={{ background: 'rgba(0,0,0,0.15)', padding: '0.6rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                    <h5 style={{ margin: '0 0 0.4rem 0', fontSize: '0.75rem', color: 'var(--accent-orange)' }}>ATS Suggestions:</h5>
-                    <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                      {atsDetails.suggestions.map((sug, idx) => (
-                        <li key={idx}>{sug}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
 
               {/* RESUME TIPS GUIDANCE */}
@@ -1314,6 +1334,13 @@ export function StudentResume() {
                         </button>
                         <button
                           className="ct-button-secondary"
+                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', border: '1px solid var(--accent-purple)', color: 'var(--accent-purple)' }}
+                          onClick={() => { setAtsTarget({ id: file._id, type: 'file' }); setEditorMode('ats'); }}
+                        >
+                          Analyze ATS
+                        </button>
+                        <button
+                          className="ct-button-secondary"
                           style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem' }}
                           onClick={() => handleOpenPreview(file.fileUrl || file.storagePath)}
                         >
@@ -1339,6 +1366,14 @@ export function StudentResume() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* ATS ANALYSIS MODE */}
+          {editorMode === 'ats' && (
+            <ATSAnalysisTab 
+              targetId={atsTarget?.id || currentVersion?._id}
+              targetType={atsTarget?.type || 'version'}
+            />
           )}
 
         </div>

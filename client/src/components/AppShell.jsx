@@ -133,8 +133,8 @@ export function AppShell({ active, children }) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.1);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
           border-radius: 999px;
           padding: 0.3rem 0.75rem 0.3rem 0.3rem;
           cursor: pointer;
@@ -142,8 +142,8 @@ export function AppShell({ active, children }) {
           color: var(--text-primary);
         }
         .ct-avatar-btn:hover {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(59,130,246,0.4);
+          background: var(--bg-card);
+          border-color: var(--accent-blue);
         }
         .ct-avatar-circle-sm {
           width: 30px;
@@ -161,7 +161,7 @@ export function AppShell({ active, children }) {
         .ct-avatar-name {
           font-size: 0.8rem;
           font-weight: 500;
-          color: #e5e7eb;
+          color: var(--text-primary);
           max-width: 100px;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -184,12 +184,12 @@ export function AppShell({ active, children }) {
           top: calc(100% + 10px);
           right: 0;
           width: 220px;
-          background: rgba(15, 23, 42, 0.97);
+          background: var(--bg-card);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid var(--border);
           border-radius: 14px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(59,130,246,0.1);
+          box-shadow: var(--card-shadow);
           overflow: hidden;
           z-index: 1000;
           animation: dropdownFadeIn 0.18s ease;
@@ -201,7 +201,7 @@ export function AppShell({ active, children }) {
         .ct-dropdown-header {
           padding: 0.9rem 1rem;
           background: rgba(59,130,246,0.06);
-          border-bottom: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid var(--border);
           display: flex;
           align-items: center;
           gap: 0.75rem;
@@ -223,7 +223,7 @@ export function AppShell({ active, children }) {
         .ct-dropdown-user-name {
           font-size: 0.85rem;
           font-weight: 600;
-          color: #f3f4f6;
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -260,7 +260,7 @@ export function AppShell({ active, children }) {
           padding: 0.55rem 0.75rem;
           border: none;
           background: transparent;
-          color: #d1d5db;
+          color: var(--text-muted);
           font-size: 0.85rem;
           cursor: pointer;
           border-radius: 8px;
@@ -268,8 +268,8 @@ export function AppShell({ active, children }) {
           transition: background 0.15s, color 0.15s;
         }
         .ct-dropdown-item:hover {
-          background: rgba(255,255,255,0.06);
-          color: #f3f4f6;
+          background: var(--bg-secondary);
+          color: var(--text-primary);
         }
         .ct-dropdown-item.active-page {
           background: rgba(59,130,246,0.1);
@@ -282,7 +282,7 @@ export function AppShell({ active, children }) {
         }
         .ct-dropdown-divider {
           height: 1px;
-          background: rgba(255,255,255,0.06);
+          background: var(--border);
           margin: 0.3rem 0.5rem;
         }
         .ct-dropdown-logout {
@@ -309,8 +309,11 @@ export function AppShell({ active, children }) {
           <div className="ct-nav-group">
             {isStudent && [
               navItem('Dashboard', '/student/dashboard', 'student-dashboard'),
+              navItem('Roadmaps', '/roadmaps', 'roadmaps'),
+              navItem('DSA Tracker', '/dsa', 'dsa'),
               navItem('Profile', '/student/profile', 'student-profile'),
               navItem('Resume', '/student/resume', 'student-resume'),
+              navItem('Interviews', '/student/interview', 'student-interview'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
             ]}
             {isCoordinator && [

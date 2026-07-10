@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { api, API_BASE_URL } from '../../api/client';
 import { 
   Trophy, Award, Code, Activity, Calendar, FileText, 
-  ExternalLink, Download, ArrowLeft, RefreshCw, Eye
+  ExternalLink, Download, ArrowLeft, RefreshCw, Eye, Map
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { HeatmapWidget } from '../../components/HeatmapWidget';
@@ -21,7 +21,8 @@ export function CoordinatorStudentDetail() {
   const [timeline, setTimeline] = useState([]);
   const [heatmap, setHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // overview, platforms, heatmap, analytics, timeline, resume
+  const [activeTab, setActiveTab] = useState('overview'); // overview, platforms, heatmap, analytics, timeline, resume, curriculum
+  const [curriculumData, setCurriculumData] = useState({ roadmaps: [], dsaSheets: [] });
 
   const [resumeBlobUrl, setResumeBlobUrl] = useState(null);
   const [loadingResume, setLoadingResume] = useState(false);
@@ -50,6 +51,16 @@ export function CoordinatorStudentDetail() {
 
       const heatmapData = await api.getJson(`/coordinator/students/${id}/heatmap`, token);
       setHeatmap(heatmapData);
+
+      try {
+        const [rmData, dsaData] = await Promise.all([
+          api.getJson('/roadmaps', token),
+          api.getJson('/dsa', token)
+        ]);
+        setCurriculumData({ roadmaps: rmData || [], dsaSheets: dsaData || [] });
+      } catch (err) {
+        console.error('Failed to load curriculum lists:', err);
+      }
     } catch (err) {
       console.error('Failed to load student details:', err);
       navigate('/coordinator/students', { replace: true });
@@ -320,6 +331,7 @@ export function CoordinatorStudentDetail() {
             { id: 'overview', label: '👤 Profile Overview' },
             { id: 'mandatory', label: '🎓 Mandatory Accomplishments' },
             { id: 'platforms', label: '🔗 Coding Profiles' },
+            { id: 'curriculum', label: '🗺️ Curriculum Tracking' },
             { id: 'heatmap', label: '📅 Streaks Heatmap' },
             { id: 'analytics', label: '📊 Solve Analytics' },
             { id: 'timeline', label: '⏳ Activity Timeline' },
@@ -1301,6 +1313,57 @@ export function CoordinatorStudentDetail() {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* CURRICULUM TAB */}
+        {activeTab === 'curriculum' && (
+          <div className="ct-grid-responsive" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="ct-card" style={{ borderTop: '4px solid var(--accent-blue)' }}>
+              <h3 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Map size={18} color="var(--accent-blue)" /> Learning Roadmaps
+              </h3>
+              {curriculumData.roadmaps.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No roadmaps available.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  {curriculumData.roadmaps.map(rm => (
+                    <div key={rm._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{rm.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rm.description.substring(0, 50)}...</div>
+                      </div>
+                      <Link to={`/coordinator/students/${id}/roadmap/${rm._id}`} className="ct-button" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
+                        View Progress
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="ct-card" style={{ borderTop: '4px solid var(--accent-green)' }}>
+              <h3 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Code size={18} color="var(--accent-green)" /> DSA Sheets
+              </h3>
+              {curriculumData.dsaSheets.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No DSA sheets available.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  {curriculumData.dsaSheets.map(sheet => (
+                    <div key={sheet._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{sheet.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sheet.description.substring(0, 50)}...</div>
+                      </div>
+                      <Link to={`/coordinator/students/${id}/dsa/${sheet._id}`} className="ct-button-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>
+                        View Tracker
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

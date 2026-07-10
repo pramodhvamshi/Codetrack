@@ -281,8 +281,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* 🔎 Indexes for long-term stability */
-UserSchema.index({ email: 1 });
 UserSchema.index({ 'scores.totalScore': -1 });
 UserSchema.index({ 'scores.weightedRankScore': -1 });
 UserSchema.index({ 'scores.competitiveIndex': -1 });

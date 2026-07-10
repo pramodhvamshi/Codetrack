@@ -11,7 +11,8 @@ async function migrateAcademicProfile() {
     for (const student of students) {
       const existing = await AcademicProfile.findOne({ userId: student._id });
       if (!existing) {
-        const cgpa = student.overallGpa != null ? student.overallGpa : null;
+        let cgpa = student.overallGpa != null ? student.overallGpa : null;
+        if (cgpa !== null && (cgpa > 10 || cgpa < 0)) cgpa = null; // Cap at 10 to satisfy schema constraints
         let academicStatus = '-';
         if (cgpa !== null) {
           if (cgpa >= 9.0) academicStatus = 'Excellent';
