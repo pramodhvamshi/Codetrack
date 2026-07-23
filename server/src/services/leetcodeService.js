@@ -244,31 +244,7 @@ async function fetchLeetCodeProfile(username, force = false) {
           console.log(`Returning stale LeetCode cache data for ${username}`);
           return cached.data;
         }
-        return {
-          username,
-          totalSolved: 0,
-          totalQuestions: 0,
-          easySolved: 0,
-          totalEasy: 0,
-          mediumSolved: 0,
-          totalMedium: 0,
-          hardSolved: 0,
-          totalHard: 0,
-          ranking: 0,
-          contributionPoint: 0,
-          reputation: 0,
-          submissionCalendar: {},
-          recentSubmissions: [],
-          contestCount: 0,
-          contestRating: 0,
-          contestRanking: 0,
-          contestTopPercentage: 0,
-          acceptanceRate: 0,
-          badges: [],
-          badgeCount: 0,
-          arraysSolved: 0,
-          stringsSolved: 0
-        };
+        throw new Error(`LeetCode API failed for ${username} after all retries: ${err.message}`);
       }
       await new Promise(res => setTimeout(res, delay));
       delay *= 2; // exponential backoff

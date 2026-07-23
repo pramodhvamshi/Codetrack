@@ -696,7 +696,7 @@ export function PublicStudentProfile() {
                 {profile.goal && (
                   <div style={{ fontSize: '0.88rem', color: '#60a5fa', fontWeight: 600, marginTop: '0.2rem' }}>
                     Track: {profile.goal}
-                    {profile.interestedDomain && ` • Domain: ${profile.interestedDomain}`}
+                    {profile.interestedDomain && profile.interestedDomain !== 'NOT SELECTED' && ` • Domain: ${profile.interestedDomain}`}
                   </div>
                 )}
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>

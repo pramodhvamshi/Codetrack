@@ -137,9 +137,32 @@ async function validateGitHub(username) {
   }
 }
 
+/**
+ * Validate HackerRank username by calling REST API
+ */
+async function validateHackerRank(username) {
+  if (!username) return false;
+  try {
+    const response = await axios.get(
+      `https://www.hackerrank.com/rest/contests/master/hackers/${encodeURIComponent(username)}/profile`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        },
+        timeout: 10000
+      }
+    );
+    return response.status === 200 && !!response.data?.model?.username;
+  } catch (err) {
+    console.error(`HackerRank validation failed for ${username}:`, err.message);
+    return false;
+  }
+}
+
 module.exports = {
   validateLeetCode,
   validateCodeChef,
   validateGeeksforGeeks,
-  validateGitHub
+  validateGitHub,
+  validateHackerRank
 };

@@ -115,71 +115,36 @@ export function CoordinatorStudentsList() {
   const getExportData = async () => {
     // Fetch all student records for export without limit
     try {
-      const data = await api.getJson('/coordinator/export-data', token);
+      const params = new URLSearchParams();
+
+      if (config.status) params.set('status', config.status);
+      if (config.readiness) params.set('readiness', config.readiness);
+
+      if (search.trim()) params.set('name', search.trim());
+      if (college) params.set('college', college);
+      if (branch) params.set('branch', branch);
+      if (currentYear) params.set('currentYear', currentYear);
+      if (goal) params.set('goal', goal);
+
+      params.set('sortBy', sortBy);
+      params.set('sortOrder', sortOrder);
+
+      const data = await api.getJson(`/coordinator/export-data?${params.toString()}`, token);
       
-      // Filter the data based on current page filters
-      let filtered = data.map(s => {
-        // Compute total solved
-        const totalSolved = (s.LeetCodeSolved || 0) + (s.CodeChefSolved || 0) + (s.GFGSolved || 0);
-        return { ...s, TotalSolved: totalSolved };
-      });
-
-      // Filter status
-      if (config.status === 'active') {
-        filtered = filtered.filter(s => s.ActivityStatus === 'active');
-      } else if (config.status === 'inactive') {
-        filtered = filtered.filter(s => s.ActivityStatus === 'inactive');
-      }
-
-      // Filter readiness
-      if (config.readiness === 'ready') {
-        filtered = filtered.filter(s => s.TotalSolved >= 300 && s.ActivityStatus === 'active');
-      } else if (config.readiness === 'needs_improvement') {
-        filtered = filtered.filter(s => s.TotalSolved >= 100 && s.TotalSolved < 300);
-      } else if (config.readiness === 'at_risk') {
-        filtered = filtered.filter(s => s.TotalSolved < 100);
-      }
-
-      // Filter college
-      if (college) {
-        filtered = filtered.filter(s => s.College === college);
-      }
-
-      // Filter branch
-      if (branch) {
-        filtered = filtered.filter(s => s.Branch === branch);
-      }
-
-      // Filter currentYear
-      if (currentYear) {
-        filtered = filtered.filter(s => {
-          const sYearStr = s.Year ? String(s.Year) : '';
-          const sCurrentYear = sYearStr === '1' ? '1st Year' : sYearStr === '2' ? '2nd Year' : sYearStr === '3' ? '3rd Year' : sYearStr === '4' ? '4th Year' : `${sYearStr} Year`;
-          return sCurrentYear === currentYear;
-        });
-      }
-
-      // Filter goal
-      if (goal) {
-        filtered = filtered.filter(s => s.Goal === goal);
-      }
-
-      // Filter search
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        filtered = filtered.filter(s => 
-          s.Name.toLowerCase().includes(q) || 
-          (s.MSSID && s.MSSID.toLowerCase().includes(q))
-        );
-      }
-
       // Format fields to match requested columns: Name, MSSID, Branch, Current Year, LeetCode Solved, GFG Solved, CodeChef Solved, GitHub Repositories, Coding Score, Goal
-      return filtered.map(s => {
+      return data.map(s => {
         const sYearStr = s.Year ? String(s.Year) : '';
-        const sCurrentYear = sYearStr === '1' ? '1st Year' : sYearStr === '2' ? '2nd Year' : sYearStr === '3' ? '3rd Year' : sYearStr === '4' ? '4th Year' : `${sYearStr} Year`;
+        let sCurrentYear = sYearStr;
+        if (sYearStr === '1') sCurrentYear = '1st Year';
+        else if (sYearStr === '2') sCurrentYear = '2nd Year';
+        else if (sYearStr === '3') sCurrentYear = '3rd Year';
+        else if (sYearStr === '4') sCurrentYear = '4th Year';
+        else if (sYearStr && !sYearStr.includes('Year')) sCurrentYear = `${sYearStr} Year`;
+
         return {
           Name: s.Name,
           MSSID: s.MSSID || '—',
+          College: s.College || '—',
           Branch: s.Branch || '—',
           'Current Year': sCurrentYear,
           'LeetCode Solved': s.LeetCodeSolved || 0,
@@ -251,13 +216,14 @@ export function CoordinatorStudentsList() {
     if (data.length === 0) return alert('No data to export');
 
     const metadata = getMetadataHeaders(data.length);
-    const headers = ['Name', 'MSSID', 'Branch', 'Current Year', 'LeetCode Solved', 'GFG Solved', 'CodeChef Solved', 'GitHub Repositories', 'Coding Score', 'Goal'];
+    const headers = ['Name', 'MSSID', 'College', 'Branch', 'Current Year', 'LeetCode Solved', 'GFG Solved', 'CodeChef Solved', 'GitHub Repositories', 'Coding Score', 'Goal'];
     const excelData = [...metadata, headers];
     
     data.forEach(row => {
       excelData.push([
         row.Name,
         row.MSSID,
+        row.College,
         row.Branch,
         row['Current Year'],
         row['LeetCode Solved'],

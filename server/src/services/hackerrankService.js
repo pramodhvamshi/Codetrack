@@ -121,29 +121,9 @@ async function fetchHackerRankProfile(username, force = false) {
           console.log(`Returning stale HackerRank cache data for ${username}`);
           return cached.data;
         }
-        // Return fallback
-        return {
-          username,
-          avatar: null,
-          country: null,
-          profileUrl: `https://www.hackerrank.com/profile/${username}`,
-          problemSolving: { solved: null, totalChallenges: null, stars: null, rank: null, points: null },
-          python: { solved: null, stars: null, rank: null, points: null },
-          sql: { solved: null, stars: null, rank: null, points: null },
-          c: { solved: null, stars: null, rank: null, points: null },
-          cpp: { solved: null, stars: null, rank: null, points: null },
-          java: { solved: null, stars: null, rank: null, points: null },
-          javascript: { solved: null, stars: null, rank: null, points: null },
-          ruby: { solved: null, stars: null, rank: null, points: null },
-          daysOfCode: { solved: null, stars: null, rank: null, points: null },
-          daysOfJS: { solved: null, stars: null, rank: null, points: null },
-          daysOfStatistics: { solved: null, stars: null, rank: null, points: null },
-          react: { solved: null, stars: null, rank: null, points: null },
-          totalCertifications: null,
-          certificates: null,
-          skills: null,
-          lastSynced: new Date()
-        };
+        const is404 = err.response && err.response.status === 404;
+        const msg = is404 ? 'User does not exist (404 Not Found)' : err.message;
+        throw new Error(`HackerRank API failed for ${username} after all retries: ${msg}`);
       }
       await new Promise(res => setTimeout(res, delay));
       delay *= 2;

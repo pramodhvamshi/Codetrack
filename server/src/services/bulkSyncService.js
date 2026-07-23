@@ -14,6 +14,19 @@ async function runBulkSync(jobId) {
   try {
     job.status = 'Running';
     job.startedAt = new Date();
+    job.completedStudents = 0;
+    job.failedStudents = 0;
+    job.partialStudents = 0;
+    
+    // Add counters for platform failures
+    job.platformFailures = {
+      LeetCode: 0,
+      CodeChef: 0,
+      GFG: 0,
+      GitHub: 0,
+      HackerRank: 0
+    };
+    
     await job.save();
 
     // Fetch active students with at least one platform username
@@ -46,25 +59,67 @@ async function runBulkSync(jobId) {
         { $push: { logs: progressLog } }
       );
 
-      // Execute this batch's sync operations in parallel
       const batchPromises = batch.map(async (student) => {
         try {
-          await syncPlatformsForUser(student, { force: true });
+          const updatedStudent = await syncPlatformsForUser(student, { force: true });
           
-          await BulkSyncJob.updateOne(
-            { jobId },
-            { 
-              $inc: { completedStudents: 1 },
-              $push: { logs: `SUCCESS: Synced student ${student.name} (${student.email})` }
-            }
-          );
+          let hasErrors = false;
+          let hasSuccess = false;
+          const platformLogs = [];
+          const platformFailureUpdates = {};
+          
+          if (updatedStudent.syncResults) {
+            Object.entries(updatedStudent.syncResults).forEach(([platform, result]) => {
+              if (!result || result.startsWith('Skipped')) {
+                platformLogs.push(`⏭ ${platform} : ${result || 'Not configured'}`);
+              } else if (result === 'SUCCESS') {
+                hasSuccess = true;
+                platformLogs.push(`✓ ${platform} : SUCCESS`);
+              } else {
+                hasErrors = true;
+                platformLogs.push(`✗ ${platform} : ${result}`);
+                platformFailureUpdates[`platformFailures.${platform}`] = 1;
+              }
+            });
+          }
+
+          const studentLog = `Student ${student.name} (${student.email}):\n${platformLogs.join('\n')}`;
+
+          if (hasErrors) {
+            await BulkSyncJob.updateOne(
+              { jobId },
+              { 
+                $inc: { 
+                  partialStudents: hasSuccess ? 1 : 0, 
+                  failedStudents: hasSuccess ? 0 : 1,
+                  ...platformFailureUpdates
+                },
+                $push: { 
+                  logs: studentLog,
+                  failedStudentsList: {
+                    studentName: student.name,
+                    email: student.email,
+                    reason: `Partial Failure: ${updatedStudent.syncErrors?.join(', ')}`
+                  }
+                }
+              }
+            );
+          } else {
+            await BulkSyncJob.updateOne(
+              { jobId },
+              { 
+                $inc: { completedStudents: 1 },
+                $push: { logs: studentLog }
+              }
+            );
+          }
         } catch (err) {
           await BulkSyncJob.updateOne(
             { jobId },
             { 
               $inc: { failedStudents: 1 },
               $push: { 
-                logs: `FAILED: Student ${student.name} (${student.email}) - Error: ${err.message}`,
+                logs: `✗ FATAL ERROR - Student ${student.name} (${student.email}): ${err.message}`,
                 failedStudentsList: {
                   studentName: student.name,
                   email: student.email,
@@ -88,7 +143,21 @@ async function runBulkSync(jobId) {
     const finalJob = await BulkSyncJob.findOne({ jobId });
     finalJob.status = 'Completed';
     finalJob.completedAt = new Date();
-    finalJob.logs.push(`Bulk sync complete. Success: ${finalJob.completedStudents}, Failed: ${finalJob.failedStudents}`);
+    
+    const summaryLog = 
+      `--- SYNC SUMMARY ---\n` +
+      `Students Processed: ${finalJob.totalStudents}\n` +
+      `Students Fully Synced: ${finalJob.completedStudents}\n` +
+      `Students Partial: ${finalJob.partialStudents || 0}\n` +
+      `Students Failed: ${finalJob.failedStudents}\n\n` +
+      `Platform Failures:\n` +
+      `LeetCode: ${finalJob.platformFailures?.LeetCode || 0}\n` +
+      `CodeChef: ${finalJob.platformFailures?.CodeChef || 0}\n` +
+      `GitHub: ${finalJob.platformFailures?.GitHub || 0}\n` +
+      `GFG: ${finalJob.platformFailures?.GFG || 0}\n` +
+      `HackerRank: ${finalJob.platformFailures?.HackerRank || 0}`;
+      
+    finalJob.logs.push(summaryLog);
     await finalJob.save();
 
   } catch (err) {

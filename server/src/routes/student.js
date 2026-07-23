@@ -498,7 +498,8 @@ router.put('/me/profile/coding', async (req, res) => {
       validateLeetCode,
       validateCodeChef,
       validateGeeksforGeeks,
-      validateGitHub
+      validateGitHub,
+      validateHackerRank
     } = require('../services/validationService');
 
     const cleanStr = (val, platform) => {
@@ -519,25 +520,31 @@ router.put('/me/profile/coding', async (req, res) => {
       const exists = await User.findOne({ leetcodeUsername: lUsername });
       if (exists) return res.status(400).json({ message: 'LeetCode username is already linked to another account' });
       const isValid = await validateLeetCode(lUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
+      if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
     }
     if (ccUsername && ccUsername !== user.codechefUsername) {
       const exists = await User.findOne({ codechefUsername: ccUsername });
       if (exists) return res.status(400).json({ message: 'CodeChef username is already linked to another account' });
       const isValid = await validateCodeChef(ccUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
+      if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
     }
     if (gfgUser && gfgUser !== user.gfgUsername) {
       const exists = await User.findOne({ gfgUsername: gfgUser });
       if (exists) return res.status(400).json({ message: 'GeeksforGeeks username is already linked to another account' });
       const isValid = await validateGeeksforGeeks(gfgUser);
-      if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
+      if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
     }
     if (ghUsername && ghUsername !== user.githubUsername) {
       const exists = await User.findOne({ githubUsername: ghUsername });
       if (exists) return res.status(400).json({ message: 'GitHub username is already linked to another account' });
       const isValid = await validateGitHub(ghUsername);
-      if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
+      if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
+    }
+    if (hrUsername && hrUsername !== user.hackerrankUsername) {
+      const exists = await User.findOne({ hackerrankUsername: hrUsername });
+      if (exists) return res.status(400).json({ message: 'HackerRank username is already linked to another account' });
+      const isValid = await validateHackerRank(hrUsername);
+      if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
     }
 
     user.leetcodeUsername = lUsername || undefined;
@@ -634,7 +641,8 @@ router.put('/me/profile', async (req, res) => {
       validateLeetCode,
       validateCodeChef,
       validateGeeksforGeeks,
-      validateGitHub
+      validateGitHub,
+      validateHackerRank
     } = require('../services/validationService');
 
     const errors = {};
@@ -696,7 +704,7 @@ router.put('/me/profile', async (req, res) => {
         const exists = await User.findOne({ leetcodeUsername: trimmedLeetcode });
         if (exists) return res.status(400).json({ message: 'LeetCode username is already linked to another account' });
         const isValid = await validateLeetCode(trimmedLeetcode);
-        if (!isValid) return res.status(400).json({ message: 'Invalid LeetCode username or profile does not exist' });
+        if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
         user.leetcodeUsername = trimmedLeetcode;
       } else {
         user.leetcodeUsername = undefined;
@@ -708,7 +716,7 @@ router.put('/me/profile', async (req, res) => {
         const exists = await User.findOne({ codechefUsername: trimmedCodechef });
         if (exists) return res.status(400).json({ message: 'CodeChef username is already linked to another account' });
         const isValid = await validateCodeChef(trimmedCodechef);
-        if (!isValid) return res.status(400).json({ message: 'Invalid CodeChef username or profile does not exist' });
+        if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
         user.codechefUsername = trimmedCodechef;
       } else {
         user.codechefUsername = undefined;
@@ -720,7 +728,7 @@ router.put('/me/profile', async (req, res) => {
         const exists = await User.findOne({ gfgUsername: trimmedGfg });
         if (exists) return res.status(400).json({ message: 'GeeksforGeeks username is already linked to another account' });
         const isValid = await validateGeeksforGeeks(trimmedGfg);
-        if (!isValid) return res.status(400).json({ message: 'Invalid GeeksforGeeks username or profile does not exist' });
+        if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
         user.gfgUsername = trimmedGfg;
       } else {
         user.gfgUsername = undefined;
@@ -732,7 +740,7 @@ router.put('/me/profile', async (req, res) => {
         const exists = await User.findOne({ githubUsername: trimmedGithub });
         if (exists) return res.status(400).json({ message: 'GitHub username is already linked to another account' });
         const isValid = await validateGitHub(trimmedGithub);
-        if (!isValid) return res.status(400).json({ message: 'Invalid GitHub username or profile does not exist' });
+        if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
         user.githubUsername = trimmedGithub;
         user.githubUrl = `https://github.com/${trimmedGithub}`;
       } else {
@@ -760,6 +768,10 @@ router.put('/me/profile', async (req, res) => {
       if (hackerrank === null) {
         user.hackerrank = null;
       } else {
+        if (hackerrank.username && hackerrank.username !== user.hackerrank?.username) {
+          const isValid = await validateHackerRank(hackerrank.username);
+          if (!isValid) return res.status(400).json({ message: 'This username could not be found. Please enter your actual platform handle.' });
+        }
         user.hackerrank = {
           ...(user.hackerrank || {}),
           ...hackerrank

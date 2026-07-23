@@ -55,7 +55,7 @@ async function updateWeeklyStats(userId, newLcSolved, newGfgSolved, prevLcSolved
   await stats.save();
 }
 
-async function syncNormalizedProfiles(user, { lcData, ccData, gfgData, ghData, hrData }) {
+async function syncNormalizedProfiles(user, { lcData, ccData, ccError, gfgData, ghData, hrData }) {
   // Update/Create CodingProfile
   let codingProfile = await CodingProfile.findOne({ userId: user._id });
   if (!codingProfile) {
@@ -100,9 +100,19 @@ async function syncNormalizedProfiles(user, { lcData, ccData, gfgData, ghData, h
     codingProfile.codechef = {
       username: user.codechefUsername || "",
       stats: ccData,
-      lastSyncAt: new Date()
+      lastSyncAt: new Date(),
+      syncStatus: 'SUCCESS',
+      lastAttempt: new Date(),
+      lastError: null
     };
+  } else if (ccError) {
+    if (!codingProfile.codechef) codingProfile.codechef = {};
+    codingProfile.codechef.username = user.codechefUsername || "";
+    codingProfile.codechef.syncStatus = 'FAILED';
+    codingProfile.codechef.lastError = ccError;
+    codingProfile.codechef.lastAttempt = new Date();
   } else if (user.codechefUsername) {
+    if (!codingProfile.codechef) codingProfile.codechef = {};
     codingProfile.codechef.username = user.codechefUsername;
   }
 
@@ -261,12 +271,26 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
   const prevLcSolved = Number(user.platformStats?.leetcode?.problemsSolved || user.platformStats?.leetcode?.totalSolved || 0);
   const prevGfgSolved = Number(user.platformStats?.geeksforgeeks?.totalProblemsSolved || user.platformStats?.geeksforgeeks?.problemsSolved || 0);
 
+  const { normalizePlatformUsername, isValidUsername } = require('../utils/usernameNormalizer');
+
+  const lcUser = normalizePlatformUsername('leetcode', user.leetcodeUsername);
+  const ccUser = normalizePlatformUsername('codechef', user.codechefUsername);
+  const gfgUser = normalizePlatformUsername('geeksforgeeks', user.gfgUsername);
+  const ghUser = normalizePlatformUsername('github', user.githubUsername);
+  const hrUser = normalizePlatformUsername('hackerrank', user.hackerrankUsername);
+
+  const fetchIfValid = (original, normalized, platform, fetcher) => {
+    if (!original) return Promise.resolve(null);
+    if (!isValidUsername(normalized)) return Promise.reject(new Error(`Skipped: Invalid username`));
+    return fetcher(normalized, force);
+  };
+
   const [lcRes, ccRes, gfgRes, ghRes, hrRes] = await Promise.allSettled([
-    user.leetcodeUsername ? fetchLeetCodeProfile(user.leetcodeUsername, force) : Promise.resolve(null),
-    user.codechefUsername ? fetchCodeChefProfile(user.codechefUsername, force) : Promise.resolve(null),
-    user.gfgUsername ? fetchGFGProfile(user.gfgUsername, force) : Promise.resolve(null),
-    user.githubUsername ? fetchGitHubProfile(user.githubUsername, force) : Promise.resolve(null),
-    user.hackerrankUsername ? fetchHackerRankProfile(user.hackerrankUsername, force) : Promise.resolve(null)
+    fetchIfValid(user.leetcodeUsername, lcUser, 'leetcode', fetchLeetCodeProfile),
+    fetchIfValid(user.codechefUsername, ccUser, 'codechef', fetchCodeChefProfile),
+    fetchIfValid(user.gfgUsername, gfgUser, 'geeksforgeeks', fetchGFGProfile),
+    fetchIfValid(user.githubUsername, ghUser, 'github', fetchGitHubProfile),
+    fetchIfValid(user.hackerrankUsername, hrUser, 'hackerrank', fetchHackerRankProfile)
   ]);
 
   const platformStats = user.platformStats || {};
@@ -588,20 +612,37 @@ async function syncPlatformsForUser(user, { force = false } = {}) {
   await syncNormalizedProfiles(updatedUser, {
     lcData: lcRes.status === 'fulfilled' ? lcRes.value : null,
     ccData: ccRes.status === 'fulfilled' ? ccRes.value : null,
+    ccError: ccRes.status === 'rejected' ? ccRes.reason?.message : null,
     gfgData: gfgRes.status === 'fulfilled' ? gfgRes.value : null,
     ghData: ghRes.status === 'fulfilled' ? ghRes.value : null,
     hrData: hrRes.status === 'fulfilled' ? hrRes.value : null
   });
 
-  // Perform weekly stats snapshot update
   const newLcSolved = Number(updatedUser.platformStats?.leetcode?.problemsSolved || updatedUser.platformStats?.leetcode?.totalSolved || 0);
   const newGfgSolved = Number(updatedUser.platformStats?.geeksforgeeks?.totalProblemsSolved || updatedUser.platformStats?.geeksforgeeks?.problemsSolved || 0);
   await updateWeeklyStats(user._id, newLcSolved, newGfgSolved, prevLcSolved, prevGfgSolved);
+
+  // Attach detailed sync results for bulk sync logging
+  updatedUser.syncResults = {
+    LeetCode: lcRes.status === 'fulfilled' ? 'SUCCESS' : lcRes.reason?.message,
+    CodeChef: ccRes.status === 'fulfilled' ? 'SUCCESS' : ccRes.reason?.message,
+    GFG: gfgRes.status === 'fulfilled' ? 'SUCCESS' : gfgRes.reason?.message,
+    GitHub: ghRes.status === 'fulfilled' ? 'SUCCESS' : ghRes.reason?.message,
+    HackerRank: hrRes.status === 'fulfilled' ? 'SUCCESS' : hrRes.reason?.message
+  };
+
+  updatedUser.syncErrors = [];
+  Object.entries(updatedUser.syncResults).forEach(([platform, result]) => {
+    if (result !== 'SUCCESS' && result !== null && !result.startsWith('Skipped:')) {
+      updatedUser.syncErrors.push(`${platform}: ${result}`);
+    }
+  });
 
   return updatedUser;
 }
 
 module.exports = {
   syncPlatformsForUser,
-  syncNormalizedProfiles
+  syncNormalizedProfiles,
+  updateWeeklyStats
 };

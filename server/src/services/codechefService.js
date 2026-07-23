@@ -1,11 +1,14 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const pLimit = require('p-limit');
 
 // In-memory cache (TTL: 5 minutes)
 const cache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-async function fetchCodeChefProfile(username, force = false) {
+const limit = pLimit(1);
+
+async function _fetchCodeChefProfile(username, force = false) {
   if (!username) return null;
 
   const now = Date.now();
@@ -14,10 +17,10 @@ async function fetchCodeChefProfile(username, force = false) {
     return cached.data;
   }
 
-  let retries = 3;
-  let delay = 1000;
+  const delays = [3000, 6000, 12000];
+  let attempt = 0;
 
-  while (retries > 0) {
+  while (attempt <= delays.length) {
     try {
       const response = await axios.get(
         `https://hades-black.vercel.app/api/codechef/user/${encodeURIComponent(username)}`,
@@ -41,7 +44,6 @@ async function fetchCodeChefProfile(username, force = false) {
       let globalRank = cleanGlobal ? Number(cleanGlobal) : 0;
 
       if (currentRating > 5000) {
-        console.warn(`Invalid CodeChef current rating parsed for ${username}: ${currentRating}. Rejecting as failure.`);
         throw new Error(`Parsed rating ${currentRating} is impossibly high.`);
       }
 
@@ -93,39 +95,36 @@ async function fetchCodeChefProfile(username, force = false) {
         contestCount
       };
 
-      console.log({
-        rating: formatted.currentRating,
-        highestRating: formatted.highestRating,
-        globalRank: formatted.globalRank,
-        countryRank: formatted.countryRank,
-        contestCount: formatted.contestCount,
-        problemsSolved: formatted.problemsSolved
-      });
-
       cache.set(username, { timestamp: now, data: formatted });
       return formatted;
     } catch (err) {
-      retries--;
-      console.warn(`CodeChef API sync attempt failed for ${username}. Retries left: ${retries}. Error:`, err.message);
-      if (retries === 0) {
+      console.warn(`CodeChef API sync attempt failed for ${username}. Attempt: ${attempt + 1}. Error: ${err.message}`);
+      if (attempt === delays.length) {
         // Cache Failure Strategy fallback
         if (cached) {
           console.log(`Returning stale CodeChef cache data for ${username}`);
           return cached.data;
         }
-        return {
-          problemsSolved: 0,
-          currentRating: 0,
-          highestRating: 0,
-          globalRank: 0,
-          countryRank: 'Inactive',
-          contestCount: 0
-        };
+        throw new Error(`CodeChef API failed for ${username} after ${attempt} retries: ${err.message}`);
       }
-      await new Promise(res => setTimeout(res, delay));
-      delay *= 2;
+      await new Promise(res => setTimeout(res, delays[attempt]));
+      attempt++;
     }
   }
+}
+
+function fetchCodeChefProfile(username, force = false) {
+  return limit(async () => {
+    try {
+      const result = await _fetchCodeChefProfile(username, force);
+      // Mandatory pacing delay to prevent global Vercel rate limit exhaustion during bulk sync
+      await new Promise(res => setTimeout(res, 1500));
+      return result;
+    } catch (err) {
+      await new Promise(res => setTimeout(res, 1500));
+      throw err;
+    }
+  });
 }
 
 module.exports = {

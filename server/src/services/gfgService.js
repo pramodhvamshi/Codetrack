@@ -163,25 +163,9 @@ async function fetchGFGProfile(
       console.log(`Returning stale GFG cache data for ${username}`);
       return cached.data;
     }
-    // Return fallback values
-    return {
-      profile: {
-        username,
-        displayName: username,
-      },
-      stats: {
-        totalProblemsSolved: 0,
-        basicProblemsSolved: 0,
-        easyProblemsSolved: 0,
-        mediumProblemsSolved: 0,
-        hardProblemsSolved: 0,
-        languageStats: {},
-      },
-      practice: {
-        recentProblems: [],
-        totalProblemsAttempted: 0,
-      },
-    };
+    const is406 = error.response && error.response.status === 406;
+    const msg = is406 ? 'User does not exist (406 Not Acceptable)' : error.message;
+    throw new Error(`GFG API failed for ${username}: ${msg}`);
   }
 }
 

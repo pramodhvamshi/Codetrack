@@ -448,10 +448,106 @@ router.get('/students', async (req, res) => {
 // Export student data
 router.get('/export-data', async (req, res) => {
   try {
-    const students = await User.find({ role: 'student', isOnboarded: true }).sort({ name: 1 });
+    const {
+      status,       // 'active' | 'inactive'
+      readiness,    // 'ready' | 'needs_improvement' | 'at_risk'
+      branch,
+      college,
+      year,
+      currentYear,
+      name,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      goal
+    } = req.query;
 
+    const filter = { role: 'student', isOnboarded: true };
+
+    if (branch) filter.branch = String(branch);
+    if (college) filter.college = String(college);
+
+    if (currentYear && currentYear !== 'All Years') {
+      filter.currentYear = String(currentYear);
+    } else if (year) {
+      const mapped = year === '1' ? '1st Year' : year === '2' ? '2nd Year' : year === '3' ? '3rd Year' : year === '4' ? '4th Year' : year;
+      filter.currentYear = String(mapped);
+    }
+
+    if (status) {
+      filter.activityStatus = String(status);
+    }
+
+    if (name) {
+      const escapedName = String(name).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      filter.name = new RegExp(escapedName, 'i');
+    }
+
+    const pipeline = [
+      { $match: filter },
+      {
+        $addFields: {
+          totalSolved: {
+            $add: [
+              { $ifNull: ["$platformStats.leetcode.problemsSolved", 0] },
+              { $ifNull: ["$platformStats.codechef.problemsSolved", 0] },
+              { $ifNull: ["$platformStats.geeksforgeeks.problemsSolved", 0] },
+              { $ifNull: ["$hackerrank.totalProblemsSolved", 0] }
+            ]
+          }
+        }
+      }
+    ];
+
+    if (goal) {
+      pipeline.push({
+        $lookup: {
+          from: 'studentprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'profile'
+        }
+      });
+      pipeline.push({ $unwind: { path: '$profile', preserveNullAndEmptyArrays: true } });
+      pipeline.push({ $match: { 'profile.goal': goal } });
+    }
+
+    if (readiness === 'ready') {
+      pipeline.push({
+        $match: {
+          totalSolved: { $gte: 300 },
+          activityStatus: 'active'
+        }
+      });
+    } else if (readiness === 'needs_improvement') {
+      pipeline.push({
+        $match: {
+          totalSolved: { $gte: 100, $lt: 300 }
+        }
+      });
+    } else if (readiness === 'at_risk') {
+      pipeline.push({
+        $match: {
+          totalSolved: { $lt: 100 }
+        }
+      });
+    }
+
+    const sort = {};
+    if (sortBy === 'scores.totalScore') {
+      sort['scores.totalScore'] = sortOrder === 'desc' ? -1 : 1;
+    } else if (sortBy === 'totalSolved') {
+      sort['totalSolved'] = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort['name'] = sortOrder === 'desc' ? -1 : 1;
+    }
+    
+    pipeline.push({ $sort: sort });
+
+    const students = await User.aggregate(pipeline);
+
+    const studentIds = students.map(s => s._id);
     const StudentProfile = require('../models/StudentProfile');
-    const profiles = await StudentProfile.find({}, 'userId goal interestedDomain');
+    const profiles = await StudentProfile.find({ userId: { $in: studentIds } }, 'userId goal interestedDomain');
     const profileMap = new Map(profiles.map(p => [String(p.userId), p]));
 
     const exportData = students.map(s => {
@@ -469,7 +565,7 @@ router.get('/export-data', async (req, res) => {
         College: s.college || '',
         Hostel: s.hostel || '',
         Branch: s.branch || '',
-        Year: s.year || '',
+        Year: s.currentYear || s.year || '',
         ActivityStatus: s.activityStatus || 'inactive',
         OverallScore: s.scores?.totalScore || 0,
         ReadinessScore: s.scores?.weightedRankScore || 0,

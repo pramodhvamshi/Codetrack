@@ -8,6 +8,14 @@ const BulkSyncJobSchema = new mongoose.Schema({
   totalStudents: { type: Number, default: 0 },
   completedStudents: { type: Number, default: 0 },
   failedStudents: { type: Number, default: 0 },
+  partialStudents: { type: Number, default: 0 },
+  platformFailures: {
+    LeetCode: { type: Number, default: 0 },
+    CodeChef: { type: Number, default: 0 },
+    GFG: { type: Number, default: 0 },
+    GitHub: { type: Number, default: 0 },
+    HackerRank: { type: Number, default: 0 }
+  },
   status: {
     type: String,
     enum: ['Pending', 'Running', 'Completed', 'Failed'],

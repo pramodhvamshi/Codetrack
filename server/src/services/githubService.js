@@ -1,10 +1,13 @@
 const axios = require('axios');
+const pLimit = require('p-limit');
 
 // In-memory cache for GitHub profiles (TTL: 5 minutes)
 const cache = new Map();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-async function fetchGitHubProfile(username, force = false) {
+const limit = pLimit(2);
+
+async function _fetchGitHubProfile(username, force = false) {
   if (!username) return null;
 
   const now = Date.now();
@@ -17,6 +20,9 @@ async function fetchGitHubProfile(username, force = false) {
     const headers = {
       'User-Agent': 'CodeTrack-V2-App'
     };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
 
     // 1. Fetch user general profile
     const profileRes = await axios.get(
@@ -114,25 +120,34 @@ async function fetchGitHubProfile(username, force = false) {
     cache.set(username, { timestamp: now, data: result });
     return result;
   } catch (err) {
-    console.warn(`GitHub API sync failed for ${username}:`, err.message);
+    // Log rate limit headers as requested by user
+    if (err.response && err.response.headers) {
+      console.warn(`[GitHub 403 Debug for ${username}] Rate Limit Limit: ${err.response.headers['x-ratelimit-limit']}, Remaining: ${err.response.headers['x-ratelimit-remaining']}`);
+      console.warn(`[GitHub 403 Debug for ${username}] Authenticated: ${process.env.GITHUB_TOKEN ? 'YES' : 'NO'}`);
+      console.warn(`[GitHub 403 Debug for ${username}] Message: ${err.response.data?.message}`);
+    } else {
+      console.warn(`GitHub API sync failed for ${username}:`, err.message);
+    }
+
     // Cache Failure Strategy fallback
     if (cached) {
       console.log(`Returning stale GitHub cache data for ${username}`);
       return cached.data;
     }
-    return {
-      username,
-      profileUrl: `https://github.com/${username}`,
-      publicReposCount: 0,
-      starsCount: 0,
-      followers: 0,
-      following: 0,
-      languages: {},
-      repositories: [],
-      recentCommits: [],
-      contributions: []
-    };
+    
+    // If it's 403 and x-ratelimit-remaining is high, it's a Secondary Rate Limit (Concurrency).
+    const isRateLimit = err.response?.status === 403;
+    const isSecondary = isRateLimit && err.response?.headers && Number(err.response.headers['x-ratelimit-remaining']) > 10;
+    
+    const errorMsg = isSecondary ? '403 Forbidden (Secondary Rate Limit - Concurrency)' 
+                   : (isRateLimit ? '403 Forbidden (Rate Limit)' : err.message);
+                   
+    throw new Error(errorMsg);
   }
+}
+
+function fetchGitHubProfile(username, force = false) {
+  return limit(() => _fetchGitHubProfile(username, force));
 }
 
 module.exports = {

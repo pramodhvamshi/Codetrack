@@ -85,7 +85,8 @@ const StudentProfileSchema = new mongoose.Schema({
       'Artificial Intelligence',
       'Cybersecurity',
       'Data Science',
-      'Internet of Things (IoT)'
+      'Internet of Things (IoT)',
+      'NOT SELECTED'
     ],
     default: null,
     required: function() {

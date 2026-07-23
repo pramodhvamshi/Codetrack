@@ -454,7 +454,7 @@ export function StudentProfileEdit({ tab }) {
       validatePhone(profileData.communicationMentor, 'Communication Skills Mentor');
       validatePhone(profileData.projectMentor, 'Project Mentor');
 
-      if (profileData.goal === 'Placement & Paid Internship Track' && !profileData.interestedDomain) {
+      if (profileData.goal === 'Placement & Paid Internship Track' && (!profileData.interestedDomain || profileData.interestedDomain === 'NOT SELECTED')) {
         throw new Error('Interested Domain is mandatory when Placement & Paid Internship Track is selected.');
       }
 
@@ -1218,12 +1218,18 @@ export function StudentProfileEdit({ tab }) {
                       onChange={(e) => setProfileData(prev => ({ ...prev, interestedDomain: e.target.value || null }))}
                     >
                       <option value="">Select Domain</option>
+                      <option value="NOT SELECTED" disabled style={{ display: 'none' }}>NOT SELECTED</option>
                       <option value="Java Stack Development">Java Stack Development</option>
                       <option value="Artificial Intelligence">Artificial Intelligence</option>
                       <option value="Cybersecurity">Cybersecurity</option>
                       <option value="Data Science">Data Science</option>
                       <option value="Internet of Things (IoT)">Internet of Things (IoT)</option>
                     </select>
+                    {profileData.interestedDomain === 'NOT SELECTED' && (
+                      <div style={{ color: '#f87171', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 'bold' }}>
+                        Please select your Interested Domain to complete your profile.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

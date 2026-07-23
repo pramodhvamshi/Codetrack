@@ -28,7 +28,10 @@ const CodingProfileSchema = new mongoose.Schema({
   },
   codechef: {
     stats: { type: mongoose.Schema.Types.Mixed, default: {} },
-    lastSyncAt: { type: Date }
+    lastSyncAt: { type: Date },
+    syncStatus: { type: String, default: 'SUCCESS', enum: ['SUCCESS', 'API_TIMEOUT', 'RATE_LIMITED', 'USER_NOT_FOUND', 'FAILED'] },
+    lastError: { type: String, default: null },
+    lastAttempt: { type: Date }
   },
   hackerrank: {
     username: { type: String, default: "" },
