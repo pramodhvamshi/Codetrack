@@ -57,7 +57,24 @@ export function CoordinatorStudentDetail() {
           api.getJson('/roadmaps', token),
           api.getJson('/dsa', token)
         ]);
-        setCurriculumData({ roadmaps: rmData || [], dsaSheets: dsaData || [] });
+
+        const startedRoadmaps = [];
+        if (rmData && Array.isArray(rmData)) {
+          await Promise.all(
+            rmData.map(async (rm) => {
+              try {
+                const prog = await api.getJson(`/coordinator/roadmaps/${id}/${rm._id}/progress`, token).catch(() => ({}));
+                if (prog && Object.keys(prog).length > 0) {
+                  startedRoadmaps.push(rm);
+                }
+              } catch (e) {
+                // Ignore if student has not started roadmap
+              }
+            })
+          );
+        }
+
+        setCurriculumData({ roadmaps: startedRoadmaps, dsaSheets: dsaData || [] });
       } catch (err) {
         console.error('Failed to load curriculum lists:', err);
       }

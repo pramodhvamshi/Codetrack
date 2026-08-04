@@ -1,0 +1,137 @@
+{
+  "title": "Git & Version Control",
+  "description": "Master Git version control, branching strategies, commit history, merge conflicts, rebase, and GitHub collaboration workflows.",
+  "category": "Core Programming",
+  "difficulty": "Beginner",
+  "estimatedDuration": "4 Weeks",
+  "totalTopics": 25,
+  "icon": "Code",
+  "nodes": [
+    {
+      "title": "Git Basics",
+      "description": "Repository initialization, staging area, commits, status, and log history inspection.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Git Installation & Configuration",
+          "description": "Installing Git, setting up git config (user.name, user.email, core.editor).",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Initializing Repositories & Staging",
+          "description": "git init, git add, working directory vs staging index vs local repository.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Commits & Inspecting History",
+          "description": "git commit -m, SHA-1 commit hashes, git status, git log formatting, and git diff.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Branching & Merging",
+      "description": "Branch creation, switching, fast-forward merge vs 3-way merge, and resolving conflicts.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Branch Creation & Switching",
+          "description": "git branch, git checkout, git switch, creating topic branches.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Merging Branches & Fast-Forward",
+          "description": "git merge mechanics, HEAD pointer movement, fast-forward vs merge commits.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Resolving Merge Conflicts",
+          "description": "Conflict markers (<<<<<<<, =======, >>>>>>>), manual resolution, and git merge --continue.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Advanced Git & Remotes",
+      "description": "Remote repositories, fetch, pull, push, rebasing, cherry-picking, stash, and reset.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Remote Repositories (GitHub, GitLab)",
+          "description": "git remote add origin, SSH vs HTTPS authentication, git push -u origin main, git fetch vs git pull.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Git Rebase vs Merge",
+          "description": "Linear history with git rebase, interactive rebase (squash, reword, drop), and golden rule of rebasing.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Stashing, Reset & Revert",
+          "description": "git stash save/pop, soft vs hard reset (git reset --hard), and safe commit reversal with git revert.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    }
+  ]
+}

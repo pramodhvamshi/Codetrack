@@ -1,0 +1,157 @@
+{
+  "title": "JavaScript Developer",
+  "description": "Master modern JavaScript (ES6+), DOM manipulation, async programming, event loop, closures, prototypes, and web APIs.",
+  "category": "Core Programming",
+  "difficulty": "Beginner",
+  "estimatedDuration": "8 Weeks",
+  "totalTopics": 45,
+  "icon": "Code",
+  "nodes": [
+    {
+      "title": "Foundations",
+      "description": "JavaScript introduction, runtime environments, basic syntax, variables, data types, and operators.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Introduction to JavaScript & V8 Engine",
+          "description": "History of ECMAScript, JS runtimes (browser, Node.js), and JIT compilation.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Variables (var, let, const)",
+          "description": "Block scope, function scope, hoisting, and temporal dead zone (TDZ).",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Data Types & Type Coercion",
+          "description": "Primitives (string, number, boolean, null, undefined, symbol, bigint) vs reference types.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Operators & Expressions",
+          "description": "Arithmetic, logical, bitwise, strict equality (===), nullish coalescing (??), and optional chaining (?.).",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Functions & Scope",
+      "description": "Function declarations, expressions, arrow functions, closures, call stack, and scope chain.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Functions & Arrow Syntax",
+          "description": "Parameters, return values, rest/spread parameters, and lexical this binding.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Closures & Scope Chain",
+          "description": "Lexical environment, outer reference, closure memory persistence, and private data encapsulation.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Higher-Order Functions",
+          "description": "Callbacks, Array methods (map, filter, reduce, find, every, some).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Async JavaScript & Event Loop",
+      "description": "Asynchronous execution, Call Stack, Event Loop, Microtask queue, Promises, and async/await.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Callbacks & Callback Hell",
+          "description": "Asynchronous callbacks, inversion of control, and error handling patterns.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Promises (Promise.all, race, settle)",
+          "description": "Promise states (pending, fulfilled, rejected), chaining, and combinators.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Async / Await Syntax",
+          "description": "Syntactic sugar over Promises, try-catch error handling, and sequential vs parallel async execution.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Event Loop & Microtasks",
+          "description": "Call stack execution, Web APIs, Task queue vs Microtask queue (Promises vs setTimeout).",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        }
+      ]
+    }
+  ]
+}

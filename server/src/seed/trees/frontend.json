@@ -1,130 +1,99 @@
 {
-  "title": "Frontend Development",
-  "description": "A complete, step-by-step curriculum to become a Frontend Developer.",
-  "icon": "Monitor",
+  "title": "Frontend Developer",
+  "description": "Master modern frontend web development: HTML5, CSS3, JavaScript ES6+, React, Next.js, Web Performance, and Testing.",
+  "category": "Development",
+  "difficulty": "Beginner",
+  "estimatedDuration": "10 Weeks",
+  "totalTopics": 60,
+  "icon": "Layout",
   "nodes": [
     {
-      "title": "HTML",
-      "description": "The foundation of web pages, defining their structure and content.",
+      "title": "HTML & Modern CSS",
+      "description": "Semantic HTML5, CSS Grid, Flexbox, responsive typography, CSS variables, and modern styling architectures.",
       "difficulty": "Beginner",
-      "estimatedTime": "1 week",
-      "interviewImportance": "Low",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
       "projectImportance": "High",
       "order": 1,
       "children": [
         {
-          "title": "Elements & Attributes",
-          "description": "Basic building blocks of HTML.",
+          "title": "Semantic HTML5 & Accessibility (a11y)",
+          "description": "Semantic landmarks (<header>, <main>, <nav>), ARIA attributes, keyboard accessibility.",
           "difficulty": "Beginner",
-          "estimatedTime": "2 hours",
-          "interviewImportance": "Low",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
           "projectImportance": "High",
           "order": 1,
-          "resources": [
-            {
-              "title": "MDN: HTML Basics",
-              "url": "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics",
-              "type": "documentation"
-            }
-          ]
+          "branch": "left"
         },
         {
-          "title": "Forms & Validations",
-          "description": "Collecting user input effectively.",
+          "title": "CSS Flexbox & CSS Grid",
+          "description": "1D flex layout vs 2D grid layout, subgrid, auto-fit/auto-fill responsiveness.",
           "difficulty": "Beginner",
-          "estimatedTime": "4 hours",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "Semantic HTML",
-          "description": "Using markup that carries meaning for SEO and accessibility.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 hours",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 3
-        },
-        {
-          "title": "Accessibility (a11y) & ARIA",
-          "description": "Making websites usable for everyone.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "3 days",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 4
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Responsive Design & Media Queries",
+          "description": "Mobile-first CSS, fluid typography (clamp), container queries, viewport units.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "CSS",
-      "description": "Styling the web.",
-      "difficulty": "Beginner",
-      "estimatedTime": "2 weeks",
-      "interviewImportance": "Medium",
+      "title": "JavaScript Mastery (ES6+)",
+      "description": "DOM manipulation, asynchronous JS (Promises, async/await), closures, event loop, and prototype inheritance.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2.5 weeks",
+      "interviewImportance": "High",
       "projectImportance": "High",
       "order": 2,
       "children": [
         {
-          "title": "Selectors & Specificity",
-          "description": "Targeting elements and resolving style conflicts.",
+          "title": "DOM Manipulation & Events",
+          "description": "Event delegation, bubbling, capturing, DOM query selection, mutation observers.",
           "difficulty": "Beginner",
-          "estimatedTime": "4 hours",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Box Model & Layout basics",
-          "description": "Understanding margins, borders, padding, and content.",
-          "difficulty": "Beginner",
-          "estimatedTime": "3 hours",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "Flexbox",
-          "description": "One-dimensional layout model.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "3 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 3
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "CSS Grid",
-          "description": "Two-dimensional layout model.",
+          "title": "Async JS, Promises & Fetch API",
+          "description": "Event loop microtasks/macrotasks, Promise chaining, async/await error handling.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 4
+          "order": 2,
+          "branch": "right"
         },
         {
-          "title": "Responsive Design & Media Queries",
-          "description": "Making websites look good on all devices.",
+          "title": "Closures, Scope & Prototypes",
+          "description": "Lexical scope, closure memory leaks, prototype chain inheritance, 'this' keyword binding.",
           "difficulty": "Intermediate",
-          "estimatedTime": "4 hours",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 5
-        },
-        {
-          "title": "Tailwind CSS",
-          "description": "Utility-first CSS framework.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Low",
-          "projectImportance": "High",
-          "order": 6
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "JavaScript (Fundamentals & Core)",
-      "description": "Adding interactivity to web pages.",
+      "title": "React.js Core & Hooks",
+      "description": "Component lifecycle, JSX, virtual DOM reconciliation, state management, and custom hooks.",
       "difficulty": "Intermediate",
       "estimatedTime": "3 weeks",
       "interviewImportance": "High",
@@ -132,64 +101,41 @@
       "order": 3,
       "children": [
         {
-          "title": "Variables, Data Types & Operators",
-          "description": "The basics of JavaScript syntax.",
-          "difficulty": "Beginner",
-          "estimatedTime": "3 hours",
-          "interviewImportance": "Low",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Functions, Scope & Closures",
-          "description": "Reusable code blocks and execution context.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
-        },
-        {
-          "title": "Arrays & Objects",
-          "description": "Data structures and manipulation methods.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 3
-        },
-        {
-          "title": "DOM Manipulation",
-          "description": "Interacting with the HTML document via JS.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 4
-        },
-        {
-          "title": "Events & Event Delegation",
-          "description": "Handling user interactions efficiently.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "2 days",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 5
-        },
-        {
-          "title": "ES6+ Features",
-          "description": "Modern JavaScript additions like destructuring, spread/rest.",
+          "title": "Components, Props & State",
+          "description": "Functional components, props validation, useState immutability, synthetic events.",
           "difficulty": "Intermediate",
           "estimatedTime": "3 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 6
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Effects & Custom Hooks",
+          "description": "useEffect cleanup functions, dependency arrays, memoization (useMemo, useCallback), custom hooks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Context API & Global State",
+          "description": "Prop drilling elimination, Context API providers, Zustand/Redux Toolkit state management.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "JavaScript (Advanced & Async)",
-      "description": "Mastering non-blocking code and network requests.",
+      "title": "Next.js & Fullstack SSR",
+      "description": "App Router, Server Components, Server Actions, Static Site Generation (SSG), Incremental Static Regeneration (ISR).",
       "difficulty": "Advanced",
       "estimatedTime": "2 weeks",
       "interviewImportance": "High",
@@ -197,212 +143,27 @@
       "order": 4,
       "children": [
         {
-          "title": "Callbacks & Promises",
-          "description": "Handling asynchronous operations.",
+          "title": "App Router & Server Components",
+          "description": "React Server Components (RSC) vs Client Components ('use client'), layout hierarchies.",
           "difficulty": "Advanced",
           "estimatedTime": "4 days",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 1
-        },
-        {
-          "title": "Async / Await",
-          "description": "Modern syntax for handling Promises.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "2 days",
-          "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Fetch API & Network Requests",
-          "description": "Making HTTP requests to APIs.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "2 days",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 3
-        },
-        {
-          "title": "Event Loop & Concurrency Model",
-          "description": "How JS engine executes code asynchronously.",
+          "title": "SSR, SSG, ISR & Server Actions",
+          "description": "Dynamic server rendering, static export, revalidation triggers, form Server Actions.",
           "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Low",
-          "order": 4
-        }
-      ]
-    },
-    {
-      "title": "React (Core)",
-      "description": "Building interactive UIs with components.",
-      "difficulty": "Intermediate",
-      "estimatedTime": "3 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 5,
-      "children": [
-        {
-          "title": "JSX & Rendering",
-          "description": "JavaScript XML syntax and how React updates the DOM.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 days",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Components & Props",
-          "description": "Building reusable UI blocks and passing data.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 days",
-          "interviewImportance": "Low",
-          "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "State Management (useState)",
-          "description": "Handling local component state.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 3
-        },
-        {
-          "title": "Side Effects (useEffect)",
-          "description": "Running code outside the render cycle (e.g. fetching).",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 4
-        }
-      ]
-    },
-    {
-      "title": "React (Intermediate/Advanced)",
-      "description": "Production-ready React application development.",
-      "difficulty": "Advanced",
-      "estimatedTime": "3 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 6,
-      "children": [
-        {
-          "title": "React Router",
-          "description": "Client-side routing and navigation.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "Low",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Context API",
-          "description": "Global state management without prop drilling.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "Advanced Hooks (useMemo, useCallback, useRef)",
-          "description": "Performance optimization and DOM access.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 3
-        },
-        {
-          "title": "Custom Hooks",
-          "description": "Extracting reusable logic.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 4
-        }
-      ]
-    },
-    {
-      "title": "Projects (Portfolio Building)",
-      "description": "Apply everything you learned.",
-      "difficulty": "Advanced",
-      "estimatedTime": "4 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 7,
-      "children": [
-        {
-          "title": "Mini Project: To-Do App with LocalStorage",
-          "description": "A basic CRUD application.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 days",
-          "interviewImportance": "Low",
-          "projectImportance": "Medium",
-          "order": 1
-        },
-        {
-          "title": "Mini Project: Weather App with Fetch API",
-          "description": "Integrating with an external REST API.",
-          "difficulty": "Intermediate",
           "estimatedTime": "4 days",
-          "interviewImportance": "Low",
+          "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "Major Project: E-Commerce Storefront",
-          "description": "Full app with cart, routing, and context.",
-          "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 3
+          "order": 2,
+          "branch": "right"
         }
-      ]
-    },
-    {
-      "title": "Interview Preparation",
-      "description": "Prepare for technical rounds.",
-      "difficulty": "Advanced",
-      "estimatedTime": "3 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "Low",
-      "order": 8,
-      "children": [
-        {
-          "title": "HTML/CSS Common Questions",
-          "description": "Specificity, centering, box model.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "3 days",
-          "interviewImportance": "High",
-          "projectImportance": "Low",
-          "order": 1
-        },
-        {
-          "title": "JavaScript Output Questions",
-          "description": "Hoisting, closures, this keyword.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Low",
-          "order": 2
-        },
-        {
-          "title": "React Lifecycle & Hooks Internals",
-          "description": "Understanding renders and effect dependencies.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Low",
-          "order": 3
-        }
-      ]
+      ],
+      "branch": "center"
     }
   ]
 }

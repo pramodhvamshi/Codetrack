@@ -19,6 +19,7 @@ async function insertNodeWithChildren(roadmapId, parentId, nodeData) {
     estimatedTime: nodeData.estimatedTime || '1-2 hours',
     interviewImportance: nodeData.interviewImportance || 'Medium',
     projectImportance: nodeData.projectImportance || 'Medium',
+    branch: nodeData.branch || 'center',
     order: nodeData.order || 0
   });
 
@@ -79,6 +80,10 @@ async function seedTrees() {
         title: treeData.title,
         description: treeData.description,
         icon: treeData.icon || 'Map',
+        category: treeData.category || 'Core Programming',
+        difficulty: treeData.difficulty || 'Beginner',
+        estimatedDuration: treeData.estimatedDuration || '8 Weeks',
+        totalTopics: treeData.totalTopics || 0,
         version: treeData.version || 1,
         source: 'CodeTrack Learning Trees'
       });

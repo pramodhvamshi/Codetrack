@@ -1,0 +1,107 @@
+{
+  "title": "SQL & Relational Databases",
+  "description": "Master SQL querying, DDL/DML/DCL statements, complex JOINs, window functions, subqueries, and database design.",
+  "category": "Core Programming",
+  "difficulty": "Beginner",
+  "estimatedDuration": "6 Weeks",
+  "totalTopics": 36,
+  "icon": "Database",
+  "nodes": [
+    {
+      "title": "SQL Basics & Data Retrieval",
+      "description": "SELECT statements, WHERE filtering, ORDER BY sorting, and aggregate functions (COUNT, SUM, AVG).",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "SELECT, WHERE & ORDER BY",
+          "description": "Filtering records, comparison operators, LIKE wildcard searches, sorting output.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Aggregations & GROUP BY / HAVING",
+          "description": "Grouping data, aggregate functions, filtering grouped results with HAVING clause.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "JOIN Operations & Subqueries",
+      "description": "INNER, LEFT, RIGHT, FULL OUTER JOINs, self joins, correlated subqueries, and CTEs.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Multi-Table JOIN Queries",
+          "description": "Combining tables with INNER JOIN, LEFT JOIN, RIGHT JOIN, CROSS JOIN, and self-joins.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Subqueries & Common Table Expressions (CTE)",
+          "description": "Subqueries in WHERE/FROM/SELECT, WITH clause Common Table Expressions (CTEs), recursive CTEs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Advanced SQL & Window Functions",
+      "description": "Analytic window functions (ROW_NUMBER, RANK, DENSE_RANK, LEAD, LAG), partition clauses, and indexing.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Window Functions (RANK, DENSE_RANK, ROW_NUMBER)",
+          "description": "Partitioning over windows, ranking functions, running totals, lead and lag offsets.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Indexes, Transactions & Views",
+          "description": "Clustered/non-clustered indexes, views, materialized views, SQL transaction commits and rollbacks.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "title": "Computer Networks",
+  "description": "OSI and TCP/IP protocol stacks, socket programming, routing protocols, DNS, HTTP/HTTPS, and network security.",
+  "category": "Computer Science Fundamentals",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "6 Weeks",
+  "totalTopics": 36,
+  "icon": "Network",
+  "nodes": [
+    {
+      "title": "Network Models & Physical Layer",
+      "description": "OSI 7-layer reference model, TCP/IP stack, bandwith, latency, and transmission media.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "Medium",
+      "order": 1,
+      "children": [
+        {
+          "title": "OSI Model vs TCP/IP Model",
+          "description": "7 layers of OSI vs 4 layers of TCP/IP, encapsulation and decapsulation.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Data Link Layer & MAC Addressing",
+          "description": "Framing, Ethernet protocols, MAC addresses, ARP (Address Resolution Protocol).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Network Layer & IP Routing",
+      "description": "IPv4/IPv6 addressing, subnetting, NAT, ICMP, and routing algorithms (OSPF, BGP).",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "IP Addressing & Subnetting (CIDR)",
+          "description": "Classful vs Classless (CIDR) addressing, subnet masks, IP range calculation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Routing Protocols (Distance Vector & Link State)",
+          "description": "Dijkstra link state (OSPF) vs Bellman-Ford distance vector (RIP), BGP peering.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Transport Layer (TCP & UDP)",
+      "description": "3-Way Handshake, TCP flow control (Sliding Window), congestion control, and UDP sockets.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "TCP 3-Way Handshake & Connection Termination",
+          "description": "SYN, SYN-ACK, ACK, FIN-WAIT, TIME-WAIT states, sequence numbers.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "TCP Flow Control & Congestion Control",
+          "description": "Sliding window, Slow Start, Congestion Avoidance, Fast Retransmit, Fast Recovery.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Application Layer & Protocols",
+      "description": "DNS hierarchy, HTTP/1.1 vs HTTP/2 vs HTTP/3, TLS/SSL handshake, WebSockets.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "DNS Lookup & Domain Resolution",
+          "description": "Recursive vs iterative DNS queries, root servers, TLDs, A/AAAA/CNAME records.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "HTTP, HTTPS & TLS Handshake",
+          "description": "HTTP request/response headers, status codes, TLS 1.3 asymmetric encryption handshake.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}
