@@ -13,15 +13,21 @@ export function LoginPage() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  const navigateByRole = (role) => {
+    if (role === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+    } else if (role === 'coordinator') {
+      navigate('/coordinator/dashboard', { replace: true });
+    } else if (role === 'alumni') {
+      navigate('/alumni/dashboard', { replace: true });
+    } else {
+      navigate('/student/dashboard', { replace: true });
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user.role === 'coordinator') {
-        navigate('/coordinator/dashboard', { replace: true });
-      } else {
-        navigate('/student/dashboard', { replace: true });
-      }
+      navigateByRole(user.role);
     }
   }, [user, navigate]);
 
@@ -36,13 +42,7 @@ export function LoginPage() {
         rememberMe
       });
       login(res.token, res.user);
-      if (res.user.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (res.user.role === 'coordinator') {
-        navigate('/coordinator/dashboard', { replace: true });
-      } else {
-        navigate('/student/dashboard', { replace: true });
-      }
+      navigateByRole(res.user?.role);
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

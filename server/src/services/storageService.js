@@ -103,9 +103,22 @@ async function deleteBugScreenshot(publicId) {
   });
 }
 
+/**
+ * Uploads a feed post image/media attachment to Cloudinary
+ */
+async function uploadFeedMedia(file) {
+  const result = await uploadToCloudinary(file.buffer, 'medha-code-track/feed-media', 'image');
+  return {
+    url: result.url,
+    publicId: result.publicId,
+    fileName: file.originalname
+  };
+}
+
 module.exports = {
   uploadResumeFile,
   deleteResumeFile,
   uploadBugScreenshot,
-  deleteBugScreenshot
+  deleteBugScreenshot,
+  uploadFeedMedia
 };

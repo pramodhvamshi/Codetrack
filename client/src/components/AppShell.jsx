@@ -3,15 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { api, API_BASE_URL } from '../api/client';
 import { ModeToggle } from './ModeToggle';
+import { NotificationDrawer } from './layout/NotificationDrawer';
+import { GlobalSearchBar } from './layout/GlobalSearchBar';
 
 export function AppShell({ active, children }) {
   const { user, token, login, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [alumniDropdownOpen, setAlumniDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const alumniDropdownRef = useRef(null);
 
   const handleLogout = async () => {
     setDropdownOpen(false);
+    setAlumniDropdownOpen(false);
     await logout();
     navigate('/login', { replace: true });
   };
@@ -31,6 +37,7 @@ export function AppShell({ active, children }) {
   const isStudent = user && user.role === 'student';
   const isCoordinator = user && user.role === 'coordinator';
   const isAdmin = user && user.role === 'admin';
+  const isAlumni = user && user.role === 'alumni';
   const isImpersonating = user?.isImpersonating || sessionStorage.getItem("impersonationActive") === "true";
 
   // Close dropdown when clicking outside
@@ -39,10 +46,13 @@ export function AppShell({ active, children }) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
+      if (alumniDropdownRef.current && !alumniDropdownRef.current.contains(e.target)) {
+        setAlumniDropdownOpen(false);
+      }
     };
-    if (dropdownOpen) document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
+  }, []);
 
   const navItem = (label, path, key) => (
     <button
@@ -65,10 +75,23 @@ export function AppShell({ active, children }) {
     ? [
         { icon: '⚡', label: 'Dashboard', path: '/student/dashboard' },
         { icon: '👤', label: 'My Profile', path: '/student/profile' },
-        { icon: '⚙️', label: 'Profile Settings', path: '/profile/personal' },
         { icon: '📄', label: 'Resume Builder', path: '/student/resume' },
+        { icon: '🛣️', label: 'Roadmaps', path: '/roadmaps' },
+        { icon: '🧠', label: 'DSA Tracker', path: '/dsa' },
+        { icon: '🎤', label: 'Mock Interviews', path: '/student/interview' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '⚙️', label: 'Profile Settings', path: '/profile/personal' },
         { icon: '🐛', label: 'Report a Bug', path: '/report-bug' }
+      ]
+    : isAlumni
+    ? [
+        { icon: '⚡', label: 'Alumni Dashboard', path: '/alumni/dashboard' },
+        { icon: '🌟', label: 'Community Feed', path: '/feed' },
+        { icon: '👥', label: 'Alumni Directory', path: '/alumni' },
+        { icon: '💬', label: 'Messages', path: '/messages' },
+        { icon: '💼', label: 'Job Portal', path: '/jobs' },
+        { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '⚙️', label: 'Profile Settings', path: '/profile/personal' }
       ]
     : isCoordinator
     ? [
@@ -306,7 +329,116 @@ export function AppShell({ active, children }) {
           <span className="ct-logo-text">MEDHA CODE TRACK</span>
         </div>
         <div className="ct-header-right">
-          <div className="ct-nav-group">
+          <div className="ct-nav-group" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+            {navItem('Feed', '/feed', 'feed')}
+
+            {/* ALUMNI HUB HOVER DROPDOWN MENU */}
+            <div
+              ref={alumniDropdownRef}
+              style={{ position: 'relative', display: 'inline-block' }}
+              onMouseEnter={() => setAlumniDropdownOpen(true)}
+              onMouseLeave={() => setAlumniDropdownOpen(false)}
+            >
+              <button
+                type="button"
+                className="ct-nav-item"
+                data-active={['alumni', 'jobs', 'messages', 'events', 'forums', 'resources', 'interview-experiences', 'students-directory', 'coordinators-directory', 'groups', 'alumni-dashboard'].includes(active) ? 'true' : 'false'}
+                onClick={() => setAlumniDropdownOpen(o => !o)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                🎓 Alumni Hub <span style={{ fontSize: '0.65rem' }}>▼</span>
+              </button>
+
+              {alumniDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  width: '260px',
+                  background: 'var(--bg-card, #1e293b)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid var(--border, #334155)',
+                  borderRadius: '14px',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
+                  padding: '0.4rem',
+                  zIndex: 2000,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.15rem'
+                }}>
+                  {isAlumni && (
+                    <button
+                      className="ct-dropdown-item"
+                      onClick={() => { setAlumniDropdownOpen(false); navigate('/alumni/dashboard'); }}
+                    >
+                      <span className="ct-dropdown-icon">⚡</span> Alumni Dashboard
+                    </button>
+                  )}
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/jobs'); }}
+                  >
+                    <span className="ct-dropdown-icon">💼</span> Jobs & Referral Slots
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/messages'); }}
+                  >
+                    <span className="ct-dropdown-icon">💬</span> Messages & Mentorship
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/alumni'); }}
+                  >
+                    <span className="ct-dropdown-icon">👥</span> Alumni Directory
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/events'); }}
+                  >
+                    <span className="ct-dropdown-icon">📅</span> Events & Hackathons
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/forums'); }}
+                  >
+                    <span className="ct-dropdown-icon">💡</span> Discussion Forum & Q&A
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/resources'); }}
+                  >
+                    <span className="ct-dropdown-icon">📚</span> Useful Resources Library
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/interview-experiences'); }}
+                  >
+                    <span className="ct-dropdown-icon">📝</span> Interview Experiences
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/students-directory'); }}
+                  >
+                    <span className="ct-dropdown-icon">🎓</span> Student Directory & Contacts
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/coordinators-directory'); }}
+                  >
+                    <span className="ct-dropdown-icon">👔</span> Coordinator Directory
+                  </button>
+                  <button
+                    className="ct-dropdown-item"
+                    onClick={() => { setAlumniDropdownOpen(false); navigate('/groups'); }}
+                  >
+                    <span className="ct-dropdown-icon">👥</span> Alumni Interest Clubs & Groups
+                  </button>
+                </div>
+              )}
+            </div>
+
             {isStudent && [
               navItem('Dashboard', '/student/dashboard', 'student-dashboard'),
               navItem('Roadmaps', '/roadmaps', 'roadmaps'),
@@ -314,6 +446,10 @@ export function AppShell({ active, children }) {
               navItem('Profile', '/student/profile', 'student-profile'),
               navItem('Resume', '/student/resume', 'student-resume'),
               navItem('Interviews', '/student/interview', 'student-interview'),
+              navItem('Leaderboard', '/leaderboard', 'leaderboard')
+            ]}
+            {isAlumni && [
+              navItem('Dashboard', '/alumni/dashboard', 'alumni-dashboard'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
             ]}
             {isCoordinator && [
@@ -334,6 +470,25 @@ export function AppShell({ active, children }) {
 
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <GlobalSearchBar />
+              <button
+                onClick={() => setNotifOpen(true)}
+                title="Notifications"
+                style={{
+                  background: 'var(--bg-secondary, #0f172a)',
+                  border: '1px solid var(--border, #334155)',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontSize: '1rem'
+                }}
+              >
+                🔔
+              </button>
               <ModeToggle />
               <div className="ct-user-dropdown" ref={dropdownRef}>
                 {/* AVATAR TRIGGER BUTTON */}
@@ -398,9 +553,11 @@ export function AppShell({ active, children }) {
         </div>
       </header>
 
-      <main className={active === 'student-profile' || active === 'leaderboard' ? 'ct-main-full' : 'ct-main'}>
+      <main className={['feed', 'alumni-dashboard', 'jobs', 'alumni', 'messages', 'leaderboard', 'student-profile'].includes(active) ? 'ct-main-full' : 'ct-main'}>
         {children}
       </main>
+
+      <NotificationDrawer isOpen={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   );
 }

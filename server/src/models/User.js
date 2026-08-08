@@ -201,7 +201,7 @@ const UserSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ['student', 'coordinator', 'admin'], required: true },
+    role: { type: String, enum: ['student', 'coordinator', 'admin', 'alumni'], required: true },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     mssid: {
@@ -226,11 +226,12 @@ const UserSchema = new mongoose.Schema(
       default: ""
     },
 
-    /* Academic */
+    /* Academic & Contact */
     college: { type: String },
     hostel: { type: String },
     branch: { type: String },
     year: { type: String },
+    phoneNumber: { type: String, default: "" },
     currentYear: { type: String, enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'], default: '1st Year' },
     overallGpa: { type: Number },
 
