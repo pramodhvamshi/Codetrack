@@ -14,15 +14,7 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   const navigateByRole = (role) => {
-    if (role === 'admin') {
-      navigate('/admin/dashboard', { replace: true });
-    } else if (role === 'coordinator') {
-      navigate('/coordinator/dashboard', { replace: true });
-    } else if (role === 'alumni') {
-      navigate('/alumni/dashboard', { replace: true });
-    } else {
-      navigate('/student/dashboard', { replace: true });
-    }
+    navigate('/feed', { replace: true });
   };
 
   useEffect(() => {

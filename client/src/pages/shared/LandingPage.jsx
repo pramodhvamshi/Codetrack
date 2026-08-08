@@ -92,18 +92,10 @@ export function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // If already logged in, redirect
+  // If already logged in, redirect to default feed page
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else if (user.role === 'coordinator') {
-        navigate('/coordinator/dashboard', { replace: true });
-      } else if (user.role === 'alumni') {
-        navigate('/alumni/dashboard', { replace: true });
-      } else {
-        navigate('/student/dashboard', { replace: true });
-      }
+      navigate('/feed', { replace: true });
     }
   }, [user, navigate]);
 

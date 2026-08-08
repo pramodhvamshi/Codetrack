@@ -400,7 +400,11 @@ export function AppShell({ active, children }) {
       `}</style>
 
       <header className="ct-header">
-        <div className="ct-header-left" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div
+          className="ct-header-left"
+          onClick={() => navigate('/feed')}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
+        >
           <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           <span className="ct-logo-text">MEDHA CODE TRACK</span>
         </div>

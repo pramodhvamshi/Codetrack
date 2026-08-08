@@ -209,12 +209,7 @@ export function RegisterPage() {
       const res = await api.postJson('/auth/register', payload);
       login(res.token, res.user);
 
-      navigate(
-        res.user.role === 'student'
-          ? '/student/dashboard'
-          : '/coordinator/dashboard',
-        { replace: true }
-      );
+      navigate('/feed', { replace: true });
     } catch (err) {
       try {
         const parsed = JSON.parse(err.message);
