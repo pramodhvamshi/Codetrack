@@ -5,12 +5,52 @@ const resumeAnalyzerService = require('../services/resumeAnalyzer.service');
 const InterviewSession = require('../models/Interview/InterviewSession');
 const InterviewMessage = require('../models/Interview/InterviewMessage');
 const InterviewFeedback = require('../models/Interview/InterviewFeedback');
+const InterviewQuota = require('../models/InterviewQuota');
+
+const MAX_FREE_INTERVIEWS = 2;
+
+// Company specific behavior nuances
+const COMPANY_PROMPTS = {
+  Google: "Simulate a senior Google software engineering interviewer. Focus heavily on optimal algorithmic efficiency (Big-O time/space complexity), scalable data structure choices, and edge-case handling.",
+  Amazon: "Simulate an Amazon Bar Raiser. Incorporate Amazon Leadership Principles (Customer Obsession, Ownership, Bias for Action). Ask questions using the STAR framework and evaluate technical scalability.",
+  Microsoft: "Simulate a Microsoft Principal Engineer. Emphasize modular code design, robust exception handling, practical software engineering principles, and core OS/system concepts.",
+  TCS: "Simulate a TCS Technical Lead. Focus on solid core CS fundamentals (OOPs, DBMS, Operating Systems, Networks), clear logical communication, and structured problem solving.",
+  Infosys: "Simulate an Infosys Technical Specialist. Focus on foundational DSA, database querying, object-oriented concepts, and articulate verbal explanations.",
+  Adobe: "Simulate an Adobe Computer Scientist. Focus on creative algorithmic thinking, data structures, low-level efficiency, and clean object-oriented architecture.",
+};
+
+// GET /api/ai/interview/quota
+router.get('/interview/quota', auth, async (req, res) => {
+  try {
+    let quota = await InterviewQuota.findOne({ studentId: req.user.id });
+    if (!quota) {
+      // Also sync count from existing Completed/InProgress InterviewSession
+      const count = await InterviewSession.countDocuments({ studentId: req.user.id });
+      quota = new InterviewQuota({
+        studentId: req.user.id,
+        interviewsCount: count,
+        maxInterviews: MAX_FREE_INTERVIEWS,
+      });
+      await quota.save();
+    }
+
+    const interviewsRemaining = Math.max(0, MAX_FREE_INTERVIEWS - quota.interviewsCount);
+    res.json({
+      interviewsCount: quota.interviewsCount,
+      maxInterviews: MAX_FREE_INTERVIEWS,
+      interviewsRemaining,
+      canStartInterview: interviewsRemaining > 0,
+    });
+  } catch (err) {
+    console.error('Fetch interview quota error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // POST /api/ai/resume/analyze
 router.post('/resume/analyze', auth, async (req, res) => {
   try {
     const { resumeVersionId, resumeFileId, jobDescription, force } = req.body;
-    
     if (!resumeVersionId && !resumeFileId) {
       return res.status(400).json({ error: 'resumeVersionId or resumeFileId is required' });
     }
@@ -83,31 +123,50 @@ router.post('/interview', auth, async (req, res) => {
     const aiService = require('../services/ai.service');
 
     if (action === 'start') {
-      const { company, role, round, difficulty } = req.body;
-      const systemPrompt = `You are a senior interviewer at ${company || 'a top tech company'} conducting a ${round || 'Technical'} interview for the position of ${role || 'Software Engineer'}. The difficulty level is ${difficulty || 'Medium'}.
-      
-YOUR BEHAVIOR:
-1. Start with a brief introduction and put the candidate at ease
-2. Ask questions ONE AT A TIME — wait for the candidate's response before proceeding
-3. Ask follow-up questions based on the candidate's responses
-4. Be encouraging but maintain professional rigor
-5. For Technical rounds: ask coding/DSA questions, evaluate approach and logic
-6. For HR/Behavioral rounds: focus on behavioral questions, cultural fit, communication
+      const { company = 'Google', role = 'Software Developer', round = 'Technical', difficulty = 'Medium' } = req.body;
 
-IMPORTANT:
-- Keep responses concise (2-3 sentences for follow-ups)
-- When asking a coding question, present it clearly with constraints
-- Don't give away answers — guide the candidate if they're stuck
+      // Enforce 2 Free Interviews Quota
+      let quota = await InterviewQuota.findOne({ studentId: req.user.id });
+      if (!quota) {
+        const count = await InterviewSession.countDocuments({ studentId: req.user.id });
+        quota = new InterviewQuota({ studentId: req.user.id, interviewsCount: count });
+        await quota.save();
+      }
 
-Respond in a conversational, professional tone. Start the interview now with a greeting and your first question.`;
+      if (quota.interviewsCount >= MAX_FREE_INTERVIEWS) {
+        return res.status(429).json({
+          error: `You have used all ${MAX_FREE_INTERVIEWS} of your free AI Voice Interviews quota. Try our Mock Tests or review past sessions.`,
+          quotaExceeded: true,
+        });
+      }
 
-      // 1. Create a session in the database
+      // Increment quota count
+      quota.interviewsCount += 1;
+      quota.lastInterviewAt = new Date();
+      await quota.save();
+
+      const companyGuidance = COMPANY_PROMPTS[company] || `Simulate a senior interviewer at ${company}.`;
+
+      const systemPrompt = `You are conducting a strict 10-minute voice-to-voice interview for ${company} (${round} Round, ${difficulty} Difficulty) for the role of ${role}.
+
+COMPANY SPECIFIC INTERVIEW STYLE:
+${companyGuidance}
+
+VOICE INTERVIEW PROTOCOL (CRITICAL):
+1. Keep ALL responses short, clear, and direct (MAXIMUM 2 to 3 sentences per turn).
+2. Since this is a SPOKEN voice interview, do NOT output long paragraphs, code blocks, or markdown tables.
+3. Ask ONE focused question at a time.
+4. Listen to the candidate's spoken reply, give brief constructive follow-up or validation, then ask the next question.
+5. Keep track of time and maintain professional momentum.
+
+Start now by warmly greeting the candidate for their ${company} ${round} interview and asking your first question.`;
+
       const dbSession = await InterviewSession.create({
         studentId: req.user.id,
-        company: company || 'Tech Company',
-        role: role || 'Software Engineer',
-        round: round || 'Technical',
-        difficulty: difficulty || 'Medium',
+        company,
+        role,
+        round,
+        difficulty,
         status: 'InProgress',
         startTime: new Date()
       });
@@ -128,7 +187,6 @@ Respond in a conversational, professional tone. Start the interview now with a g
       }
       res.end();
 
-      // 2. Save greeting message to DB
       if (textAccumulator) {
         await InterviewMessage.create({
           sessionId: dbSession._id,
@@ -149,7 +207,6 @@ Respond in a conversational, professional tone. Start the interview now with a g
         });
       }
 
-      // Save user response to DB
       if (sessionId) {
         await InterviewMessage.create({
           sessionId,
@@ -172,7 +229,6 @@ Respond in a conversational, professional tone. Start the interview now with a g
       }
       res.end();
 
-      // Save AI reply to DB
       if (sessionId && textAccumulator) {
         await InterviewMessage.create({
           sessionId,
@@ -184,17 +240,15 @@ Respond in a conversational, professional tone. Start the interview now with a g
     }
     else if (action === 'evaluate') {
       const { company, role, round, conversationHistory, sessionId } = req.body;
-      const evalPrompt = `You are evaluating a mock interview session for ${role || 'Software Engineer'} at ${company || 'a top tech company'} (${round || 'Technical'} round).
+      const evalPrompt = `You are evaluating a 10-minute voice mock interview session for ${role || 'Software Engineer'} at ${company || 'a top tech company'} (${round || 'Technical'} round).
 
 INTERVIEW CONVERSATION:
 ${conversationHistory}
 
-GRADING CRITERIA & RULES:
-1. Be extremely strict and realistic. This is a simulation of real campus placements.
-2. If the candidate provides irrelevant, gibberish, single-letter, very short (e.g. less than 3 words), or empty answers (like "c", "kk", "ok", "yes", "i don't know"), you MUST score that specific question as 0 (zero) points.
-3. If the candidate answers most questions with nonsense or single-letter responses, the overallScore and all category scores MUST be extremely low (e.g., between 0 and 5).
-
-TASK: Evaluate the candidate's performance based on the above rules and provide detailed feedback.
+GRADING CRITERIA:
+1. Be strict, fair, and realistic for campus placement standards.
+2. Evaluate technical accuracy, communication clarity, problem-solving, and confidence.
+3. If candidate answers were extremely short, empty, or gibberish, grade accordingly.
 
 Return JSON:
 {
@@ -221,7 +275,6 @@ Return JSON:
 }`;
       const analysis = await aiService.generateJSON(evalPrompt, "You are an expert interviewer.", { temperature: 0.3 });
       
-      // Save feedback and set session Completed
       if (sessionId) {
         try {
           await InterviewFeedback.findOneAndUpdate(

@@ -18,6 +18,7 @@ const progressRoutes = require('./routes/progress');
 const roadmapRoutes = require('./routes/roadmap.routes');
 const dsaRoutes = require('./routes/dsa.routes');
 const aiRoutes = require('./routes/ai.routes');
+const mockTestRoutes = require('./routes/mockTest.routes');
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -84,6 +85,7 @@ app.use('/api/student/progress', progressRoutes);
 app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai/mocktest', mockTestRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
