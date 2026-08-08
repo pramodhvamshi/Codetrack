@@ -11,17 +11,13 @@ export function AppShell({ active, children }) {
   const navigate = useNavigate();
   
   const [dropdownOpen, setDropdownOpen] = useState(false);
-<<<<<<< HEAD
   const [alumniDropdownOpen, setAlumniDropdownOpen] = useState(false);
+  const [prepHubOpen, setPrepHubOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+
   const dropdownRef = useRef(null);
   const alumniDropdownRef = useRef(null);
-=======
-  const [prepHubOpen, setPrepHubOpen] = useState(false);
-  
-  const dropdownRef = useRef(null);
   const prepHubRef = useRef(null);
->>>>>>> origin/main
 
   const handleLogout = async () => {
     setDropdownOpen(false);
@@ -54,13 +50,11 @@ export function AppShell({ active, children }) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
-<<<<<<< HEAD
       if (alumniDropdownRef.current && !alumniDropdownRef.current.contains(e.target)) {
         setAlumniDropdownOpen(false);
-=======
+      }
       if (prepHubRef.current && !prepHubRef.current.contains(e.target)) {
         setPrepHubOpen(false);
->>>>>>> origin/main
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -702,11 +696,7 @@ export function AppShell({ active, children }) {
         </div>
       </header>
 
-<<<<<<< HEAD
-      <main className={['feed', 'alumni-dashboard', 'jobs', 'alumni', 'messages', 'leaderboard', 'student-profile'].includes(active) ? 'ct-main-full' : 'ct-main'}>
-=======
-      <main className="ct-main">
->>>>>>> origin/main
+      <main className={['feed', 'alumni-dashboard', 'jobs', 'alumni', 'messages', 'leaderboard', 'student-profile', 'events', 'forums', 'resources', 'interview-experiences', 'students-directory', 'coordinators-directory', 'groups'].includes(active) ? 'ct-main-full' : 'ct-main'}>
         {children}
       </main>
 

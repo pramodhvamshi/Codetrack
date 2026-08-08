@@ -18,7 +18,6 @@ const progressRoutes = require('./routes/progress');
 const roadmapRoutes = require('./routes/roadmap.routes');
 const dsaRoutes = require('./routes/dsa.routes');
 const aiRoutes = require('./routes/ai.routes');
-<<<<<<< HEAD
 const feedRoutes = require('./routes/feed.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const jobRoutes = require('./routes/job.routes');
@@ -30,12 +29,10 @@ const forumRoutes = require('./routes/forum.routes');
 const resourceRoutes = require('./routes/resource.routes');
 const interviewExperienceRoutes = require('./routes/interviewExperience.routes');
 const alumniGroupRoutes = require('./routes/alumniGroup.routes');
+const mockTestRoutes = require('./routes/mockTest.routes');
 
 const { initSocket } = require('./services/socketService');
 const http = require('http');
-=======
-const mockTestRoutes = require('./routes/mockTest.routes');
->>>>>>> origin/main
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
