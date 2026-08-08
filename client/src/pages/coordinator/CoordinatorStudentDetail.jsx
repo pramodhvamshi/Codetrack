@@ -21,8 +21,10 @@ export function CoordinatorStudentDetail() {
   const [timeline, setTimeline] = useState([]);
   const [heatmap, setHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // overview, platforms, heatmap, analytics, timeline, resume, curriculum
+  const [activeTab, setActiveTab] = useState('overview'); // overview, platforms, heatmap, analytics, timeline, resume, curriculum, meeting-notes
   const [curriculumData, setCurriculumData] = useState({ roadmaps: [], dsaSheets: [] });
+  const [meetingNotesList, setMeetingNotesList] = useState([]);
+  const [studentLeavesList, setStudentLeavesList] = useState([]);
 
   const [resumeBlobUrl, setResumeBlobUrl] = useState(null);
   const [loadingResume, setLoadingResume] = useState(false);
@@ -77,6 +79,17 @@ export function CoordinatorStudentDetail() {
         setCurriculumData({ roadmaps: startedRoadmaps, dsaSheets: dsaData || [] });
       } catch (err) {
         console.error('Failed to load curriculum lists:', err);
+      }
+
+      try {
+        const [notesData, leavesData] = await Promise.all([
+          api.getJson(`/services/mentoring/student-profile/${id}/notes`, token).catch(() => []),
+          api.getJson(`/services/leave/student-profile/${id}`, token).catch(() => [])
+        ]);
+        setMeetingNotesList(notesData || []);
+        setStudentLeavesList(leavesData || []);
+      } catch (e) {
+        console.error('Failed to load meeting notes & leaves:', e);
       }
     } catch (err) {
       console.error('Failed to load student details:', err);
@@ -353,6 +366,8 @@ export function CoordinatorStudentDetail() {
             { id: 'analytics', label: '📊 Solve Analytics' },
             { id: 'timeline', label: '⏳ Activity Timeline' },
             { id: 'mentor-notes', label: '📝 Mentor Notes' },
+            { id: 'meeting-notes', label: '🤝 Mentoring Meeting Notes' },
+            { id: 'leave-history', label: '🍃 Leave Request History' },
             { id: 'resume', label: '📜 PDF Resume' }
           ].map(t => (
             <button
@@ -1381,6 +1396,121 @@ export function CoordinatorStudentDetail() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* MENTORING MEETING NOTES TAB */}
+        {activeTab === 'meeting-notes' && (
+          <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '4px solid var(--accent-purple)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.8rem' }}>
+              <div>
+                <h3 style={{ margin: 0, color: 'white' }}>🤝 Mentoring Meeting Notes & Discussion History</h3>
+                <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Recorded session notes, mentor counsel, and attached resource links</p>
+              </div>
+              <Link to="/coordinator/services?tab=mentoring" className="ct-button" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+                + Book / Manage Mentoring
+              </Link>
+            </div>
+
+            {meetingNotesList.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                No mentoring meeting notes recorded for this student yet.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {meetingNotesList.map((m) => (
+                  <div key={m._id} style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-blue)', fontSize: '0.95rem' }}>{m.category}</span>
+                      <span className="ct-pill" style={{ fontSize: '0.75rem' }}>{m.date} ({m.timeSlot})</span>
+                    </div>
+
+                    {m.notesText && (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <strong>Student Request Reason:</strong> {m.notesText}
+                      </div>
+                    )}
+
+                    {m.meetingNotes ? (
+                      <div style={{ padding: '0.8rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.3)', fontSize: '0.85rem', color: '#f3e8ff', lineHeight: 1.6 }}>
+                        <strong>Coordinator Meeting Notes:</strong>
+                        <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap' }}>{m.meetingNotes}</p>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', italic: 'true' }}>No coordinator meeting notes added yet.</span>
+                    )}
+
+                    {m.docLinks && m.docLinks.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.4rem' }}>
+                        {m.docLinks.map((d, di) => (
+                          <a key={di} href={d.url} target="_blank" rel="noopener noreferrer" className="ct-chip" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', fontSize: '0.75rem', textDecoration: 'none' }}>
+                            📎 {d.title || 'Doc Link'} ↗
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LEAVE REQUEST HISTORY TAB */}
+        {activeTab === 'leave-history' && (
+          <div className="ct-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '4px solid var(--accent-orange)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.8rem' }}>
+              <div>
+                <h3 style={{ margin: 0, color: 'white' }}>🍃 Student Leave Request History</h3>
+                <p style={{ margin: '0.2rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Full record of submitted leave applications, templates, and coordinator verification remarks</p>
+              </div>
+              <Link to="/coordinator/services?tab=leave" className="ct-button" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+                + Manage Leave Queue
+              </Link>
+            </div>
+
+            {studentLeavesList.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                No leave requests submitted by this student yet.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+                {studentLeavesList.map((l) => (
+                  <div key={l._id} style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--accent-orange)', fontSize: '0.95rem' }}>{l.reasonType} ({l.duration})</span>
+                      <span className="ct-pill" style={{
+                        background: l.status === 'Approved' ? 'rgba(34, 197, 94, 0.15)' : l.status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                        color: l.status === 'Approved' ? '#4ade80' : l.status === 'Rejected' ? '#f87171' : '#60a5fa',
+                        fontSize: '0.75rem'
+                      }}>
+                        {l.status}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+                      <strong>Statement:</strong> {l.statement}
+                    </div>
+
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      <strong>Dates:</strong> {new Date(l.startDate).toLocaleDateString()} - {new Date(l.endDate).toLocaleDateString()}
+                    </div>
+
+                    {l.driveDocUrl && (
+                      <a href={l.driveDocUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa', fontSize: '0.78rem', textDecoration: 'none', fontWeight: 600 }}>
+                        Doc Link ↗
+                      </a>
+                    )}
+
+                    {l.coordinatorRemarks && (
+                      <div style={{ padding: '0.5rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '6px', fontSize: '0.78rem', color: '#fcd34d' }}>
+                        <strong>Coordinator Remarks:</strong> {l.coordinatorRemarks}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

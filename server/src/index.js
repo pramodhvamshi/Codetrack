@@ -30,6 +30,7 @@ const resourceRoutes = require('./routes/resource.routes');
 const interviewExperienceRoutes = require('./routes/interviewExperience.routes');
 const alumniGroupRoutes = require('./routes/alumniGroup.routes');
 const mockTestRoutes = require('./routes/mockTest.routes');
+const servicesRoutes = require('./routes/services.routes');
 
 const { initSocket } = require('./services/socketService');
 const http = require('http');
@@ -103,6 +104,7 @@ app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai/mocktest', mockTestRoutes);
+app.use('/api/services', servicesRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);

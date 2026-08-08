@@ -50,6 +50,10 @@ import DSADashboard from './features/dsa/pages/DSADashboard';
 import DSASheetView from './features/dsa/pages/DSASheetView';
 import CoordinatorDSAView from './features/dsa/pages/CoordinatorDSAView';
 
+import { StudentServicesDashboard } from './features/services/pages/StudentServicesDashboard';
+import { CoordinatorServicesDashboard } from './features/services/pages/CoordinatorServicesDashboard';
+import { LiveMentoringSessionPage } from './features/services/pages/LiveMentoringSessionPage';
+
 import './styles/global.css';
 
 /* ---------- PROTECTED ROUTE ---------- */
@@ -263,6 +267,23 @@ function AppRoutes() {
         />
 
         <Route
+          path="/student/services"
+          element={
+            <ProtectedRoute role="student">
+              <StudentServicesDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/mentoring/:sessionId"
+          element={
+            <ProtectedRoute role={['student', 'coordinator', 'admin']}>
+              <LiveMentoringSessionPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/profile/personal"
           element={
             <ProtectedRoute role="student">
@@ -325,6 +346,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute role={['coordinator', 'admin']}>
               <CoordinatorReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/coordinator/services"
+          element={
+            <ProtectedRoute role="coordinator">
+              <CoordinatorServicesDashboard />
             </ProtectedRoute>
           }
         />

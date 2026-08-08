@@ -14,10 +14,11 @@ export function AppShell({ active, children }) {
   const [alumniDropdownOpen, setAlumniDropdownOpen] = useState(false);
   const [prepHubOpen, setPrepHubOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-
+  const [servicesOpen, setServicesOpen] = useState(false);
   const dropdownRef = useRef(null);
   const alumniDropdownRef = useRef(null);
   const prepHubRef = useRef(null);
+  const servicesRef = useRef(null);
 
   const handleLogout = async () => {
     setDropdownOpen(false);
@@ -55,6 +56,9 @@ export function AppShell({ active, children }) {
       }
       if (prepHubRef.current && !prepHubRef.current.contains(e.target)) {
         setPrepHubOpen(false);
+      }
+      if (servicesRef.current && !servicesRef.current.contains(e.target)) {
+        setServicesOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -582,7 +586,62 @@ export function AppShell({ active, children }) {
                   )}
                 </div>
 
-                {navItem('Profile', '/student/profile', 'student-profile')}
+                {/* Services Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={servicesRef}
+                  onMouseEnter={() => setServicesOpen(true)}
+                  onMouseLeave={() => setServicesOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setServicesOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={active === 'services' ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Services</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {servicesOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/student/services?tab=leave'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Apply & Track Leave Applications</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/services?tab=mentoring'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📅</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Book Slots & GMeet Links</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/services?tab=laptop'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>💻</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Report Issues & Repairs</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {navItem('Leaderboard', '/leaderboard', 'leaderboard')}
               </>
             )}
@@ -591,12 +650,72 @@ export function AppShell({ active, children }) {
               navItem('Dashboard', '/alumni/dashboard', 'alumni-dashboard'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
             ]}
-            {isCoordinator && [
-              navItem('Dashboard', '/coordinator/dashboard', 'coord-dashboard'),
-              navItem('Students', '/coordinator/students', 'coord-students'),
-              navItem('Reports', '/coordinator/reports', 'coord-reports'),
-              navItem('Leaderboard', '/leaderboard', 'leaderboard')
-            ]}
+
+            {isCoordinator && (
+              <>
+                {navItem('Dashboard', '/coordinator/dashboard', 'coord-dashboard')}
+                {navItem('Students', '/coordinator/students', 'coord-students')}
+                {navItem('Reports', '/coordinator/reports', 'coord-reports')}
+
+                {/* Coordinator Services Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={servicesRef}
+                  onMouseEnter={() => setServicesOpen(true)}
+                  onMouseLeave={() => setServicesOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setServicesOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={active === 'services' ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Services</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {servicesOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=leave'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Requests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Verify & Approve Applications</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=mentoring'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📅</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Requests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Reschedule Slots & Meeting Notes</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=laptop'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>💻</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Audit Table</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Excel Inventory & R&D Status</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {navItem('Leaderboard', '/leaderboard', 'leaderboard')}
+              </>
+            )}
             {isAdmin && [
               navItem('Dashboard', '/admin/dashboard', 'admin-dashboard'),
               navItem('Coordinators', '/admin/coordinators', 'admin-coordinators'),
