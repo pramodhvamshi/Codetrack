@@ -5,14 +5,13 @@ let socket = null;
 export function getSocket(token) {
   if (!socket && token) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const serverUrl = isLocal
-      ? (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001').replace(/\/$/, "").replace(/\/api$/, "")
-      : window.location.origin;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:5000' : 'https://medhacodetrack-api.vercel.app');
+    const serverUrl = baseUrl.replace(/\/$/, "").replace(/\/api$/, "");
 
     socket = io(serverUrl, {
       auth: { token },
       autoConnect: true,
-      transports: ['websocket', 'polling']
+      transports: ['polling', 'websocket']
     });
 
     socket.on('connect', () => {

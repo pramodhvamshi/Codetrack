@@ -43,17 +43,21 @@ const seedAlumniData = require('./utils/seedAlumni');
 
 const app = express();
 
+// Trust proxy for Vercel / serverless deployments (fixes express-rate-limit X-Forwarded-For validation error)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB().then(() => {
   seedAlumniData();
 });
 
-// Rate limiting
+// Rate limiting configured safely for Vercel proxy
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 300, // Limit each IP to 300 requests per 15 minutes
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false, default: false },
   message: { message: 'Too many requests, please try again later.' }
 });
 
