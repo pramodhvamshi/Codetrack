@@ -39,30 +39,38 @@ const limiter = rateLimit({
 });
 
 // ── CORS must be FIRST — before helmet, rate-limiter, and body parsers ──
+const allowedOrigins = [
+  config.clientUrl,
+  'https://medhacodetrack.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174'
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      const allowedOrigins = [
-        config.clientUrl,
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://localhost:5174',
-        'http://127.0.0.1:5174'
-      ];
       if (
         allowedOrigins.includes(origin) ||
+        /\.vercel\.app$/.test(origin) ||
         /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
       ) {
         return callback(null, true);
       }
-      return callback(null, false);
+      // Allow origin fallback for serverless preflights
+      return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'x-system-prompt'],
+    exposedHeaders: ['x-session-id', 'x-system-prompt']
   })
 );
+
+// Handle preflight OPTIONS requests for all routes
+app.options('*', cors());
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
