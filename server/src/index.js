@@ -39,38 +39,21 @@ const limiter = rateLimit({
 });
 
 // ── CORS must be FIRST — before helmet, rate-limiter, and body parsers ──
-const allowedOrigins = [
-  config.clientUrl,
-  'https://medhacodetrack.vercel.app',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:5174',
-  'http://127.0.0.1:5174'
-];
-
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, curl, server calls)
       if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        /\.vercel\.app$/.test(origin) ||
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-      ) {
-        return callback(null, true);
-      }
-      // Allow origin fallback for serverless preflights
-      return callback(null, true);
+      // Dynamically echo the requesting origin (https://medhacodetrack.vercel.app, localhost, etc.)
+      return callback(null, origin);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'x-system-prompt'],
-    exposedHeaders: ['x-session-id', 'x-system-prompt']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-session-id', 'x-system-prompt'],
+    exposedHeaders: ['x-session-id', 'x-system-prompt'],
+    optionsSuccessStatus: 200
   })
 );
-
-// Handle preflight OPTIONS requests for all routes
-app.options('*', cors());
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
