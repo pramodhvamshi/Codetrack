@@ -1,0 +1,149 @@
+{
+  "title": "Operating Systems",
+  "description": "Core computer science fundamentals: process management, memory virtualisation, concurrency, I/O, and file systems.",
+  "category": "Computer Science Fundamentals",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "6 Weeks",
+  "totalTopics": 36,
+  "icon": "Cpu",
+  "nodes": [
+    {
+      "title": "OS Architecture & Bootstrapping",
+      "description": "Kernel architectures, dual-mode execution, system calls, interrupt handling, and boot process.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "Medium",
+      "order": 1,
+      "children": [
+        {
+          "title": "Kernel Modes & System Calls",
+          "description": "User mode vs Kernel mode, trap handlers, POSIX system call interface.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Interrupts & Dual Mode Execution",
+          "description": "Hardware and software interrupts, interrupt vector tables, context switching.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Process & Thread Management",
+      "description": "Process Control Blocks (PCB), thread models, CPU scheduling algorithms, and process state transitions.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Process Control Block (PCB) & States",
+          "description": "Process creation (fork/exec), PCB fields, states (Ready, Running, Waiting, Terminated).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "CPU Scheduling Algorithms",
+          "description": "FCFS, SJF, Round Robin, Priority, and Multi-level Queue CPU schedulers.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Threads & Concurrency Models",
+          "description": "User-level vs Kernel-level threads, POSIX pthreads, thread pools.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Synchronization & Deadlocks",
+      "description": "Critical section problem, mutexes, semaphores, Banker's algorithm, and deadlock handling.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Mutexes & Semaphores",
+          "description": "Race conditions, atomic instructions (TestAndSet), binary and counting semaphores.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Deadlock Detection & Prevention",
+          "description": "4 Coffman deadlock conditions, resource allocation graphs, Banker's avoidance algorithm.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Memory Management & Virtual Memory",
+      "description": "Paging, segmentation, TLB caching, page replacement algorithms, and thrashing.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "Paging & Translation Lookaside Buffer (TLB)",
+          "description": "Page tables, multi-level paging, page faults, virtual-to-physical address translation.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Page Replacement Algorithms",
+          "description": "FIFO, Optimal, LRU, LFU, and Clock page replacement strategies.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

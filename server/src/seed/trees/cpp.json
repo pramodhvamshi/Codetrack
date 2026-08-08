@@ -1,0 +1,721 @@
+{
+  "title": "C++ Programming",
+  "description": "Comprehensive directed learning tree to master C++ from basic syntax to manual memory management, STL containers, OOP, template metaprogramming, and system programming.",
+  "category": "Core Programming",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "10 Weeks",
+  "totalTopics": 60,
+  "icon": "Code",
+  "nodes": [
+    {
+      "title": "Foundations",
+      "description": "C++ history, compiler installation, Hello World, primitive types, operators, and control flow.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "branch": "center",
+      "children": [
+        {
+          "title": "History of C & C++",
+          "description": "Evolution of C, Bjarne Stroustrup's C with Classes, ANSI/ISO standard revisions (C++11 to C++23).",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "Low",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Installing Compiler (GCC, Clang, MSVC)",
+          "description": "Setting up MinGW, GCC, Clang, or Visual Studio compiler toolchains and PATH environment.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Hello World in C++",
+          "description": "Main entry point, preprocessor directives (#include <iostream>), return 0, and compilation steps.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Input/Output (cin, cout)",
+          "description": "Stream insertion (<<) and extraction (>>) operators, std::endl vs '\\n', cin.getline().",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Variables & Data Types",
+          "description": "Primitive types (int, float, double, char, bool), auto type deduction, sizeof operator.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Operators (Arithmetic, Relational, Logical)",
+          "description": "Arithmetic, logical, bitwise, assignment, and ternary conditional operators.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Control Flow (if, switch, loops)",
+          "description": "Conditional branching, switch-case, for loops, range-based for loops, while and do-while loops.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Core C++",
+      "description": "Functions, parameter passing, pointers, references, arrays, strings, structures, and namespaces.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Functions & Overloading",
+          "description": "Function signature, pass-by-value vs pass-by-reference, default arguments, inline functions, method overloading.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Scope & Storage Classes",
+          "description": "Local, global, static, register, extern, and thread_local storage specifiers.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Pointers & References",
+          "description": "Pointer declaration, address-of (&), dereference (*), pointer arithmetic, references vs pointers, const pointers.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Arrays & Strings",
+          "description": "Fixed C-style arrays, multidimensional arrays, std::string methods, and string_view.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Structures & Enums",
+          "description": "struct data alignment, unions, enum and strongly-typed enum class.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Namespaces",
+          "description": "Preventing name collisions, using namespace directive, nested namespaces, and anonymous namespaces.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Object-Oriented Programming",
+      "description": "Classes, constructors, encapsulation, inheritance hierarchy, virtual functions, and abstract classes.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Classes & Objects",
+          "description": "Class declaration, public/private/protected access specifiers, object instantiation, and this pointer.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Constructors & Destructors",
+          "description": "Default, parameterized, copy, move constructors, initializer lists, and ~Destructor cleanup.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Encapsulation & Abstraction",
+          "description": "Data hiding, interface design, const member functions, and getter/setter encapsulation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Inheritance (Single, Multiple, Hierarchical)",
+          "description": "Derived classes, mode of inheritance, virtual base classes, and resolving diamond problem.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Polymorphism (Compile-time, Runtime)",
+          "description": "Function & operator overloading vs virtual function dynamic binding and override specifier.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Abstract Classes & Interfaces",
+          "description": "Pure virtual functions (= 0), abstract base classes, dynamic_cast, and interface implementation.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Memory Management",
+      "description": "Stack vs heap memory, dynamic memory allocation with new/delete, RAII pattern, and smart pointers.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Dynamic Memory Allocation",
+          "description": "new and delete operators, allocating dynamic arrays (new[] / delete[]), and bad_alloc exception.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Stack vs Heap",
+          "description": "Memory layout of C++ executable: Stack frame allocation speed vs Heap dynamic allocation durability.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Smart Pointers",
+          "description": "std::unique_ptr, std::shared_ptr, std::weak_ptr, make_unique, and make_shared memory safety.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "RAII Pattern",
+          "description": "Resource Acquisition Is Initialization resource management, exception safety guarantees.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Memory Leaks & Valgrind",
+          "description": "Dangling pointers, memory leaks, double free errors, debugging with Valgrind / AddressSanitizer.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Standard Template Library (STL)",
+      "description": "Sequence containers, associative containers, iterators, generic STL algorithms, and functors.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 5,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Containers",
+          "description": "std::vector, std::list, std::deque, std::set, std::map, std::unordered_map, std::priority_queue.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Iterators",
+          "description": "Input, output, forward, bidirectional, random-access iterators, std::begin() and std::end().",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Algorithms",
+          "description": "std::sort, std::find, std::binary_search, std::transform, std::accumulate, std::for_each.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Custom Comparators",
+          "description": "Lambda comparators, struct operator(), std::greater, std::less for sorting custom classes.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Functors & Lambdas",
+          "description": "Function objects, inline lambda expressions with capture lists ([&], [=]), std::function.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Modern C++ Features",
+      "description": "C++11 through C++20 standard updates, move semantics, auto, constexpr, lambdas, and type traits.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 6,
+      "branch": "center",
+      "children": [
+        {
+          "title": "C++11/14/17/20 Overview",
+          "description": "Evolution of Modern C++ standards, range loops, nullptr, override, final, enum class.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Rvalue References",
+          "description": "T&& rvalue reference mechanics, lvalues vs rvalues, std::move, std::forward.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Move Semantics",
+          "description": "Move constructor, move assignment operator, Rule of 5, zero-copy optimization.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Lambda Expressions",
+          "description": "Generic lambdas, mutable lambdas, stateless vs stateful lambda captures.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "auto & decltype",
+          "description": "Automatic type deduction rules, decltype(auto), trailing return types.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Optional, Variant, Any",
+          "description": "Type-safe vocabulary types: std::optional, std::variant with std::visit, std::any.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Constexpr & Consteval",
+          "description": "Compile-time evaluation with constexpr functions, consteval immediate functions, constinit.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Advanced Concepts",
+      "description": "Templates, metaprogramming, exception safety, multithreading concurrency, and atomic operations.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 7,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Templates & Generic Programming",
+          "description": "Function templates, class templates, template specialization, variadic templates.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Template Metaprogramming",
+          "description": "SFINAE (Substitution Failure Is Not An Error), std::enable_if, C++20 concepts and constraints.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Exception Handling",
+          "description": "try-catch blocks, throw, exception hierarchies, noexcept specifier, stack unwinding.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Smart Pointer Internals",
+          "description": "Custom implementation of unique_ptr and shared_ptr control block with reference counts.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Multithreading & Concurrency",
+          "description": "std::thread, std::mutex, std::lock_guard, std::unique_lock, std::condition_variable.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Atomic Operations & Locks",
+          "description": "std::atomic, lock-free data structures, memory barriers, std::async, and std::future.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "System Programming",
+      "description": "File I/O, inter-process communication, sockets, CLI tool development, and performance optimization.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 8,
+      "branch": "center",
+      "children": [
+        {
+          "title": "File I/O",
+          "description": "std::ifstream, std::ofstream, std::fstream, binary file I/O, std::filesystem library.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Inter-Process Communication",
+          "description": "Shared memory, named pipes, message queues, and OS process signaling.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Networking & Sockets",
+          "description": "POSIX / Winsock socket programming, TCP/UDP client-server architecture.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Building CLI Tools",
+          "description": "Parsing command-line flags, terminal formatting, and native binary distribution.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Performance Optimization",
+          "description": "Cache locality, cache-friendly data layouts, avoiding unnecessary allocations, profiling with gprof.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Projects",
+      "description": "Hands-on projects building CLI tools, custom data structures, multithreaded servers, and system software in C++.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 9,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Console Calculator",
+          "description": "CLI calculator parsing infix mathematical expressions into reverse polish notation (RPN).",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Low",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Custom STL Container",
+          "description": "Implementing a custom dynamic array or hash map class template with custom iterators.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "File Encryption Tool",
+          "description": "CLI file encryption/decryption program using AES/XOR streams and binary file handling.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Multithreaded Web Server",
+          "description": "High-performance HTTP web server utilizing socket programming, thread pool, and non-blocking I/O.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Bank Management System",
+          "description": "Object-oriented banking software with binary file storage, transaction records, and user security.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Game Engine Core",
+          "description": "2D game engine loop featuring entity component system (ECS), input handling, and SFML rendering.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Interview Preparation",
+      "description": "C++ interview preparation covering pointers, virtual tables, memory management, STL internals, and competitive coding.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Low",
+      "order": 10,
+      "branch": "center",
+      "children": [
+        {
+          "title": "C++ Core Concepts Q&A",
+          "description": "Reviewing compilation phases, undefined behavior, linkage, storage classes, and constness.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "STL & Algorithms Q&A",
+          "description": "Time complexity trade-offs between vector vs list vs deque vs unordered_map.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Pointers & Memory Q&A",
+          "description": "Memory leaks, double free, dangling references, vtable mechanics, and smart pointer internals.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Concurrency Q&A",
+          "description": "Race conditions, data races, atomic operations, mutex deadlocks, and condition variables.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "OOP in C++ Q&A",
+          "description": "Diamond problem, virtual inheritance, copy elision, RVO, and RAII design pattern questions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Coding Challenges",
+          "description": "Solving top C++ LeetCode / AlgoMaster data structure & algorithm problems under time constraints.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "title": "Data Structures & Algorithms",
+  "description": "Master core computer science algorithms, problem solving patterns, data structures, and tech interview preparation.",
+  "category": "Computer Science Fundamentals",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "10 Weeks",
+  "totalTopics": 64,
+  "icon": "Binary",
+  "nodes": [
+    {
+      "title": "Foundations & Time Complexity",
+      "description": "Asymptotic analysis, Big-O notation, space complexity, and math primitives for algorithm design.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Big-O Notation & Time Complexity",
+          "description": "Analyzing best, average, and worst-case time bounds for algorithms.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Space Complexity & Memory Allocation",
+          "description": "Auxiliary memory usage, call stack overhead, and memory efficiency.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Math & Bit Manipulation",
+          "description": "Bitwise AND, OR, XOR, shifts, GCD, prime testing, and modular arithmetic.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 3,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Arrays, Hashing & String Manipulation",
+      "description": "Contiguous array storage, hash table collisions, sliding window technique, and two-pointer strategies.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Array Operations & Memory Layout",
+          "description": "Static arrays, dynamic array resizing, in-place rotation, and prefix sums.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Hash Tables & Hash Maps",
+          "description": "Hash functions, collision resolution (chaining vs open addressing), constant time lookups.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Two Pointers Technique",
+          "description": "Converging and same-direction two pointer patterns for array/string traversal.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Sliding Window Pattern",
+          "description": "Fixed and dynamic sliding window algorithms for subarray/substring optimization.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 4,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Stacks, Queues & Linked Lists",
+      "description": "Linear data structures, pointer manipulation, LIFO and FIFO execution pipelines.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Singly & Doubly Linked Lists",
+          "description": "Node pointers, insertion, deletion, cycle detection (Floyd's algorithm), and reversing lists.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Stack & Monotonic Stack",
+          "description": "LIFO push/pop, expression evaluation, matching parentheses, and next greater element.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Queue & Monotonic Queue",
+          "description": "FIFO enqueue/dequeue, circular queues, sliding window maximum with monotonic queue.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Trees & Binary Search Trees (BST)",
+      "description": "Hierarchical tree traversals, BST properties, balanced trees, and lowest common ancestor algorithms.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "Binary Tree Traversals (DFS & BFS)",
+          "description": "In-order, Pre-order, Post-order DFS traversals, and Level-order BFS traversal.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Binary Search Tree Properties",
+          "description": "BST search, insertion, deletion, validation, and k-th smallest element finding.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Trie (Prefix Tree)",
+          "description": "Prefix tree insertion, search, prefix matching, and autocomplete algorithms.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Heaps & Priority Queues",
+      "description": "Binary heap mechanics, heapify algorithms, top-K element extraction, and median finding.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 5,
+      "children": [
+        {
+          "title": "Min-Heap & Max-Heap Implementation",
+          "description": "Array representation of complete binary trees, percolate up/down operations.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Top-K Frequent Elements & K-th Largest",
+          "description": "Using min-heap of size K for optimal O(N log K) element tracking.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Graphs & Network Algorithms",
+      "description": "Graph representations, BFS/DFS explorations, shortest paths, topological sorting, and union-find.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 6,
+      "children": [
+        {
+          "title": "Graph Representations & BFS/DFS",
+          "description": "Adjacency matrix vs adjacency list, graph traversal algorithms, connected components.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Topological Sort & Cycle Detection",
+          "description": "Kahn's algorithm (BFS degree counting) and DFS cycle detection in directed graphs.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Shortest Path (Dijkstra & Bellman-Ford)",
+          "description": "Weighted graph shortest path algorithms with priority queue optimization.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Disjoint Set Union (DSU / Union-Find)",
+          "description": "Path compression, rank-based union, Kruskal's minimum spanning tree algorithm.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Dynamic Programming (DP)",
+      "description": "Overlapping subproblems, optimal substructure, Memoization (Top-Down) vs Tabulation (Bottom-Up).",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Medium",
+      "order": 7,
+      "children": [
+        {
+          "title": "1D Dynamic Programming",
+          "description": "Climbing stairs, house robber, coin change, longest increasing subsequence.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "2D & Grid Dynamic Programming",
+          "description": "Unique paths, minimum path sum, 0/1 Knapsack, Edit Distance, LCS.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

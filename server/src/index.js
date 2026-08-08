@@ -18,6 +18,7 @@ const progressRoutes = require('./routes/progress');
 const roadmapRoutes = require('./routes/roadmap.routes');
 const dsaRoutes = require('./routes/dsa.routes');
 const aiRoutes = require('./routes/ai.routes');
+<<<<<<< HEAD
 const feedRoutes = require('./routes/feed.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const jobRoutes = require('./routes/job.routes');
@@ -32,6 +33,9 @@ const alumniGroupRoutes = require('./routes/alumniGroup.routes');
 
 const { initSocket } = require('./services/socketService');
 const http = require('http');
+=======
+const mockTestRoutes = require('./routes/mockTest.routes');
+>>>>>>> origin/main
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
@@ -67,15 +71,16 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, curl, server calls)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error('Not allowed by CORS'));
+      // Dynamically echo the requesting origin (https://medhacodetrack.vercel.app, localhost, etc.)
+      return callback(null, origin);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-session-id', 'x-system-prompt'],
+    exposedHeaders: ['x-session-id', 'x-system-prompt'],
+    optionsSuccessStatus: 200
   })
 );
 
@@ -100,6 +105,7 @@ app.use('/api/student/progress', progressRoutes);
 app.use('/api/roadmaps', roadmapRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai/mocktest', mockTestRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);

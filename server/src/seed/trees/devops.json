@@ -1,0 +1,107 @@
+{
+  "title": "DevOps & Cloud Engineering",
+  "description": "Master DevOps practices: Linux administration, Git version control, Docker containerization, Kubernetes orchestration, CI/CD pipelines, and AWS Cloud.",
+  "category": "Cloud & Deployment",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "12 Weeks",
+  "totalTopics": 65,
+  "icon": "Cloud",
+  "nodes": [
+    {
+      "title": "Linux Administration & Shell Scripting",
+      "description": "Linux file system hierarchy, permissions (chmod/chown), process signals, and Bash shell automation scripts.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Linux File System & User Permissions",
+          "description": "Directory structure (/etc, /var, /usr), file permissions (rwx), sudoers, user management.",
+          "difficulty": "Beginner",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Bash Shell Automation Scripting",
+          "description": "Variables, conditionals, loops, functions, sed, awk, grep text processing, cron jobs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Docker Containerization & Compose",
+      "description": "Docker images, containers, Dockerfile instructions, multi-stage builds, networking, and docker-compose.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Dockerfile & Multi-Stage Builds",
+          "description": "FROM, RUN, COPY, CMD vs ENTRYPOINT, image layer caching, multi-stage size optimization.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Docker Compose & Container Networking",
+          "description": "Multi-container applications, network bridges, volume mounts, environment variables.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Kubernetes Orchestration & CI/CD",
+      "description": "Pods, Deployments, Services, Ingress, Helm charts, GitHub Actions, and Jenkins automation pipelines.",
+      "difficulty": "Advanced",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Kubernetes Architecture & Core Primitives",
+          "description": "Control Plane (API Server, etcd, Scheduler) vs Worker Nodes (Kubelet, Kube-proxy), Pods, Deployments.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "GitHub Actions & CI/CD Pipelines",
+          "description": "Automated build workflows, test execution, Docker hub publishing, automated SSH deployment.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

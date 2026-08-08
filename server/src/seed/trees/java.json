@@ -1,0 +1,823 @@
+{
+  "title": "Java Developer",
+  "description": "Comprehensive directed learning roadmap for mastering Java from core foundations to enterprise Spring Boot microservices.",
+  "category": "Core Programming",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "12 Weeks",
+  "totalTopics": 82,
+  "icon": "Coffee",
+  "nodes": [
+    {
+      "title": "Foundations of Java",
+      "description": "Core Java environment setup, compilation mechanics, syntax fundamentals, and basic programming constructs.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Introduction to Java & JVM",
+          "description": "Understanding JDK, JRE, JVM architecture, bytecode execution, and platform independence.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Setting up Java & IDE (IntelliJ/Eclipse)",
+          "description": "Installing JDK 21+, configuring environment variables (JAVA_HOME), and setting up modern IDEs.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Basic Syntax: Variables, Data Types, Operators",
+          "description": "Primitive types, type casting, arithmetic, relational, and bitwise operators.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Input & Output in Java",
+          "description": "Reading input with Scanner, BufferedReader, System.out formatting, and PrintStream.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Control Flow: if-else, switch, loops",
+          "description": "Conditional branching, enhanced switch expressions, for, while, and do-while loops.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Methods & Parameters",
+          "description": "Defining static and instance methods, pass-by-value semantics, and varargs.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Recursion Basics",
+          "description": "Base cases, call stack unwinding, and classic recursive algorithmic thinking.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 7,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Object-Oriented Programming (OOP)",
+      "description": "Mastering object-oriented software design paradigms, encapsulation, polymorphism, inheritance, and abstraction.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Classes & Objects",
+          "description": "Blueprint vs instance instantiation, heap allocation, fields, and behavior.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Constructors & Overloading",
+          "description": "Default, parameterized, copy constructors, constructor chaining (this(), super()), and overloading.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Encapsulation",
+          "description": "Data hiding, access modifiers (private, protected, public, package-private), getters and setters.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Inheritance & Method Overriding",
+          "description": "IS-A relationships, extends keyword, @Override annotation, and method signature matching.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Polymorphism (Compile-time & Runtime)",
+          "description": "Static binding vs dynamic method dispatch, upcasting, downcasting, and instance-of checks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Abstraction (Abstract Classes & Interfaces)",
+          "description": "Defining contracts with interfaces, default/static interface methods, sealed classes, and abstract bases.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Static & Final Keywords",
+          "description": "Static context, memory optimization, final variables, methods, classes, and immutability.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        },
+        {
+          "title": "Inner Classes",
+          "description": "Member inner classes, static nested classes, local inner classes, and anonymous inner classes.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 8,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Core Java Concepts",
+      "description": "Memory allocation models, immutable string manipulation, wrapper primitives, and annotation systems.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Strings & StringBuilder",
+          "description": "String constant pool, immutability, String vs StringBuilder vs StringBuffer performance benchmarks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Arrays & Multidimensional Arrays",
+          "description": "Contiguous memory layout, array iteration, Arrays utility class, matrix operations.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Wrapper Classes & Autoboxing",
+          "description": "Primitive wrappers (Integer, Double), autoboxing/unboxing pitfalls, and value caching.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Packages & Access Modifiers",
+          "description": "Organizing code with package declarations, namespace resolution, and accessibility scopes.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Enums",
+          "description": "Type-safe enumerations, enum constructors, fields, methods, and EnumSet/EnumMap usage.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Annotations",
+          "description": "Built-in annotations (@Override, @Deprecated), target & retention policies, custom reflection annotations.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Java Memory Model (Stack vs Heap)",
+          "description": "Stack frame activation, heap object lifecycle, Garbage Collection (G1, ZGC) algorithms.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Collections Framework",
+      "description": "In-depth algorithms, complexity, and internal data structure implementations of java.util Collections.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "Introduction to Collections",
+          "description": "Hierarchy of Collection framework, Iterable interface, Collections class utility helper methods.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "List, ArrayList, LinkedList",
+          "description": "Dynamic array resizing algorithms vs doubly linked list nodes, performance trade-offs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Set, HashSet, TreeSet, LinkedHashSet",
+          "description": "Uniqueness contracts, hashCode() & equals() overrides, bucket collisions, and Red-Black tree backings.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Map, HashMap, TreeMap, LinkedHashMap",
+          "description": "Key-value hashing, load factor, table capacity expansion, concurrent modification checks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Queue & Deque",
+          "description": "FIFO queues, PriorityQueue min-heap implementation, ArrayDeque double-ended operations.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Iterators & Iterable",
+          "description": "Iterator pattern, ListIterator, fail-fast vs fail-safe iterator mechanics.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Comparable vs Comparator",
+          "description": "Natural ordering via Comparable (compareTo) vs custom sorting strategies with Comparator functional lambdas.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Advanced Java Concepts",
+      "description": "Generics type safety, concurrent multithreading execution models, stream API functional pipelines, modern Java updates.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 5,
+      "children": [
+        {
+          "title": "Generics",
+          "description": "Type parameters, bounded wildcards (? extends T, ? super T), type erasure mechanics.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Exception Handling",
+          "description": "Checked vs unchecked exceptions, try-catch-finally, try-with-resources, custom exception hierarchies.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "File Handling (I/O Streams, NIO)",
+          "description": "Byte & character streams, Java NIO (Path, Files, Channels, Buffers), non-blocking I/O.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Serialization & Deserialization",
+          "description": "Serializable interface, serialVersionUID, transient fields, externalizable customization.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "Medium",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Multithreading & Concurrency",
+          "description": "Thread lifecycles, Runnable, Callable, Executors, synchronized blocks, locks, Volatile, Atomic variables.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Java 8 Features (Streams, Lambdas, Optional)",
+          "description": "Functional interfaces, lambda syntax, Stream intermediate/terminal operations, Optional null safety.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Functional Interfaces",
+          "description": "Predicate, Function, Consumer, Supplier, BiFunction, and method references (::).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        },
+        {
+          "title": "Java 9+ Features (Modules, var, Records, etc.)",
+          "description": "JPMS modularity, var local type inference, record data classes, pattern matching switch expressions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 8,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Java Ecosystem",
+      "description": "Industrial tooling, dependency management, unit testing suites, and logging infrastructures.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1 week",
+      "interviewImportance": "Medium",
+      "projectImportance": "High",
+      "order": 6,
+      "children": [
+        {
+          "title": "Java Development Tools (Maven, Gradle)",
+          "description": "POM.xml configuration, build lifecycle phases, dependency resolution, Gradle task scripts.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Logging Frameworks (Log4j, SLF4J)",
+          "description": "Logging abstraction layers, log levels (DEBUG, INFO, ERROR), appenders, and structured JSON logs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "JUnit & Testing Frameworks",
+          "description": "Unit testing with JUnit 5, assertions, parameterized tests, Mockito mocking framework.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Build & Dependency Management",
+          "description": "Multi-module builds, transitive dependencies, plugin management, and repository mirrors.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Databases & Persistence",
+      "description": "Relational database connection mechanisms, SQL integration, connection pooling, ORM mapping.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 7,
+      "children": [
+        {
+          "title": "JDBC Basics",
+          "description": "DriverManager, Connection, Statement, PreparedStatement SQL injection safety, ResultSet handling.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "CRUD Operations with JDBC",
+          "description": "Executing SELECT, INSERT, UPDATE, DELETE queries, transaction management (commit/rollback).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Connection Pooling",
+          "description": "HikariCP configuration, connection pool lifecycle, maxLifetime and idle timeout tuning.",
+          "difficulty": "Advanced",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Introduction to JPA & Hibernate",
+          "description": "Java Persistence API entity mappings (@Entity, @Table, @Id), SessionFactory, EntityManager persistence context.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Mapping Entities & Relationships",
+          "description": "@OneToOne, @OneToMany, @ManyToOne, @ManyToMany annotations, fetch strategies (LAZY vs EAGER).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Frameworks & Web Development",
+      "description": "Enterprise Spring Boot framework architecture, RESTful web services, Dependency Injection, Security.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 8,
+      "children": [
+        {
+          "title": "Java Servlets & JSP",
+          "description": "HttpServlet lifecycle (init, service, destroy), request/response headers, session management.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "Low",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Spring Core & Dependency Injection",
+          "description": "Inversion of Control (IoC) container, ApplicationContext, @Component, @Autowired, @Bean lifecycle.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Spring Boot Basics",
+          "description": "Auto-configuration, Spring Boot starters, application.properties/yml, embedded Tomcat server.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "REST API Development with Spring Boot",
+          "description": "@RestController, @GetMapping, @PostMapping, ResponseEntity, DTO conversions, RequestValidation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Spring Data JPA",
+          "description": "JpaRepository interfaces, custom JPQL/Native queries, derived query methods, pagination & sorting.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Spring Security",
+          "description": "Authentication vs Authorization, SecurityFilterChain, JWT token generation, password hashing (BCrypt).",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "System Design & Best Practices",
+      "description": "SOLID object design principles, battle-tested GoF design patterns, clean architecture, performance tuning.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 9,
+      "children": [
+        {
+          "title": "Design Patterns in Java",
+          "description": "Creational (Singleton, Factory, Builder), Structural (Adapter, Decorator), Behavioral (Observer, Strategy).",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "SOLID Principles",
+          "description": "Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Clean Code Practices",
+          "description": "Meaningful naming, method sizing, refactoring code smells, DRY principle, self-documenting code.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Error Handling Strategies",
+          "description": "Global @ControllerAdvice, standardized RFC 7807 error responses, resilient fallback strategies.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Performance Optimization",
+          "description": "Profiling memory with VisualVM/JProfiler, eliminating memory leaks, benchmarking with JMH.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Project Building",
+      "description": "Hands-on full lifecycle software engineering projects building real-world enterprise applications.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 10,
+      "children": [
+        {
+          "title": "Console-based Projects",
+          "description": "Building CLI applications (Student Management System / Library System) with file persistence.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "CRUD App with JDBC",
+          "description": "Building a raw Java JDBC application with database connection pools and SQL transactions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Spring Boot REST API Project",
+          "description": "Full REST API microservice with OpenAPI Swagger docs, DTO validation, and MySQL persistence.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Mini E-commerce Application",
+          "description": "E-commerce backend featuring cart checkout, order generation, payment gateway mock, and JPA models.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Blogging Platform with Spring Boot + Hibernate",
+          "description": "Full-stack blog portal with JWT auth, role management, comment trees, and post tagging.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Interview Prep & Practice",
+      "description": "Technical interview readiness, coding challenges, system design, and mock interview rounds.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Medium",
+      "order": 11,
+      "children": [
+        {
+          "title": "Java Core Concepts Q&A",
+          "description": "Comprehensive review of JVM internals, memory model, immutability, and classloaders.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Multithreading & Concurrency Q&A",
+          "description": "Solving deadlock scenarios, race conditions, producer-consumer pattern implementation.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Collections Framework Q&A",
+          "description": "Deep dive into HashMap internals, custom key hashing traps, and tree rebalancing.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "System Design Q&A",
+          "description": "Designing scalable URL shortener, rate limiter, and notification service in Java.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "DSA in Java (LeetCode/AlgoMaster)",
+          "description": "Solving top 100 interview problems using Java collections and optimized data structures.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Mock Interviews & Coding Challenges",
+          "description": "Timed coding assessments, whiteboarding exercises, and behavioral STAR prep.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 6,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

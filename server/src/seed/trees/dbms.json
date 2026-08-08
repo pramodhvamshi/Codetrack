@@ -1,0 +1,139 @@
+{
+  "title": "DBMS & Database Design",
+  "description": "Relational algebra, SQL query optimization, ER modeling, normalization, indexing, and ACID transactions.",
+  "category": "Computer Science Fundamentals",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "6 Weeks",
+  "totalTopics": 38,
+  "icon": "Database",
+  "nodes": [
+    {
+      "title": "Relational Data Modeling & ER",
+      "description": "Entities, attributes, relationships, cardinality constraints, and ER diagram conversion.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "ER Diagrams & Relational Model",
+          "description": "Primary keys, foreign keys, candidate keys, and ER model to table translation.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Relational Algebra",
+          "description": "Select, project, join (inner/outer/cross), set union, difference, and intersection.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Normalization & Functional Dependencies",
+      "description": "Database redundancy elimination: 1NF, 2NF, 3NF, BCNF, 4NF, and functional dependency closures.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Functional Dependencies & Closures",
+          "description": "Armstrong's axioms, attribute closure algorithms, minimal cover calculation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Normal Forms (1NF, 2NF, 3NF, BCNF)",
+          "description": "Lossless join decomposition, dependency preservation, anomalous updates prevention.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Transactions & Concurrency Control",
+      "description": "ACID properties, serializability, two-phase locking (2PL), deadlock handling, and isolation levels.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "ACID Properties & Transaction States",
+          "description": "Atomicity, Consistency, Isolation, Durability contracts, commit/rollback logs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Concurrency Control & 2-Phase Locking",
+          "description": "Conflict serializability, shared/exclusive locks, Strict 2PL, MVCC (Multi-Version Concurrency).",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Indexing & Query Optimization",
+      "description": "B-Trees, B+ Trees, Hashing indexes, query execution plans, and performance tuning.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 4,
+      "children": [
+        {
+          "title": "B-Trees & B+ Tree Indexing",
+          "description": "Internal node structure, leaf node linking, range queries efficiency, composite indexes.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Query Optimization & EXPLAIN Plans",
+          "description": "Index scans vs sequential scans, cost-based optimizer estimates, EXPLAIN ANALYZE.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

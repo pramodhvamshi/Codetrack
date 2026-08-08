@@ -1,197 +1,799 @@
 {
   "title": "Python Developer",
-  "description": "A comprehensive roadmap to master Python, from basic syntax to advanced applications.",
+  "description": "Comprehensive directed learning tree to master Python, from basic syntax to advanced applications, frameworks, Data Science, and Machine Learning.",
+  "category": "Core Programming",
+  "difficulty": "Beginner",
+  "estimatedDuration": "10 Weeks",
+  "totalTopics": 65,
   "icon": "Terminal",
   "nodes": [
     {
-      "title": "Python Basics",
-      "description": "Fundamental concepts of Python programming.",
+      "title": "Foundations",
+      "description": "Core Python environment setup, basic syntax, primitive data types, variables, and operators.",
       "difficulty": "Beginner",
-      "estimatedTime": "2 weeks",
+      "estimatedTime": "1 week",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 1,
+      "branch": "center",
       "children": [
         {
-          "title": "Syntax & Variables",
-          "description": "Data types, strings, numbers, and boolean.",
+          "title": "Introduction to Python & Installation",
+          "description": "Understanding Python 3 execution model, CPython interpreter, and installation.",
           "difficulty": "Beginner",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Control Structures",
-          "description": "If/else statements, for loops, and while loops.",
+          "title": "Python Interpreter & IDEs (VS Code, PyCharm, Jupyter)",
+          "description": "Configuring IDEs, REPL environment, and running Python scripts.",
           "difficulty": "Beginner",
-          "estimatedTime": "1 week",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Basic Syntax & Variables",
+          "description": "Dynamic typing, variable declaration, naming conventions, and memory references.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Data Types (int, float, str, bool)",
+          "description": "Built-in primitive types, type conversion, and type checking with type().",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Operators",
+          "description": "Arithmetic, assignment, comparison, logical, bitwise, identity, and membership operators.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Input & Output",
+          "description": "Reading console input via input(), print() formatting, f-strings, and string formatting.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Comments & Docstrings",
+          "description": "Single-line comments, multi-line strings, and docstring documentation standards.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "Medium",
+          "order": 7,
+          "branch": "left"
         }
       ]
     },
     {
-      "title": "Data Structures",
-      "description": "Built-in data structures in Python.",
-      "difficulty": "Intermediate",
-      "estimatedTime": "2 weeks",
+      "title": "Core Python",
+      "description": "Control structures, functions, parameter passing, built-in data structures, list comprehensions, and error handling.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1.5 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 2,
+      "branch": "center",
       "children": [
         {
-          "title": "Lists & Tuples",
-          "description": "Ordered collections, mutability vs immutability.",
+          "title": "Control Flow (if-else, loops)",
+          "description": "Conditional statements, for loops, while loops, break, continue, and pass statements.",
           "difficulty": "Beginner",
-          "estimatedTime": "1 week",
+          "estimatedTime": "2 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Dictionaries & Sets",
-          "description": "Key-value pairs and unique collections.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "title": "Functions & Parameters",
+          "description": "Function definition, default arguments, positional vs keyword arguments, *args and **kwargs.",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Data Structures (Lists, Tuples, Sets, Dicts)",
+          "description": "Indexing, slicing, mutability vs immutability, dict lookups, and set operations.",
+          "difficulty": "Beginner",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "String Manipulation",
+          "description": "String methods, concatenation, slicing, splitting, joining, and regex basics.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "List Comprehensions",
+          "description": "Concise syntax for creating lists, nested list comprehensions, and generator expressions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Recursion",
+          "description": "Base case, recursive call stacks, tail recursion, and memoization techniques.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Error Handling (try-except-finally)",
+          "description": "Catching exceptions, raise keyword, custom exceptions, and cleanup with finally.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
         }
       ]
     },
     {
-      "title": "Functions & Modules",
-      "description": "Reusable code and structuring large applications.",
+      "title": "Object-Oriented Programming",
+      "description": "Classes, object instantiation, encapsulation, inheritance, polymorphism, and dunder magic methods.",
       "difficulty": "Intermediate",
-      "estimatedTime": "2 weeks",
+      "estimatedTime": "1.5 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 3,
+      "branch": "center",
       "children": [
         {
-          "title": "Functions & Lambdas",
-          "description": "Defining functions, args, kwargs, and anonymous functions.",
+          "title": "Classes & Objects",
+          "description": "Class attributes, instance variables, self parameter, and instantiation.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "2 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Modules & Packages",
-          "description": "Importing modules, standard library, and PIP.",
+          "title": "Constructors & Destructors",
+          "description": "__init__ constructor initializer, __del__ destructor, and object lifecycles.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Encapsulation",
+          "description": "Private fields (_protected, __private name mangling), getters, setters, and @property.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Inheritance",
+          "description": "Single, multiple, and multi-level inheritance, super() call, and MRO (Method Resolution Order).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Polymorphism",
+          "description": "Duck typing, method overriding, dynamic binding, and operator overloading.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Abstract Classes & Interfaces (abc module)",
+          "description": "Defining abstract methods using ABC, @abstractmethod decorator, and strict interfaces.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Magic Methods & Operator Overloading",
+          "description": "Dunder methods (__str__, __repr__, __add__, __len__, __getitem__, __call__).",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
         }
       ]
     },
     {
-      "title": "Object-Oriented Programming (OOP)",
-      "description": "Classes, inheritance, and encapsulation.",
+      "title": "Intermediate Python",
+      "description": "Modules, package management, virtual environments, iterators, generators, decorators, and file I/O.",
       "difficulty": "Intermediate",
-      "estimatedTime": "3 weeks",
+      "estimatedTime": "1.5 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 4,
+      "branch": "center",
       "children": [
         {
-          "title": "Classes & Objects",
-          "description": "Defining classes, __init__, and self.",
+          "title": "Modules & Packages",
+          "description": "Importing modules, custom packages, __init__.py, sys.path namespace resolution.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Virtual Environments (venv, pipenv)",
+          "description": "Creating isolated Python environments, requirements.txt, pip, and dependency locking.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Iterators & Generators",
+          "description": "__iter__, __next__, yield keyword, generator functions, lazy evaluation memory savings.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 3,
+          "branch": "left"
         },
         {
-          "title": "Inheritance & Polymorphism",
-          "description": "Subclasses, super(), and method overriding.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
-        },
-        {
-          "title": "Magic Methods",
-          "description": "Dunder methods like __str__, __len__, __add__.",
+          "title": "Decorators",
+          "description": "Function wrappers, higher-order functions, functools.wraps, and parameterized decorators.",
           "difficulty": "Advanced",
-          "estimatedTime": "1 week",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Context Managers",
+          "description": "with statement, __enter__ and __exit__ methods, contextlib.contextmanager.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "File Handling",
+          "description": "Reading and writing files (txt, csv, json), file modes, buffering, and path management.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Regular Expressions (re module)",
+          "description": "Pattern matching, search, match, findall, sub, regex flags, and groups.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
           "interviewImportance": "Medium",
-          "projectImportance": "Low",
-          "order": 3
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
         }
       ]
     },
     {
       "title": "Advanced Python",
-      "description": "Decorators, generators, and context managers.",
+      "description": "Functional programming paradigms, type hinting, metaclasses, concurrency models, and asynchronous programming.",
       "difficulty": "Advanced",
-      "estimatedTime": "3 weeks",
+      "estimatedTime": "2 weeks",
       "interviewImportance": "High",
-      "projectImportance": "Medium",
+      "projectImportance": "High",
       "order": 5,
+      "branch": "center",
       "children": [
         {
-          "title": "Iterators & Generators",
-          "description": "Yield keyword and custom iterators.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
+          "title": "Functional Programming (map, filter, reduce)",
+          "description": "Pure functions, map(), filter(), functools.reduce(), and immutable data flows.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 1
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Decorators",
-          "description": "Higher-order functions and wrapping behavior.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
+          "title": "Lambda Functions",
+          "description": "Anonymous inline functions, sorting keys, and callbacks.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
         },
         {
-          "title": "Context Managers",
-          "description": "The 'with' statement and __enter__/__exit__.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
+          "title": "Typing & Type Hints",
+          "description": "PEP 484 type annotations, typing module (Union, Optional, Callable), static analysis with mypy.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
           "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Metaclasses",
+          "description": "Understanding type, custom class creation hooks, __new__ vs __init__ in type instantiation.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
           "projectImportance": "Medium",
-          "order": 3
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Concurrency (Threading, Multiprocessing)",
+          "description": "GIL limitations, threading module, multiprocessing module, concurrent.futures executor pool.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Async Programming (async/await, asyncio)",
+          "description": "Event loops, coroutines, tasks, futures, non-blocking asynchronous I/O.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Memory Management & Garbage Collection",
+          "description": "Reference counting, gc module, cyclic garbage collector, slot optimization (__slots__).",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Medium",
+          "order": 7,
+          "branch": "left"
         }
       ]
     },
     {
-      "title": "File I/O & Exception Handling",
-      "description": "Interacting with the file system and handling errors.",
+      "title": "Popular Libraries & Frameworks",
+      "description": "Data processing with NumPy & Pandas, visualization tools, web scraping, and web frameworks (Flask, Django, FastAPI).",
       "difficulty": "Intermediate",
-      "estimatedTime": "1 week",
+      "estimatedTime": "2 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 6,
+      "branch": "center",
       "children": [
         {
-          "title": "Reading & Writing Files",
-          "description": "Working with txt, csv, and json files.",
-          "difficulty": "Beginner",
-          "estimatedTime": "3 days",
-          "interviewImportance": "Medium",
+          "title": "NumPy",
+          "description": "N-dimensional arrays, vectorization, broadcasting, matrix algebra, and indexing.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Exceptions",
-          "description": "Try, except, finally, and custom exceptions.",
+          "title": "Pandas",
+          "description": "DataFrames, Series, reading CSV/Excel/SQL, data filtering, grouping, and merging.",
           "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Matplotlib & Seaborn",
+          "description": "Line plots, bar charts, histograms, scatter plots, subplots, and statistical plotting.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Requests (HTTP)",
+          "description": "Sending GET/POST requests, session management, handling headers, JSON payloads, and response status.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "BeautifulSoup & Scrapy (Web Scraping)",
+          "description": "HTML DOM parsing, CSS selectors, XPath expressions, spider pipelines, and rate limiting.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Flask",
+          "description": "Lightweight micro-framework, routing, request handling, Jinja2 templates, and REST APIs.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Django",
+          "description": "Full-stack framework, MVT architecture, ORM models, admin panel, migrations, and auth system.",
+          "difficulty": "Advanced",
           "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 7,
+          "branch": "left"
+        },
+        {
+          "title": "FastAPI",
+          "description": "Modern async API framework, Pydantic validation, automatic OpenAPI Swagger docs, dependency injection.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 8,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Data Science & Machine Learning with Python",
+      "description": "Data preprocessing, exploration, statistical modeling, and deep learning framework foundations.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 7,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Jupyter Notebooks",
+          "description": "Interactive Python computing, markdown cells, magic commands, and notebook sharing.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Data Cleaning & Preprocessing",
+          "description": "Handling missing values, outlier detection, feature scaling, one-hot encoding, and train-test splits.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Visualization with matplotlib/seaborn/plotly",
+          "description": "Custom plot styling, interactive dashboards, and multi-variable analysis.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Scikit-learn",
+          "description": "Supervised learning (regression, classification), unsupervised clustering (K-Means), and model evaluation metrics.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "TensorFlow Basics",
+          "description": "Tensors, computational graphs, Keras sequential API, and neural network training loops.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "PyTorch Basics",
+          "description": "Tensors, autograd automatic differentiation, nn.Module custom neural layers, and DataLoader pipelines.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        }
+      ]
+    },
+    {
+      "title": "Automation & Scripting",
+      "description": "System task automation, filesystem manipulation, HTTP API orchestration, task scheduling, and web browser automation.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1 week",
+      "interviewImportance": "Medium",
+      "projectImportance": "High",
+      "order": 8,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Working with OS & Filesystem (os, pathlib, shutil)",
+          "description": "Directory traversal, file moving/copying, path manipulation with pathlib, and environment variables.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Automating Tasks with Python",
+          "description": "File organizers, email alerts, PDF manipulation, and spreadsheet generation scripts.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "APIs & HTTP Requests",
+          "description": "Calling external REST APIs, API keys, JSON payload parsing, and error handling.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Web Automation with Selenium",
+          "description": "WebDriver setup, element locator strategies, automated form filling, and page clicking automation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Scheduling Scripts (cron, sched, apscheduler)",
+          "description": "Background task scheduling, crontab integration, and periodic timer execution.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Projects",
+      "description": "Hands-on projects to solidify Python skills across web, automation, data analysis, and machine learning.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 9,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Calculator App",
+          "description": "CLI or GUI calculator handling complex mathematical expressions and order of operations.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "Medium",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Web Scraper",
+          "description": "Automated data extraction pipeline using BeautifulSoup/Scrapy saving to CSV/JSON.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Medium",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Todo List API with Flask",
+          "description": "RESTful CRUD API with JSON response formatting, SQLite database, and endpoint testing.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Blog Website with Django",
+          "description": "Full-stack blog platform featuring user login, markdown editor, comments, and post tagging.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Data Analysis Project with Pandas",
+          "description": "Exploratory Data Analysis (EDA) report analyzing real-world datasets with interactive charts.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Machine Learning Model with scikit-learn",
+          "description": "End-to-end ML prediction pipeline: data preparation, model training, hyperparameter tuning, and deployment.",
+          "difficulty": "Advanced",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 6,
+          "branch": "right"
+        },
+        {
+          "title": "Automation Script (File Organizer, Email Sender)",
+          "description": "System background utility script for directory cleanup, log parsing, and email notifications.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 7,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Interview Preparation",
+      "description": "Comprehensive Python interview preparation covering core concepts, OOP design, framework architecture, and coding challenges.",
+      "difficulty": "Advanced",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "Low",
+      "order": 10,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Python Core Concepts Q&A",
+          "description": "Deep-dive questions on CPython, memory management, GIL, mutability, and execution mechanics.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Data Structures & Algorithms in Python",
+          "description": "LeetCode problem patterns solved efficiently using heapq, collections.deque, and bisect.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "OOP in Python Interview Questions",
+          "description": "MRO traps, dunder methods, metaclasses, and design pattern questions.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 3,
+          "branch": "left"
+        },
+        {
+          "title": "Concurrency & Async Q&A",
+          "description": "Explaining thread safety, process isolation, asyncio event loops, and deadlock scenarios.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 4,
+          "branch": "right"
+        },
+        {
+          "title": "Django/Flask API Design Questions",
+          "description": "REST API best practices, ORM query optimization (select_related, prefetch_related), and JWT auth.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 5,
+          "branch": "left"
+        },
+        {
+          "title": "Practical Coding Challenges",
+          "description": "Timed coding tests, data manipulation exercises, and live whiteboarding practice.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "Low",
+          "order": 6,
+          "branch": "right"
         }
       ]
     }

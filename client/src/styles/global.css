@@ -628,3 +628,305 @@ a {
     gap: 1rem;
   }
 }
+
+/* ================= ALGOMASTER ROADMAPS STYLES ================= */
+.ct-roadmaps-dashboard {
+  min-height: calc(100vh - 64px);
+  background-color: #0b0f17;
+  color: #f8fafc;
+  padding: 3rem 1.5rem;
+}
+
+.ct-roadmaps-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.ct-roadmaps-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.ct-roadmaps-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.ct-roadmaps-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  max-width: 600px;
+  margin: 0 auto 1.5rem auto;
+  line-height: 1.6;
+}
+
+.ct-search-box {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.ct-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  background-color: #121824;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  color: #f8fafc;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.ct-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.ct-category-section {
+  margin-bottom: 2.5rem;
+}
+
+.ct-category-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.ct-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .ct-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .ct-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ct-roadmap-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #121824;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  padding: 1.15rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ct-roadmap-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  background-color: #161e2e;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+}
+
+.ct-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  transition: color 0.2s;
+}
+
+.ct-roadmap-card:hover .ct-card-title {
+  color: #60a5fa;
+}
+
+/* ================= 3-COLUMN TREE ROADMAP ================= */
+.ct-tree-container {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  min-height: calc(100vh - 140px);
+}
+
+.ct-tree-axis {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #22c55e;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.ct-tree-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.ct-tree-section-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  width: 100%;
+  position: relative;
+}
+
+.ct-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: flex-end;
+  text-align: right;
+  position: relative;
+  padding-top: 1rem;
+}
+
+.ct-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: flex-start;
+  text-align: left;
+  position: relative;
+  padding-top: 1rem;
+}
+
+.ct-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-top: -0.75rem;
+  z-index: 10;
+}
+
+.ct-milestone-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 2rem;
+  border-radius: 0.5rem;
+  border: 2px solid #1d4ed8;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  min-width: 280px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ct-milestone-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.ct-milestone-btn.completed {
+  background-color: #059669;
+  border-color: #047857;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+}
+
+.ct-topic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  border: 2px solid #22c55e;
+  background-color: #1e293b;
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 240px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ct-topic-btn:hover {
+  background-color: #334155;
+  border-color: #4ade80;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Connectors */
+.ct-left-line-vertical {
+  position: absolute;
+  top: 0;
+  right: 3rem;
+  width: 2px;
+  height: 3rem;
+  background-color: #60a5fa;
+}
+
+.ct-left-line-horizontal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5rem;
+  height: 2px;
+  background-color: #60a5fa;
+  transform: translateX(30px);
+}
+
+.ct-left-line-bottom {
+  position: absolute;
+  top: 3rem;
+  bottom: 0;
+  width: 2px;
+  background-color: #60a5fa;
+  right: 3rem;
+}
+
+.ct-right-line-vertical {
+  position: absolute;
+  top: 0;
+  left: 3rem;
+  width: 2px;
+  height: 3rem;
+  background-color: #60a5fa;
+}
+
+.ct-right-line-horizontal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5rem;
+  height: 2px;
+  background-color: #60a5fa;
+  transform: translateX(-30px);
+}
+
+.ct-right-line-bottom {
+  position: absolute;
+  top: 3rem;
+  bottom: 0;
+  width: 2px;
+  background-color: #60a5fa;
+  left: 3rem;
+}
+

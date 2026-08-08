@@ -12,34 +12,24 @@ const seedDSASheets = async () => {
     await mongoose.connect(config.mongoUri);
     console.log('Connected to MongoDB');
 
+    // Clean all existing sheets to avoid duplicates
+    await DSAProblem.deleteMany({});
+    await DSACategory.deleteMany({});
+    await DSASheet.deleteMany({});
+    console.log('Cleared existing DSA sheets, categories, and problems.');
+
     const seedDir = path.join(__dirname, '..', 'seed', 'dsa');
     if (!fs.existsSync(seedDir)) {
       console.error('Seed directory not found:', seedDir);
       process.exit(1);
     }
 
-    const files = fs.readdirSync(seedDir).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(seedDir).filter((f) => f.endsWith('.json'));
 
     for (const file of files) {
       console.log(`Processing DSA seed file: ${file}`);
       const filePath = path.join(seedDir, file);
       const sheetData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-      // Remove existing sheet of this title and version (implements versioning)
-      const existingSheet = await DSASheet.findOne({ 
-        title: sheetData.title, 
-        version: sheetData.version || 1 
-      });
-
-      if (existingSheet) {
-        // Clear categories and problems linked to this sheet version
-        const categories = await DSACategory.find({ sheetId: existingSheet._id });
-        const categoryIds = categories.map(c => c._id);
-        await DSAProblem.deleteMany({ categoryId: { $in: categoryIds } });
-        await DSACategory.deleteMany({ sheetId: existingSheet._id });
-        await DSASheet.deleteOne({ _id: existingSheet._id });
-        console.log(`Cleared existing version of sheet: ${sheetData.title} v${sheetData.version || 1}`);
-      }
 
       // Create new sheet
       const sheet = await DSASheet.create({
@@ -47,7 +37,8 @@ const seedDSASheets = async () => {
         description: sheetData.description || '',
         version: sheetData.version || 1,
         source: sheetData.source || 'striver',
-        sourceVersion: sheetData.sourceVersion || '2026-07'
+        sourceVersion: sheetData.sourceVersion || '2026-08',
+        sourceUrl: sheetData.sourceUrl || ''
       });
 
       // Create Categories & Problems
@@ -58,7 +49,7 @@ const seedDSASheets = async () => {
           order: catData.order || 0
         });
 
-        const problemsToInsert = catData.problems.map(prob => ({
+        const problemsToInsert = catData.problems.map((prob) => ({
           categoryId: category._id,
           title: prob.title,
           difficulty: prob.difficulty || 'Medium',
@@ -69,7 +60,7 @@ const seedDSASheets = async () => {
 
         await DSAProblem.insertMany(problemsToInsert);
       }
-      console.log(`Successfully seeded DSA Sheet: ${sheetData.title} (v${sheetData.version || 1}) with ${sheetData.categories.length} categories.`);
+      console.log(`Successfully seeded DSA Sheet: ${sheetData.title} with ${sheetData.categories.length} categories.`);
     }
 
     console.log('Successfully completed all DSA seed operations.');

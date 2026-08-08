@@ -1,0 +1,107 @@
+{
+  "title": "Spring Boot Developer",
+  "description": "Master enterprise Java backend development with Spring Boot 3, Spring Security, Spring Data JPA, Microservices, and Cloud Deployment.",
+  "category": "Libraries & Frameworks",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "10 Weeks",
+  "totalTopics": 58,
+  "icon": "Layers",
+  "nodes": [
+    {
+      "title": "Spring Core & Inversion of Control",
+      "description": "Dependency Injection, ApplicationContext, bean lifecycles, configuration classes, and profiles.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "children": [
+        {
+          "title": "Inversion of Control (IoC) & Dependency Injection",
+          "description": "Constructor injection vs Field injection, @Autowired, @Component, @Service, @Repository.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Spring Beans & Configuration Profiles",
+          "description": "Bean scopes (singleton, prototype), @Bean methods, application-dev.yml vs application-prod.yml.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "RESTful Microservices & Spring Data JPA",
+      "description": "Spring MVC controllers, REST endpoints, DTO conversions, Hibernate ORM, and Spring Data JPA repositories.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "children": [
+        {
+          "title": "Spring MVC REST Controllers",
+          "description": "@RestController, @GetMapping, @PostMapping, ResponseEntity, ExceptionHandler, Bean Validation (@NotNull, @Size).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Spring Data JPA & Entity Mappings",
+          "description": "JpaRepository interfaces, derived queries, @Query JPQL/Native, @OneToMany/@ManyToOne mappings.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    },
+    {
+      "title": "Spring Security & Microservice Architecture",
+      "description": "Spring Security 6 filters, JWT token authentication, OAuth2 Resource Server, Spring Cloud Gateway.",
+      "difficulty": "Advanced",
+      "estimatedTime": "3 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "children": [
+        {
+          "title": "Spring Security 6 & JWT Auth",
+          "description": "SecurityFilterChain configuration, DaoAuthenticationProvider, JWT token generation & verification filter.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Spring Cloud Microservices (Eureka & Gateway)",
+          "description": "Service discovery with Netflix Eureka, API Gateway routing, Resilience4j circuit breakers.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        }
+      ],
+      "branch": "center"
+    }
+  ]
+}

@@ -9,11 +9,19 @@ import { GlobalSearchBar } from './layout/GlobalSearchBar';
 export function AppShell({ active, children }) {
   const { user, token, login, logout } = useAuth();
   const navigate = useNavigate();
+  
   const [dropdownOpen, setDropdownOpen] = useState(false);
+<<<<<<< HEAD
   const [alumniDropdownOpen, setAlumniDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
   const alumniDropdownRef = useRef(null);
+=======
+  const [prepHubOpen, setPrepHubOpen] = useState(false);
+  
+  const dropdownRef = useRef(null);
+  const prepHubRef = useRef(null);
+>>>>>>> origin/main
 
   const handleLogout = async () => {
     setDropdownOpen(false);
@@ -40,14 +48,19 @@ export function AppShell({ active, children }) {
   const isAlumni = user && user.role === 'alumni';
   const isImpersonating = user?.isImpersonating || sessionStorage.getItem("impersonationActive") === "true";
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
+<<<<<<< HEAD
       if (alumniDropdownRef.current && !alumniDropdownRef.current.contains(e.target)) {
         setAlumniDropdownOpen(false);
+=======
+      if (prepHubRef.current && !prepHubRef.current.contains(e.target)) {
+        setPrepHubOpen(false);
+>>>>>>> origin/main
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -60,11 +73,14 @@ export function AppShell({ active, children }) {
       type="button"
       onClick={() => navigate(path)}
       className="ct-nav-item"
-      data-active={active === key ? 'true' : 'false'}
+      data-active={active === key || (key === 'student-interview' && active === 'interview') ? 'true' : 'false'}
     >
       {label}
     </button>
   );
+
+  // Check if current active page belongs to Prep Hub
+  const isPrepHubActive = ['roadmaps', 'dsa', 'student-interview', 'interview', 'student-resume', 'resume'].includes(active);
 
   // Avatar initials
   const initials = user?.name
@@ -74,6 +90,7 @@ export function AppShell({ active, children }) {
   const dropdownItems = isStudent
     ? [
         { icon: '⚡', label: 'Dashboard', path: '/student/dashboard' },
+        { icon: '🎯', label: 'Mock Interviews & Tests', path: '/student/interview' },
         { icon: '👤', label: 'My Profile', path: '/student/profile' },
         { icon: '📄', label: 'Resume Builder', path: '/student/resume' },
         { icon: '🛣️', label: 'Roadmaps', path: '/roadmaps' },
@@ -107,8 +124,8 @@ export function AppShell({ active, children }) {
         { icon: '👥', label: 'Students', path: '/admin/students' },
         { icon: '🛡️', label: 'Coordinators', path: '/admin/coordinators' },
         { icon: '📊', label: 'Tracking Reports', path: '/coordinator/reports' },
-        { icon: '🐛', label: 'Bug Reports', path: '/admin/bugs' },
         { icon: '🏆', label: 'Leaderboard', path: '/leaderboard' },
+        { icon: '🐛', label: 'Bug Reports', path: '/admin/bugs' },
         { icon: '➕', label: 'Report a Bug', path: '/report-bug' }
       ]
     : [];
@@ -149,7 +166,7 @@ export function AppShell({ active, children }) {
         </div>
       )}
       <style>{`
-        .ct-user-dropdown {
+        .ct-user-dropdown, .ct-prephub-dropdown {
           position: relative;
         }
         .ct-avatar-btn {
@@ -217,6 +234,67 @@ export function AppShell({ active, children }) {
           z-index: 1000;
           animation: dropdownFadeIn 0.18s ease;
         }
+        
+        .ct-prephub-dropdown {
+          position: relative;
+          display: inline-block;
+        }
+
+        .ct-prephub-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          width: 285px;
+          background: #0b1329;
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          border-radius: 14px;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+          padding: 0.5rem;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          animation: dropdownFadeIn 0.18s ease;
+        }
+
+        /* Invisible hover bridge to eliminate gap flickering */
+        .ct-prephub-menu::before {
+          content: '';
+          position: absolute;
+          top: -12px;
+          left: 0;
+          right: 0;
+          height: 12px;
+          background: transparent;
+        }
+
+        .ct-prephub-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.65rem 0.85rem;
+          border-radius: 10px;
+          color: #cbd5e1;
+          text-decoration: none;
+          background: transparent;
+          border: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .ct-prephub-item:hover {
+          background: rgba(59, 130, 246, 0.12);
+          color: #ffffff;
+        }
+        .ct-prephub-item.active {
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(30, 27, 75, 0.6) 100%);
+          border: 1px solid rgba(59, 130, 246, 0.4);
+          color: #60a5fa;
+        }
+        
         @keyframes dropdownFadeIn {
           from { opacity: 0; transform: translateY(-8px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -439,15 +517,82 @@ export function AppShell({ active, children }) {
               )}
             </div>
 
-            {isStudent && [
-              navItem('Dashboard', '/student/dashboard', 'student-dashboard'),
-              navItem('Roadmaps', '/roadmaps', 'roadmaps'),
-              navItem('DSA Tracker', '/dsa', 'dsa'),
-              navItem('Profile', '/student/profile', 'student-profile'),
-              navItem('Resume', '/student/resume', 'student-resume'),
-              navItem('Interviews', '/student/interview', 'student-interview'),
-              navItem('Leaderboard', '/leaderboard', 'leaderboard')
-            ]}
+            {isStudent && (
+              <>
+                {navItem('Dashboard', '/student/dashboard', 'student-dashboard')}
+                
+                {/* Combined Prep Hub Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={prepHubRef}
+                  onMouseEnter={() => setPrepHubOpen(true)}
+                  onMouseLeave={() => setPrepHubOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setPrepHubOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={isPrepHubActive ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Prep Hub</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: prepHubOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {prepHubOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/roadmaps'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${active === 'roadmaps' ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🗺️</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Roadmaps</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Structured Learning Paths</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/dsa'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${active === 'dsa' ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>DSA Tracker</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Category & Topic Problems</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/interview'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${['student-interview', 'interview'].includes(active) ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🎯</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Interviews & Mock Tests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Voice Interviews & AI Tests</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/resume'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${['student-resume', 'resume'].includes(active) ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📄</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Resume Builder</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>ATS Generator & Scorer</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {navItem('Profile', '/student/profile', 'student-profile')}
+                {navItem('Leaderboard', '/leaderboard', 'leaderboard')}
+              </>
+            )}
+
             {isAlumni && [
               navItem('Dashboard', '/alumni/dashboard', 'alumni-dashboard'),
               navItem('Leaderboard', '/leaderboard', 'leaderboard')
@@ -514,46 +659,54 @@ export function AppShell({ active, children }) {
                     <div className="ct-dropdown-avatar-lg">{initials}</div>
                     <div style={{ minWidth: 0 }}>
                       <div className="ct-dropdown-user-name">{user.name}</div>
-                      <div className={`ct-dropdown-role-badge ${user.role === 'coordinator' ? 'coordinator' : user.role === 'admin' ? 'admin' : ''}`}>
-                        {user.role === 'admin' ? '👑 Admin' : user.role === 'coordinator' ? '🎓 Coordinator' : '💻 Student'}
-                      </div>
+                      <span className={`ct-dropdown-role-badge ${user.role}`}>{user.role.toUpperCase()}</span>
                     </div>
                   </div>
 
-                  {/* Nav items */}
+                  {/* Links */}
                   <div className="ct-dropdown-items">
-                    {dropdownItems.map(item => (
-                      <button
-                        key={item.path}
-                        className="ct-dropdown-item"
-                        onClick={() => { setDropdownOpen(false); navigate(item.path); }}
-                        role="menuitem"
-                      >
-                        <span className="ct-dropdown-icon">{item.icon}</span>
-                        {item.label}
-                      </button>
-                    ))}
+                    {dropdownItems.map((item, idx) => {
+                      const isActive = window.location.pathname === item.path;
+                      return (
+                        <button
+                          key={idx}
+                          role="menuitem"
+                          className={`ct-dropdown-item ${isActive ? 'active-page' : ''}`}
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            navigate(item.path);
+                          }}
+                        >
+                          <span className="ct-dropdown-icon">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
 
                     <div className="ct-dropdown-divider" />
 
                     <button
+                      role="menuitem"
                       className="ct-dropdown-item ct-dropdown-logout"
                       onClick={handleLogout}
-                      role="menuitem"
                     >
                       <span className="ct-dropdown-icon">🚪</span>
-                      Logout
+                      <span>Log Out</span>
                     </button>
                   </div>
                 </div>
               )}
             </div>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </header>
 
+<<<<<<< HEAD
       <main className={['feed', 'alumni-dashboard', 'jobs', 'alumni', 'messages', 'leaderboard', 'student-profile'].includes(active) ? 'ct-main-full' : 'ct-main'}>
+=======
+      <main className="ct-main">
+>>>>>>> origin/main
         {children}
       </main>
 

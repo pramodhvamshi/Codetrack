@@ -10,10 +10,12 @@ exports.getAllSheets = async () => {
 exports.getSheetDetails = async (sheetId) => {
   const categories = await DSACategory.find({ sheetId }).sort({ order: 1 }).lean();
   const categoryIds = categories.map(c => c._id);
-  const problems = await DSAProblem.find({ categoryId: { $in: categoryIds } }).sort({ order: 1 }).lean();
+  const problems = await DSAProblem.find({ categoryId: { $in: categoryIds } }).lean();
 
   return categories.map(cat => {
-    cat.problems = problems.filter(p => p.categoryId.toString() === cat._id.toString());
+    cat.problems = problems
+      .filter(p => p.categoryId.toString() === cat._id.toString())
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
     return cat;
   });
 };

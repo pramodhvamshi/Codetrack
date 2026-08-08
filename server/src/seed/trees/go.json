@@ -1,0 +1,137 @@
+{
+  "title": "Go Programming",
+  "description": "Master Go (Golang), static typing, goroutines, channels, interfaces, packages, and high-concurrency backend services.",
+  "category": "Core Programming",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "8 Weeks",
+  "totalTopics": 40,
+  "icon": "Code",
+  "nodes": [
+    {
+      "title": "Foundations of Go",
+      "description": "Go toolchain setup, main package, variable declarations, primitive types, and control flow.",
+      "difficulty": "Beginner",
+      "estimatedTime": "1 week",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 1,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Introduction to Go & Setup",
+          "description": "Installing Go, GOPATH, Go modules (go mod init), and main entry point.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "Low",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Variables, Constants & Data Types",
+          "description": "Short variable declaration (:=), basic types, type conversion, and iota constants.",
+          "difficulty": "Beginner",
+          "estimatedTime": "1 day",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Control Flow (if, switch, for)",
+          "description": "If initializer syntax, expression-less switch, and Go's single loop construct (for).",
+          "difficulty": "Beginner",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Data Structures & Structs",
+      "description": "Arrays, slices, maps, structs, and pointer semantics in Go.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 2,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Slices & Array Internals",
+          "description": "Slice header (pointer, length, capacity), make(), append() reallocation behavior, and reslicing.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Maps & Key-Value Lookups",
+          "description": "Creating maps, comma-ok idiom, iterating over maps, and map deletion.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Structs & Methods",
+          "description": "Defining structs, anonymous fields, value vs pointer receiver methods.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    },
+    {
+      "title": "Concurrency in Go",
+      "description": "Goroutines, Channels, Select statements, Mutexes, and WaitGroups.",
+      "difficulty": "Advanced",
+      "estimatedTime": "2 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
+      "order": 3,
+      "branch": "center",
+      "children": [
+        {
+          "title": "Goroutines & M:N Scheduler",
+          "description": "Lightweight thread execution, go keyword, stack size allocation, and Go runtime scheduler.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
+        },
+        {
+          "title": "Channels (Unbuffered vs Buffered)",
+          "description": "Channel creation, directional channels, blocking send/receive, and closing channels.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Select Statement & Timeouts",
+          "description": "Non-blocking channel communication, multiplexing with select, and time.After timeouts.",
+          "difficulty": "Advanced",
+          "estimatedTime": "2 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
+        }
+      ]
+    }
+  ]
+}

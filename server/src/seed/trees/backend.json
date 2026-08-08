@@ -1,228 +1,127 @@
 {
-  "title": "Backend Development",
-  "description": "A complete, step-by-step curriculum to become a Backend Developer.",
+  "title": "Backend Developer",
+  "description": "Master backend systems architecture: Server runtimes (Node.js/Go/Python), Relational & NoSQL databases, API design, Caching, and Microservices.",
+  "category": "Development",
+  "difficulty": "Intermediate",
+  "estimatedDuration": "12 Weeks",
+  "totalTopics": 68,
   "icon": "Server",
   "nodes": [
     {
-      "title": "Internet & Web Basics",
-      "description": "Understand how the internet and web work behind the scenes.",
+      "title": "Server Runtimes & OS Fundamentals",
+      "description": "Event-driven I/O, process management, memory allocation, and environment configurations.",
       "difficulty": "Beginner",
-      "estimatedTime": "1 week",
-      "interviewImportance": "Medium",
-      "projectImportance": "Medium",
+      "estimatedTime": "1.5 weeks",
+      "interviewImportance": "High",
+      "projectImportance": "High",
       "order": 1,
       "children": [
         {
-          "title": "How the Internet Works",
-          "description": "DNS, IP Addresses, and Hosting.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 hours",
-          "interviewImportance": "Medium",
-          "projectImportance": "Low",
-          "order": 1
+          "title": "Node.js Event Loop & Non-Blocking I/O",
+          "description": "Libuv event loop phases, call stack, microtask queue, thread pool delegation.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "HTTP/HTTPS",
-          "description": "Methods, status codes, and secure communication.",
-          "difficulty": "Beginner",
-          "estimatedTime": "3 hours",
+          "title": "HTTP Server Architecture & Sockets",
+          "description": "HTTP request routing, headers, body streams, TCP socket connections.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "3 days",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "Programming Language (Choose One)",
-      "description": "Master a backend language.",
+      "title": "API Design & Protocol Architecture",
+      "description": "RESTful standards, GraphQL, gRPC Protocol Buffers, WebSockets, and API Security.",
       "difficulty": "Intermediate",
-      "estimatedTime": "4 weeks",
+      "estimatedTime": "2 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 2,
       "children": [
         {
-          "title": "Node.js (JavaScript)",
-          "description": "Asynchronous event-driven JavaScript runtime.",
+          "title": "RESTful API Best Practices",
+          "description": "Resource Naming, HTTP Verbs, Status Codes, Idempotency, DTO Validation, OpenAPI.",
           "difficulty": "Intermediate",
-          "estimatedTime": "2 weeks",
+          "estimatedTime": "3 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Java",
-          "description": "Object-oriented, class-based, concurrent language.",
+          "title": "Authentication & Authorization (JWT, OAuth2)",
+          "description": "JSON Web Tokens, Refresh tokens, Session store, OAuth2 / OIDC authorization flows.",
           "difficulty": "Intermediate",
-          "estimatedTime": "3 weeks",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 2,
+          "branch": "right"
         },
         {
-          "title": "Python",
-          "description": "Interpreted high-level general-purpose language.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "2 weeks",
+          "title": "WebSockets & Real-Time Data",
+          "description": "Full-duplex WebSocket connections, heartbeat pings, Socket.io fallback transports.",
+          "difficulty": "Advanced",
+          "estimatedTime": "3 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 3
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "Relational Databases (SQL)",
-      "description": "Storing and querying structured data.",
-      "difficulty": "Intermediate",
+      "title": "Databases, Caching & ORMs",
+      "description": "PostgreSQL, MongoDB, Redis caching, ORMs (Prisma, Mongoose, TypeORM), and database indexing.",
+      "difficulty": "Advanced",
       "estimatedTime": "3 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 3,
       "children": [
         {
-          "title": "SQL Basics & Joins",
-          "description": "SELECT, INSERT, UPDATE, DELETE, and table joins.",
-          "difficulty": "Beginner",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Indexing & Performance",
-          "description": "Optimizing queries and understanding execution plans.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
-        },
-        {
-          "title": "ACID Transactions",
-          "description": "Atomicity, Consistency, Isolation, Durability.",
-          "difficulty": "Advanced",
-          "estimatedTime": "3 hours",
-          "interviewImportance": "High",
-          "projectImportance": "Low",
-          "order": 3
-        }
-      ]
-    },
-    {
-      "title": "NoSQL Databases",
-      "description": "Flexible schema data storage.",
-      "difficulty": "Intermediate",
-      "estimatedTime": "2 weeks",
-      "interviewImportance": "Medium",
-      "projectImportance": "High",
-      "order": 4,
-      "children": [
-        {
-          "title": "MongoDB",
-          "description": "Document-oriented NoSQL database.",
+          "title": "Relational Databases & SQL Optimization",
+          "description": "Complex joins, indexing strategies (B-Tree/Hash), EXPLAIN query tuning, transactions.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Redis",
-          "description": "In-memory data structure store, used as a database, cache, and message broker.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
-        }
-      ]
-    },
-    {
-      "title": "APIs (Application Programming Interfaces)",
-      "description": "Building communication bridges.",
-      "difficulty": "Intermediate",
-      "estimatedTime": "2 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 5,
-      "children": [
-        {
-          "title": "REST APIs",
-          "description": "Representational State Transfer principles and design.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "GraphQL",
-          "description": "Query language for APIs.",
+          "title": "Redis Caching Strategies",
+          "description": "Cache-Aside, Write-Through, LRU eviction policies, distributed locking with Redlock.",
           "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
-          "projectImportance": "Medium",
-          "order": 2
-        }
-      ]
-    },
-    {
-      "title": "Authentication & Security",
-      "description": "Securing your applications.",
-      "difficulty": "Intermediate",
-      "estimatedTime": "2 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 6,
-      "children": [
-        {
-          "title": "JWT & OAuth",
-          "description": "Token-based authentication and authorization frameworks.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "4 hours",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 2,
+          "branch": "right"
         },
         {
-          "title": "Hashing & Encryption",
-          "description": "Bcrypt, salt, and securing passwords.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 hours",
-          "interviewImportance": "Medium",
+          "title": "Message Queues & Event Streaming",
+          "description": "RabbitMQ, Apache Kafka, pub/sub architecture, event-driven microservices.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 3,
+          "branch": "left"
         }
-      ]
-    },
-    {
-      "title": "Architecture & Scaling",
-      "description": "Designing scalable systems.",
-      "difficulty": "Advanced",
-      "estimatedTime": "3 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "Low",
-      "order": 7,
-      "children": [
-        {
-          "title": "Microservices vs Monoliths",
-          "description": "Architectural patterns and trade-offs.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 1
-        },
-        {
-          "title": "Message Brokers",
-          "description": "RabbitMQ, Kafka - asynchronous communication.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
-        }
-      ]
+      ],
+      "branch": "center"
     }
   ]
 }

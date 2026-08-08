@@ -1,217 +1,179 @@
 {
-  "title": "Artificial Intelligence",
-  "description": "A comprehensive roadmap to become an AI Engineer, from basics to advanced models.",
-  "icon": "Cpu",
+  "title": "AI & Machine Learning",
+  "description": "Comprehensive roadmap to become an AI & ML Engineer: Mathematics, Supervised/Unsupervised Learning, Deep Neural Networks, GenAI, and MLOps.",
+  "category": "AI & Data Science",
+  "difficulty": "Advanced",
+  "estimatedDuration": "14 Weeks",
+  "totalTopics": 72,
+  "icon": "Brain",
   "nodes": [
     {
-      "title": "Programming & Fundamentals",
-      "description": "Learn the core programming languages and math for AI.",
-      "difficulty": "Beginner",
-      "estimatedTime": "4 weeks",
+      "title": "Mathematics for Machine Learning",
+      "description": "Linear algebra, matrix operations, multivariate calculus, probability distributions, and optimization algorithms.",
+      "difficulty": "Intermediate",
+      "estimatedTime": "2 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 1,
       "children": [
         {
-          "title": "Python for Data Science",
-          "description": "Pandas, NumPy, Matplotlib, and Scikit-learn basics.",
-          "difficulty": "Beginner",
-          "estimatedTime": "2 weeks",
+          "title": "Linear Algebra & Matrix Decompositions",
+          "description": "Vectors, matrices, eigenvalues, eigenvectors, SVD, and Principal Component Analysis (PCA).",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Linear Algebra & Calculus",
-          "description": "Vectors, Matrices, Derivatives, and Gradients.",
+          "title": "Calculus & Gradient Descent",
+          "description": "Partial derivatives, chain rule, Jacobians, Hessians, stochastic gradient descent (SGD), and Adam.",
           "difficulty": "Intermediate",
-          "estimatedTime": "2 weeks",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 2
+          "projectImportance": "High",
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Probability & Statistics",
+          "description": "Probability distributions, Bayes' Theorem, Maximum Likelihood Estimation (MLE), hypothesis testing.",
+          "difficulty": "Intermediate",
+          "estimatedTime": "4 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "Machine Learning",
-      "description": "Core predictive modeling algorithms.",
+      "title": "Machine Learning Fundamentals",
+      "description": "Supervised, unsupervised, ensemble learning algorithms, feature engineering, and cross-validation.",
       "difficulty": "Intermediate",
-      "estimatedTime": "6 weeks",
+      "estimatedTime": "3 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 2,
       "children": [
         {
-          "title": "Supervised Learning",
-          "description": "Regression, Classification, Decision Trees, SVM, and Ensembles (Random Forest, XGBoost).",
+          "title": "Regression & Classification Algorithms",
+          "description": "Linear/Logistic Regression, Decision Trees, SVM, k-Nearest Neighbors, Naive Bayes.",
           "difficulty": "Intermediate",
-          "estimatedTime": "3 weeks",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Unsupervised Learning",
-          "description": "Clustering (K-Means), PCA, and Anomaly Detection.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "2 weeks",
+          "title": "Ensemble Methods (Random Forest, XGBoost)",
+          "description": "Bagging vs Boosting, Random Forest, AdaBoost, Gradient Boosting, XGBoost, LightGBM.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 2,
+          "branch": "right"
         },
         {
-          "title": "Model Evaluation",
-          "description": "Cross-validation, Precision, Recall, F1 Score, and ROC-AUC.",
+          "title": "Unsupervised Learning & Clustering",
+          "description": "K-Means, Hierarchical Clustering, DBSCAN, t-SNE, UMAP dimensional reduction.",
           "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "estimatedTime": "4 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 3
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "Deep Learning",
-      "description": "Neural Networks and representation learning.",
+      "title": "Deep Learning & Neural Networks",
+      "description": "Perceptrons, backpropagation, PyTorch/TensorFlow, CNNs for Vision, and RNNs/Transformers for Sequential Data.",
       "difficulty": "Advanced",
-      "estimatedTime": "6 weeks",
+      "estimatedTime": "3.5 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 3,
       "children": [
         {
-          "title": "Neural Network Fundamentals",
-          "description": "Perceptrons, Backpropagation, and Activation Functions.",
+          "title": "Feedforward Neural Networks & Backpropagation",
+          "description": "Activation functions (ReLU, Sigmoid, Softmax), cross-entropy loss, backpropagation chain rule.",
           "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
-          "interviewImportance": "High",
-          "projectImportance": "Medium",
-          "order": 1
-        },
-        {
-          "title": "PyTorch / TensorFlow",
-          "description": "Deep learning frameworks.",
-          "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 2
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Computer Vision (CNNs)",
-          "description": "Convolutional Neural Networks for image processing.",
+          "title": "Convolutional Neural Networks (CNN)",
+          "description": "Convolution filters, pooling layers, ResNet architectures, transfer learning for image tasks.",
           "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 3
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "Transformers & Self-Attention Mechanics",
+          "description": "Self-attention mechanism, Multi-Head Attention, Positional Encoding, Encoder-Decoder architectures.",
+          "difficulty": "Advanced",
+          "estimatedTime": "6 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
         }
-      ]
+      ],
+      "branch": "center"
     },
     {
-      "title": "Natural Language Processing (NLP)",
-      "description": "Processing and understanding human language.",
+      "title": "Generative AI, LLMs & RAG",
+      "description": "Large Language Models, prompt engineering, Retrieval-Augmented Generation (RAG), vector databases, and LangChain/LlamaIndex.",
       "difficulty": "Advanced",
-      "estimatedTime": "4 weeks",
+      "estimatedTime": "3 weeks",
       "interviewImportance": "High",
       "projectImportance": "High",
       "order": 4,
       "children": [
         {
-          "title": "Text Processing & Embeddings",
-          "description": "Tokenization, TF-IDF, Word2Vec, GloVe.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
+          "title": "LLM Fine-Tuning (LoRA & QLoRA)",
+          "description": "Parameter-efficient fine-tuning (PEFT), Quantization (GGUF/AWQ), Instruction tuning.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 1
+          "order": 1,
+          "branch": "left"
         },
         {
-          "title": "Sequence Models",
-          "description": "RNNs, LSTMs, and GRUs.",
+          "title": "Retrieval-Augmented Generation (RAG)",
+          "description": "Chunking strategies, embedding models, vector search (FAISS, Pinecone, Chroma), hybrid retrieval.",
           "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
-          "projectImportance": "Medium",
-          "order": 2
-        },
-        {
-          "title": "Transformers & Attention",
-          "description": "Self-Attention, BERT, GPT architectures.",
-          "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
+          "estimatedTime": "5 days",
           "interviewImportance": "High",
           "projectImportance": "High",
-          "order": 3
+          "order": 2,
+          "branch": "right"
+        },
+        {
+          "title": "AI Agents & Tool Use",
+          "description": "ReAct framework, autonomous agent loops, multi-agent orchestrations with AutoGen/CrewAI.",
+          "difficulty": "Advanced",
+          "estimatedTime": "5 days",
+          "interviewImportance": "High",
+          "projectImportance": "High",
+          "order": 3,
+          "branch": "left"
         }
-      ]
-    },
-    {
-      "title": "Generative AI & LLMs",
-      "description": "Building and utilizing modern Large Language Models.",
-      "difficulty": "Advanced",
-      "estimatedTime": "4 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 5,
-      "children": [
-        {
-          "title": "Prompt Engineering",
-          "description": "Effective techniques for querying LLMs.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "RAG (Retrieval-Augmented Generation)",
-          "description": "Vector Databases, LangChain, LlamaIndex.",
-          "difficulty": "Advanced",
-          "estimatedTime": "2 weeks",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 2
-        },
-        {
-          "title": "Fine-Tuning",
-          "description": "LoRA, QLoRA, and adapting pre-trained models.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 3
-        }
-      ]
-    },
-    {
-      "title": "MLOps & Deployment",
-      "description": "Taking models to production.",
-      "difficulty": "Advanced",
-      "estimatedTime": "3 weeks",
-      "interviewImportance": "High",
-      "projectImportance": "High",
-      "order": 6,
-      "children": [
-        {
-          "title": "Model Serving",
-          "description": "FastAPI, Flask, ONNX, TensorRT.",
-          "difficulty": "Intermediate",
-          "estimatedTime": "1 week",
-          "interviewImportance": "High",
-          "projectImportance": "High",
-          "order": 1
-        },
-        {
-          "title": "Cloud AI Services",
-          "description": "AWS SageMaker, Google Vertex AI, Azure ML.",
-          "difficulty": "Advanced",
-          "estimatedTime": "1 week",
-          "interviewImportance": "Medium",
-          "projectImportance": "High",
-          "order": 2
-        }
-      ]
+      ],
+      "branch": "center"
     }
   ]
 }

@@ -8,6 +8,7 @@ const RoadmapNodeSchema = new mongoose.Schema(
     description: { type: String, default: '' },
     statusType: { type: String, default: 'default' }, // Allows custom UI types later (e.g., 'core', 'optional')
     order: { type: Number, default: 0 },
+    branch: { type: String, enum: ['left', 'right', 'center'], default: 'center' },
     difficulty: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'], default: 'Beginner' },
     estimatedTime: { type: String, default: '1-2 hours' },
     interviewImportance: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
