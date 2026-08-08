@@ -95,10 +95,15 @@ export function LandingPage() {
   // If already logged in, redirect
   useEffect(() => {
     if (user) {
-      navigate(
-        user.role === 'coordinator' ? '/coordinator/dashboard' : '/student/dashboard',
-        { replace: true }
-      );
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (user.role === 'coordinator') {
+        navigate('/coordinator/dashboard', { replace: true });
+      } else if (user.role === 'alumni') {
+        navigate('/alumni/dashboard', { replace: true });
+      } else {
+        navigate('/student/dashboard', { replace: true });
+      }
     }
   }, [user, navigate]);
 

@@ -26,6 +26,20 @@ import { ReportBugPage } from './pages/shared/ReportBugPage';
 import { LeaderboardPage } from './pages/shared/LeaderboardPage';
 import { PublicStudentProfile } from './pages/shared/PublicStudentProfile';
 import { LandingPage } from './pages/shared/LandingPage';
+import { FeedPage } from './pages/FeedPage';
+import { JobPortalPage } from './pages/JobPortalPage';
+import { AlumniDirectoryPage } from './pages/AlumniDirectoryPage';
+import { UserProfilePage } from './pages/UserProfilePage';
+import { MessagesPage } from './pages/MessagesPage';
+import { AlumniDashboard } from './pages/alumni/AlumniDashboard';
+
+import { EventsPage } from './pages/alumni/EventsPage';
+import { ForumsPage } from './pages/alumni/ForumsPage';
+import { ResourcesPage } from './pages/alumni/ResourcesPage';
+import { InterviewExperiencesPage } from './pages/alumni/InterviewExperiencesPage';
+import { StudentDirectoryPage } from './pages/alumni/StudentDirectoryPage';
+import { CoordinatorDirectoryPage } from './pages/alumni/CoordinatorDirectoryPage';
+import { AlumniGroupsPage } from './pages/alumni/AlumniGroupsPage';
 
 // Features
 import RoadmapsDashboard from './features/roadmaps/pages/RoadmapsDashboard';
@@ -96,6 +110,120 @@ function AppRoutes() {
         {/* AUTH */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* COMMUNITY FEED */}
+        <Route
+          path="/feed"
+          element={
+            <ProtectedRoute>
+              <FeedPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* JOBS & REFERRAL PORTAL */}
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <JobPortalPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ALUMNI DIRECTORY & DASHBOARD */}
+        <Route
+          path="/alumni"
+          element={
+            <ProtectedRoute>
+              <AlumniDirectoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/alumni/dashboard"
+          element={
+            <ProtectedRoute role="alumni">
+              <AlumniDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute>
+              <EventsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/forums"
+          element={
+            <ProtectedRoute>
+              <ForumsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/interview-experiences"
+          element={
+            <ProtectedRoute>
+              <InterviewExperiencesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students-directory"
+          element={
+            <ProtectedRoute>
+              <StudentDirectoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/coordinators-directory"
+          element={
+            <ProtectedRoute>
+              <CoordinatorDirectoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <AlumniGroupsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* USER PUBLIC PROFILE */}
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute>
+              <UserProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* REAL-TIME MESSAGING */}
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* STUDENT */}
         <Route

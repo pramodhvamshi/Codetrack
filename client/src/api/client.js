@@ -1,7 +1,9 @@
 export const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  'https://medhacodetrack-api.vercel.app'
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5001'
+    : 'https://medhacodetrack-api.vercel.app')
 ).replace(/\/$/, "").replace(/\/api$/, "");
 
 let currentToken = null;

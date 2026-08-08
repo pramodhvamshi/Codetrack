@@ -18,16 +18,34 @@ const progressRoutes = require('./routes/progress');
 const roadmapRoutes = require('./routes/roadmap.routes');
 const dsaRoutes = require('./routes/dsa.routes');
 const aiRoutes = require('./routes/ai.routes');
+const feedRoutes = require('./routes/feed.routes');
+const notificationRoutes = require('./routes/notification.routes');
+const jobRoutes = require('./routes/job.routes');
+const alumniRoutes = require('./routes/alumni.routes');
+const messageRoutes = require('./routes/message.routes');
+const fundingRoutes = require('./routes/funding.routes');
+const eventRoutes = require('./routes/event.routes');
+const forumRoutes = require('./routes/forum.routes');
+const resourceRoutes = require('./routes/resource.routes');
+const interviewExperienceRoutes = require('./routes/interviewExperience.routes');
+const alumniGroupRoutes = require('./routes/alumniGroup.routes');
 const mockTestRoutes = require('./routes/mockTest.routes');
+
+const { initSocket } = require('./services/socketService');
+const http = require('http');
 
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
+const seedAlumniData = require('./utils/seedAlumni');
+
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  seedAlumniData();
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -37,6 +55,14 @@ const limiter = rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many requests, please try again later.' }
 });
+
+const allowedOrigins = [
+  config.clientUrl,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174'
+];
 
 // ── CORS must be FIRST — before helmet, rate-limiter, and body parsers ──
 app.use(
@@ -54,6 +80,7 @@ app.use(
     optionsSuccessStatus: 200
   })
 );
+
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
@@ -63,13 +90,12 @@ app.use(limiter);
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'MEDHA CODE TRACK API is running' });
 });
 
-// Routes
+// V1 Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/student/resume', resumeRoutes);
 app.use('/api/student/progress', progressRoutes);
@@ -85,21 +111,30 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/bugs', bugRoutes);
 app.use('/api/coordinator/mentor-notes', mentorNotesRoutes);
 
+// V2 Integrated Architecture Routes
+app.use('/api/v2/feed', feedRoutes);
+app.use('/api/v2/notifications', notificationRoutes);
+app.use('/api/v2/jobs', jobRoutes);
+app.use('/api/v2/alumni', alumniRoutes);
+app.use('/api/v2/messages', messageRoutes);
+app.use('/api/v2/funding', fundingRoutes);
+app.use('/api/v2/events', eventRoutes);
+app.use('/api/v2/forums', forumRoutes);
+app.use('/api/v2/resources', resourceRoutes);
+app.use('/api/v2/interview-experiences', interviewExperienceRoutes);
+app.use('/api/v2/groups', alumniGroupRoutes);
+
 // Fallback
 app.use((req, res) => {
-  res.status(404).json({ message: 'Not found' });
+  res.status(404).json({ message: 'API route not found' });
 });
 
-const port = config.port;
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`MEDHA CODE TRACK API listening on port ${port}`);
-  
-  try {
-    const { initScheduler } = require('./services/cronScheduler');
-    initScheduler();
-  } catch (err) {
-    console.error('Failed to start cron scheduler:', err.message);
-  }
-});
+const PORT = config.port || 5000;
+const server = http.createServer(app);
 
+// Initialize Socket.IO
+initSocket(server);
+
+server.listen(PORT, () => {
+  console.log(`🚀 MEDHA CODE TRACK Server running on port ${PORT}`);
+});
