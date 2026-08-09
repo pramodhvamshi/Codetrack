@@ -41,6 +41,14 @@ import { StudentDirectoryPage } from './pages/alumni/StudentDirectoryPage';
 import { CoordinatorDirectoryPage } from './pages/alumni/CoordinatorDirectoryPage';
 import { AlumniGroupsPage } from './pages/alumni/AlumniGroupsPage';
 
+// Medha Charitable Trust Public Pages
+import { MedhaHomePage } from './pages/medha/MedhaHomePage';
+import { AboutPage } from './pages/medha/AboutPage';
+import { ProgrammesOverviewPage } from './pages/medha/ProgrammesOverviewPage';
+import { SampurnaSikshaBridgePage } from './pages/medha/SampurnaSikshaBridgePage';
+import { ProgrammeDetailPage } from './pages/medha/ProgrammeDetailPage';
+import { NotFoundPage } from './pages/medha/NotFoundPage';
+
 // Features
 import RoadmapsDashboard from './features/roadmaps/pages/RoadmapsDashboard';
 import RoadmapDetail from './features/roadmaps/pages/RoadmapDetail';
@@ -108,10 +116,20 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* LANDING */}
-        <Route path="/" element={<LandingPage />} />
+        {/* MEDHA CHARITABLE TRUST PUBLIC ROUTES */}
+        <Route path="/" element={<MedhaHomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/programmes" element={<ProgrammesOverviewPage />} />
+        <Route path="/programmes/sampurna-siksha" element={<SampurnaSikshaBridgePage />} />
+        <Route path="/programmes/naipunya-nirmana" element={<ProgrammeDetailPage slugOverride="naipunya-nirmana" />} />
+        <Route path="/programmes/helping-hands" element={<ProgrammeDetailPage slugOverride="helping-hands" />} />
+        <Route path="/programmes/mvn" element={<ProgrammeDetailPage slugOverride="mvn" />} />
+        <Route path="/programmes/:slug" element={<ProgrammeDetailPage />} />
 
-        {/* AUTH */}
+        {/* CODETRACK LANDING PAGE */}
+        <Route path="/codetrack" element={<LandingPage />} />
+
+        {/* AUTH (EXPLICITLY PRESERVED) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -557,7 +575,7 @@ function AppRoutes() {
         />
 
         {/* FALLBACK */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

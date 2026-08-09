@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { api, API_BASE_URL } from '../api/client';
 import { ModeToggle } from './ModeToggle';
@@ -402,11 +402,36 @@ export function AppShell({ active, children }) {
       <header className="ct-header">
         <div
           className="ct-header-left"
-          onClick={() => navigate('/feed')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}
         >
-          <img src="/logo-icon.png" alt="MEDHA CODE TRACK Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
-          <span className="ct-logo-text">MEDHA CODE TRACK</span>
+          <img
+            src="/logo-icon.png"
+            alt="MEDHA CODE TRACK Logo"
+            style={{ width: 24, height: 24, objectFit: 'contain', cursor: 'pointer' }}
+            onClick={() => navigate('/feed')}
+          />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span
+              className="ct-logo-text"
+              onClick={() => navigate('/feed')}
+              style={{ cursor: 'pointer', lineHeight: 1.25 }}
+            >
+              MEDHA CODETRACK
+            </span>
+            <Link
+              to="/"
+              style={{
+                fontSize: '0.68rem',
+                color: '#38bdf8',
+                textDecoration: 'none',
+                fontWeight: 500,
+                lineHeight: 1
+              }}
+              title="Return to Medha Charitable Trust Home"
+            >
+              An initiative of Medha Charitable Trust
+            </Link>
+          </div>
         </div>
         <div className="ct-header-right">
           <div className="ct-nav-group" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
