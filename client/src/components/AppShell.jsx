@@ -437,6 +437,201 @@ export function AppShell({ active, children }) {
           <div className="ct-nav-group" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
             {navItem('Feed', '/feed', 'feed')}
 
+            {isStudent && (
+              <>
+                {/* Combined Prep Hub Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={prepHubRef}
+                  onMouseEnter={() => setPrepHubOpen(true)}
+                  onMouseLeave={() => setPrepHubOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setPrepHubOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={isPrepHubActive ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Prep Hub</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: prepHubOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {prepHubOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/roadmaps'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${active === 'roadmaps' ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🗺️</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Roadmaps</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Structured Learning Paths</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/dsa'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${active === 'dsa' ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>DSA Tracker</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Category & Topic Problems</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/interview'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${['student-interview', 'interview'].includes(active) ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🎯</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Interviews & Mock Tests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Voice Interviews & AI Tests</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/resume'); setPrepHubOpen(false); }}
+                        className={`ct-prephub-item ${['student-resume', 'resume'].includes(active) ? 'active' : ''}`}
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📄</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Resume Builder</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>ATS Generator & Scorer</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {navItem('Dashboard', '/student/dashboard', 'student-dashboard')}
+
+                {/* Services Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={servicesRef}
+                  onMouseEnter={() => setServicesOpen(true)}
+                  onMouseLeave={() => setServicesOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setServicesOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={active === 'services' ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Services</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {servicesOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/student/services?tab=leave'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Apply & Track Leave Applications</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/services?tab=mentoring'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📅</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Book Slots & GMeet Links</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/student/services?tab=laptop'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>💻</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Request</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Report Issues & Repairs</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {isAlumni && navItem('Dashboard', '/alumni/dashboard', 'alumni-dashboard')}
+
+            {isCoordinator && (
+              <>
+                {navItem('Dashboard', '/coordinator/dashboard', 'coord-dashboard')}
+                {navItem('Students', '/coordinator/students', 'coord-students')}
+                {navItem('Reports', '/coordinator/reports', 'coord-reports')}
+
+                {/* Coordinator Services Dropdown */}
+                <div
+                  className="ct-prephub-dropdown"
+                  ref={servicesRef}
+                  onMouseEnter={() => setServicesOpen(true)}
+                  onMouseLeave={() => setServicesOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setServicesOpen(o => !o)}
+                    className="ct-nav-item"
+                    data-active={active === 'services' ? 'true' : 'false'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>Services</span>
+                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  </button>
+
+                  {servicesOpen && (
+                    <div className="ct-prephub-menu" role="menu">
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=leave'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Requests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Verify & Approve Applications</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=mentoring'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>📅</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Requests</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Reschedule Slots & Meeting Notes</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => { navigate('/coordinator/services?tab=laptop'); setServicesOpen(false); }}
+                        className="ct-prephub-item"
+                      >
+                        <span style={{ fontSize: '1.1rem' }}>💻</span>
+                        <div>
+                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Audit Table</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Excel Inventory & R&D Status</div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             {/* ALUMNI HUB HOVER DROPDOWN MENU */}
             <div
               ref={alumniDropdownRef}
@@ -544,207 +739,8 @@ export function AppShell({ active, children }) {
               )}
             </div>
 
-            {isStudent && (
-              <>
-                {navItem('Dashboard', '/student/dashboard', 'student-dashboard')}
-                
-                {/* Combined Prep Hub Dropdown */}
-                <div
-                  className="ct-prephub-dropdown"
-                  ref={prepHubRef}
-                  onMouseEnter={() => setPrepHubOpen(true)}
-                  onMouseLeave={() => setPrepHubOpen(false)}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setPrepHubOpen(o => !o)}
-                    className="ct-nav-item"
-                    data-active={isPrepHubActive ? 'true' : 'false'}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <span>Prep Hub</span>
-                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: prepHubOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
-                  </button>
+            {!isAdmin && navItem('Leaderboard', '/leaderboard', 'leaderboard')}
 
-                  {prepHubOpen && (
-                    <div className="ct-prephub-menu" role="menu">
-                      <button
-                        onClick={() => { navigate('/roadmaps'); setPrepHubOpen(false); }}
-                        className={`ct-prephub-item ${active === 'roadmaps' ? 'active' : ''}`}
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>🗺️</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Roadmaps</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Structured Learning Paths</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/dsa'); setPrepHubOpen(false); }}
-                        className={`ct-prephub-item ${active === 'dsa' ? 'active' : ''}`}
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>⚡</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>DSA Tracker</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Category & Topic Problems</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/student/interview'); setPrepHubOpen(false); }}
-                        className={`ct-prephub-item ${['student-interview', 'interview'].includes(active) ? 'active' : ''}`}
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>🎯</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Interviews & Mock Tests</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Voice Interviews & AI Tests</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/student/resume'); setPrepHubOpen(false); }}
-                        className={`ct-prephub-item ${['student-resume', 'resume'].includes(active) ? 'active' : ''}`}
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>📄</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Resume Builder</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>ATS Generator & Scorer</div>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Services Dropdown */}
-                <div
-                  className="ct-prephub-dropdown"
-                  ref={servicesRef}
-                  onMouseEnter={() => setServicesOpen(true)}
-                  onMouseLeave={() => setServicesOpen(false)}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setServicesOpen(o => !o)}
-                    className="ct-nav-item"
-                    data-active={active === 'services' ? 'true' : 'false'}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <span>Services</span>
-                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
-                  </button>
-
-                  {servicesOpen && (
-                    <div className="ct-prephub-menu" role="menu">
-                      <button
-                        onClick={() => { navigate('/student/services?tab=leave'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Request</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Apply & Track Leave Applications</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/student/services?tab=mentoring'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>📅</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Request</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Book Slots & GMeet Links</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/student/services?tab=laptop'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>💻</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Request</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Report Issues & Repairs</div>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {navItem('Leaderboard', '/leaderboard', 'leaderboard')}
-              </>
-            )}
-
-            {isAlumni && [
-              navItem('Dashboard', '/alumni/dashboard', 'alumni-dashboard'),
-              navItem('Leaderboard', '/leaderboard', 'leaderboard')
-            ]}
-
-            {isCoordinator && (
-              <>
-                {navItem('Dashboard', '/coordinator/dashboard', 'coord-dashboard')}
-                {navItem('Students', '/coordinator/students', 'coord-students')}
-                {navItem('Reports', '/coordinator/reports', 'coord-reports')}
-
-                {/* Coordinator Services Dropdown */}
-                <div
-                  className="ct-prephub-dropdown"
-                  ref={servicesRef}
-                  onMouseEnter={() => setServicesOpen(true)}
-                  onMouseLeave={() => setServicesOpen(false)}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setServicesOpen(o => !o)}
-                    className="ct-nav-item"
-                    data-active={active === 'services' ? 'true' : 'false'}
-                    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <span>Services</span>
-                    <span style={{ fontSize: '0.65rem', transition: 'transform 0.2s', transform: servicesOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
-                  </button>
-
-                  {servicesOpen && (
-                    <div className="ct-prephub-menu" role="menu">
-                      <button
-                        onClick={() => { navigate('/coordinator/services?tab=leave'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>🍃</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Leave Requests</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Verify & Approve Applications</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/coordinator/services?tab=mentoring'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>📅</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Mentoring Requests</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Reschedule Slots & Meeting Notes</div>
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() => { navigate('/coordinator/services?tab=laptop'); setServicesOpen(false); }}
-                        className="ct-prephub-item"
-                      >
-                        <span style={{ fontSize: '1.1rem' }}>💻</span>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.85rem' }}>Laptop Audit Table</div>
-                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Excel Inventory & R&D Status</div>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {navItem('Leaderboard', '/leaderboard', 'leaderboard')}
-              </>
-            )}
             {isAdmin && [
               navItem('Dashboard', '/admin/dashboard', 'admin-dashboard'),
               navItem('Coordinators', '/admin/coordinators', 'admin-coordinators'),
