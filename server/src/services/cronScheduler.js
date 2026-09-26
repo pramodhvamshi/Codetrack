@@ -169,7 +169,34 @@ function initScheduler() {
     }
   });
 
-  console.log('Cron scheduler successfully initialized.');
+  // Periodic bulk sync every 6 hours (e.g. 12:00 AM, 6:00 AM, 12:00 PM, 6:00 PM)
+  cron.schedule('0 */6 * * *', async () => {
+    console.log('Running scheduled 6-hour periodic bulk platform sync...');
+    try {
+      const BulkSyncJob = require('../models/BulkSyncJob');
+      const { runBulkSync } = require('./bulkSyncService');
+      const crypto = require('crypto');
+
+      const runningJob = await BulkSyncJob.findOne({ status: { $in: ['Pending', 'Running'] } });
+      if (runningJob) {
+        console.log(`Periodic sync skipped: Job ${runningJob.jobId} is currently running.`);
+        return;
+      }
+
+      const jobId = crypto.randomUUID();
+      await BulkSyncJob.create({
+        jobId,
+        status: 'Pending',
+        logs: ['Scheduled periodic bulk sync job created by cron scheduler.']
+      });
+
+      runBulkSync(jobId);
+    } catch (err) {
+      console.error('Error triggering scheduled periodic bulk sync:', err.message);
+    }
+  });
+
+  console.log('Cron scheduler successfully initialized (Weekly, Monthly, and 6-Hour Periodic Bulk Sync).');
 }
 
 module.exports = {

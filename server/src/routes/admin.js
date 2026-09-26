@@ -7,7 +7,7 @@ const User = require('../models/User');
 const BugReport = require('../models/BugReport');
 const AuditLog = require('../models/AuditLog');
 const BulkSyncJob = require('../models/BulkSyncJob');
-const { runBulkSync } = require('../services/bulkSyncService');
+const { runBulkSync, stopAllSyncJobs } = require('../services/bulkSyncService');
 const authRouter = require('./auth'); // to get generateTokens and setAuthCookies
 const config = require('../config/env');
 
@@ -477,7 +477,12 @@ router.post('/platform-sync/all', async (req, res) => {
     // Prevent duplicate runs: check if any job is currently Pending or Running
     const runningJob = await BulkSyncJob.findOne({ status: { $in: ['Pending', 'Running'] } });
     if (runningJob) {
-      return res.status(400).json({ message: 'A bulk platform sync job is already running.' });
+      const isStale = (Date.now() - new Date(runningJob.updatedAt || runningJob.createdAt).getTime()) > 5 * 60 * 1000;
+      if (!isStale) {
+        return res.status(400).json({ message: 'A bulk platform sync job is already actively running.' });
+      }
+      // If stale, terminate the abandoned job first
+      await stopAllSyncJobs();
     }
 
     const jobId = crypto.randomUUID();
@@ -499,15 +504,75 @@ router.post('/platform-sync/all', async (req, res) => {
 });
 
 /**
+ * POST /api/admin/platform-sync/stop
+ */
+router.post('/platform-sync/stop', async (req, res) => {
+  try {
+    await stopAllSyncJobs();
+    return res.json({ message: 'Bulk sync process stopped successfully.' });
+  } catch (err) {
+    console.error('Failed to stop bulk platform sync:', err);
+    return res.status(500).json({ message: 'Failed to stop bulk platform sync', error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/platform-sync/resume
+ */
+router.post('/platform-sync/resume', async (req, res) => {
+  try {
+    const runningJob = await BulkSyncJob.findOne({ status: { $in: ['Pending', 'Running'] } });
+    if (runningJob) {
+      const isStale = (Date.now() - new Date(runningJob.updatedAt || runningJob.createdAt).getTime()) > 5 * 60 * 1000;
+      if (!isStale) {
+        return res.status(400).json({ message: 'A bulk platform sync job is currently actively running.' });
+      }
+      await stopAllSyncJobs();
+    }
+
+    // Find the latest job to resume from
+    const lastJob = await BulkSyncJob.findOne().sort({ createdAt: -1 });
+    if (!lastJob) {
+      return res.status(400).json({ message: 'No previous sync job found to resume.' });
+    }
+
+    const jobId = crypto.randomUUID();
+    await BulkSyncJob.create({
+      jobId,
+      startedBy: req.currentUser._id,
+      status: 'Pending',
+      logs: [`Resume job queued. Continuing from previous run (${lastJob.jobId})...`]
+    });
+
+    // Run bulk sync with resume option
+    runBulkSync(jobId, { resumeFromJobId: lastJob.jobId });
+
+    return res.status(202).json({ message: 'Bulk sync resumed successfully.', jobId });
+  } catch (err) {
+    console.error('Failed to resume bulk platform sync:', err);
+    return res.status(500).json({ message: 'Failed to resume bulk platform sync', error: err.message });
+  }
+});
+
+/**
  * GET /api/admin/platform-sync/status/latest
  */
 router.get('/platform-sync/status/latest', async (req, res) => {
   try {
-    const latest = await BulkSyncJob.findOne().sort({ createdAt: -1 });
+    let latest = await BulkSyncJob.findOne().sort({ createdAt: -1 });
+
+    // Auto-detect and heal stale running jobs (> 5 minutes inactive)
+    if (latest && (latest.status === 'Running' || latest.status === 'Pending')) {
+      const lastActive = new Date(latest.updatedAt || latest.createdAt).getTime();
+      if (Date.now() - lastActive > 5 * 60 * 1000) {
+        await stopAllSyncJobs();
+        latest = await BulkSyncJob.findOne({ _id: latest._id });
+      }
+    }
     
     // Additional metrics for dashboard
     const lastSuccessJob = await BulkSyncJob.findOne({ status: 'Completed' }).sort({ completedAt: -1 });
-    const lastFailedJob = await BulkSyncJob.findOne({ status: 'Failed' }).sort({ completedAt: -1 });
+    const lastFailedJob = await BulkSyncJob.findOne({ status: { $in: ['Failed', 'Cancelled'] } }).sort({ completedAt: -1 });
     
     const completedJobs = await BulkSyncJob.find({ status: 'Completed', startedAt: { $exists: true }, completedAt: { $exists: true } });
     let avgDuration = 0;
@@ -516,11 +581,15 @@ router.get('/platform-sync/status/latest', async (req, res) => {
       avgDuration = Math.round((totalDuration / completedJobs.length) / 1000); // in seconds
     }
 
+    const processed = latest ? ((latest.completedStudents || 0) + (latest.failedStudents || 0)) : 0;
+    const canResume = !!(latest && (latest.status === 'Failed' || latest.status === 'Cancelled') && latest.totalStudents > 0 && processed < latest.totalStudents);
+
     return res.json({
       latest,
       lastSuccessfulSync: lastSuccessJob ? lastSuccessJob.completedAt : null,
       lastFailedSync: lastFailedJob ? lastFailedJob.completedAt : null,
-      averageSyncDuration: avgDuration
+      averageSyncDuration: avgDuration,
+      canResume
     });
   } catch (err) {
     console.error('Failed to get latest job status:', err);

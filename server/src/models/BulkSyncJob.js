@@ -18,9 +18,10 @@ const BulkSyncJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Running', 'Completed', 'Failed'],
+    enum: ['Pending', 'Running', 'Completed', 'Failed', 'Cancelled'],
     default: 'Pending'
   },
+  processedStudentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   logs: { type: [String], default: [] },
   failedStudentsList: [
     {

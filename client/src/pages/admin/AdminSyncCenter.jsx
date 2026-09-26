@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../auth/AuthContext';
 import { api } from '../../api/client';
-import { RefreshCw, Play, Download, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Play, Download, CheckCircle, XCircle, AlertTriangle, Square, PlayCircle, RotateCcw } from 'lucide-react';
 
 export function AdminSyncCenter() {
   const { token } = useAuth();
@@ -13,6 +13,8 @@ export function AdminSyncCenter() {
   
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [canResume, setCanResume] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
   
   const logContainerRef = useRef(null);
@@ -27,6 +29,7 @@ export function AdminSyncCenter() {
         setLastSuccessfulSync(data.lastSuccessfulSync);
         setLastFailedSync(data.lastFailedSync);
         setAverageDuration(data.averageSyncDuration || 0);
+        setCanResume(!!data.canResume);
 
         if (data.latest && (data.latest.status === 'Running' || data.latest.status === 'Pending')) {
           setSyncing(true);
@@ -52,7 +55,7 @@ export function AdminSyncCenter() {
     if (syncing) {
       interval = setInterval(() => {
         fetchStatus(false);
-      }, 3000);
+      }, 4000);
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -67,8 +70,9 @@ export function AdminSyncCenter() {
   }, [latest?.logs]);
 
   const handleStartSync = async () => {
-    if (!token) return;
+    if (!token || actionLoading) return;
     setError('');
+    setActionLoading(true);
     try {
       setSyncing(true);
       const res = await api.postJson('/admin/platform-sync/all', {}, token);
@@ -79,6 +83,42 @@ export function AdminSyncCenter() {
       console.error('Failed to trigger sync:', err);
       setError(err.message || 'Failed to trigger bulk sync');
       setSyncing(false);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResumeSync = async () => {
+    if (!token || actionLoading) return;
+    setError('');
+    setActionLoading(true);
+    try {
+      setSyncing(true);
+      const res = await api.postJson('/admin/platform-sync/resume', {}, token);
+      if (res && res.jobId) {
+        fetchStatus(false);
+      }
+    } catch (err) {
+      console.error('Failed to resume sync:', err);
+      setError(err.message || 'Failed to resume bulk sync');
+      setSyncing(false);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleStopSync = async () => {
+    if (!token || actionLoading) return;
+    if (!window.confirm('Are you sure you want to stop the bulk sync? Any already-synced students will be kept, and you can resume anytime.')) return;
+    setActionLoading(true);
+    try {
+      await api.postJson('/admin/platform-sync/stop', {}, token);
+      await fetchStatus(true);
+    } catch (err) {
+      console.error('Failed to stop sync:', err);
+      setError(err.message || 'Failed to stop bulk sync');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -182,8 +222,8 @@ export function AdminSyncCenter() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status:</span>
                     <span className="ct-chip" style={{
-                      background: latest.status === 'Completed' ? 'rgba(16,185,129,0.15)' : latest.status === 'Failed' ? 'rgba(239,68,68,0.15)' : 'rgba(37,99,235,0.15)',
-                      color: latest.status === 'Completed' ? '#10b981' : latest.status === 'Failed' ? '#ef4444' : '#3b82f6',
+                      background: latest.status === 'Completed' ? 'rgba(16,185,129,0.15)' : (latest.status === 'Failed' || latest.status === 'Cancelled') ? 'rgba(239,68,68,0.15)' : 'rgba(37,99,235,0.15)',
+                      color: latest.status === 'Completed' ? '#10b981' : (latest.status === 'Failed' || latest.status === 'Cancelled') ? '#ef4444' : '#3b82f6',
                       fontWeight: 'bold'
                     }}>
                       {latest.status}
@@ -193,7 +233,7 @@ export function AdminSyncCenter() {
                 </div>
 
                 {/* Progress bar */}
-                {(latest.status === 'Running' || latest.status === 'Pending' || latest.status === 'Completed') && (
+                {(latest.status === 'Running' || latest.status === 'Pending' || latest.status === 'Completed' || latest.status === 'Failed' || latest.status === 'Cancelled') && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
                       <span>Batch Sync Progress</span>
@@ -210,6 +250,28 @@ export function AdminSyncCenter() {
                   </div>
                 )}
 
+                {/* Resumable helper notification */}
+                {canResume && !syncing && (
+                  <div style={{
+                    background: 'rgba(59, 130, 246, 0.12)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    borderRadius: 8,
+                    padding: '0.8rem 1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.4rem',
+                    fontSize: '0.85rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: '#60a5fa' }}>
+                      <PlayCircle size={16} />
+                      <span>Sync Incomplete / Resumable</span>
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                      The previous sync stopped at {processed} of {total} students. Click <strong>Resume Sync</strong> to finish the remaining {total - processed} students without starting from scratch.
+                    </p>
+                  </div>
+                )}
+
                 {/* Batch metrics grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', textAlign: 'center', padding: '0.8rem', background: '#0f172a', borderRadius: 8 }}>
                   <div>
@@ -221,8 +283,8 @@ export function AdminSyncCenter() {
                     <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981' }}>{latest.completedStudents}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.7rem', color: '#ef4444' }}>FAILED</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ef4444' }}>{latest.failedStudents}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#ef4444' }}>FAILED / PARTIAL</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ef4444' }}>{(latest.failedStudents || 0) + (latest.partialStudents || 0)}</div>
                   </div>
                 </div>
 
@@ -244,25 +306,106 @@ export function AdminSyncCenter() {
               </div>
             )}
 
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.2rem', display: 'flex', gap: '1rem' }}>
-              <button
-                onClick={handleStartSync}
-                className="ct-button"
-                disabled={syncing}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.6rem 1.2rem',
-                  background: syncing ? 'var(--text-muted)' : 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
-                  color: syncing ? '#1e293b' : '#0b1120',
-                  fontWeight: 'bold',
-                  cursor: syncing ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {syncing ? <RefreshCw size={16} className="animate-spin" /> : <Play size={16} />}
-                {syncing ? 'Syncing In Progress...' : 'Sync All Students'}
-              </button>
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.2rem', display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+              {syncing ? (
+                <>
+                  <button
+                    disabled
+                    className="ct-button"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.6rem 1.2rem',
+                      background: 'var(--text-muted)',
+                      color: '#1e293b',
+                      fontWeight: 'bold',
+                      cursor: 'not-allowed'
+                    }}
+                  >
+                    <RefreshCw size={16} className="animate-spin" />
+                    Syncing In Progress...
+                  </button>
+                  <button
+                    onClick={handleStopSync}
+                    disabled={actionLoading}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.6rem 1.2rem',
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      border: '1px solid #ef4444',
+                      color: '#ef4444',
+                      borderRadius: 8,
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Square size={14} />
+                    Stop / Cancel Sync
+                  </button>
+                </>
+              ) : (
+                <>
+                  {canResume ? (
+                    <>
+                      <button
+                        onClick={handleResumeSync}
+                        disabled={actionLoading}
+                        className="ct-button"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.6rem 1.2rem',
+                          background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                          color: '#0b1120',
+                          fontWeight: 'bold',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <PlayCircle size={16} />
+                        Resume Sync ({total - processed} remaining)
+                      </button>
+                      <button
+                        onClick={handleStartSync}
+                        disabled={actionLoading}
+                        className="ct-button-secondary"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.6rem 1.2rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <RotateCcw size={14} />
+                        Start Fresh Sync All
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleStartSync}
+                      disabled={actionLoading}
+                      className="ct-button"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.6rem 1.2rem',
+                        background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))',
+                        color: '#0b1120',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Play size={16} />
+                      Sync All Students
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
 

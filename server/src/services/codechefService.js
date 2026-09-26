@@ -17,7 +17,7 @@ async function _fetchCodeChefProfile(username, force = false) {
     return cached.data;
   }
 
-  const delays = [3000, 6000, 12000];
+  const delays = [1500, 3000, 5000];
   let attempt = 0;
 
   while (attempt <= delays.length) {

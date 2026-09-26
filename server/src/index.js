@@ -40,21 +40,26 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
 const seedAlumniData = require('./utils/seedAlumni');
+const { initScheduler } = require('./services/cronScheduler');
 
 const app = express();
 
 // Trust proxy for Vercel / serverless deployments (fixes express-rate-limit X-Forwarded-For validation error)
 app.set('trust proxy', 1);
 
+const { cleanOrphanedJobsOnStartup } = require('./services/bulkSyncService');
+
 // Connect to MongoDB
-connectDB().then(() => {
+connectDB().then(async () => {
+  await cleanOrphanedJobsOnStartup();
   seedAlumniData();
+  initScheduler();
 });
 
 // Rate limiting configured safely for Vercel proxy
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per 15 minutes
+  max: 2500, // Limit each IP to 2500 requests per 15 minutes
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false, default: false },
